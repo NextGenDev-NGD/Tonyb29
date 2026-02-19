@@ -200,12 +200,24 @@ EOF
 }
 
 # ─── 7. GitHub repo setup ─────────────────────────────────────────────────────
+# Repository: https://github.com/NextGenDev-NGD/Tonyb29
+GITHUB_REPO="NextGenDev-NGD/Tonyb29"
+GITHUB_REMOTE_URL="https://github.com/${GITHUB_REPO}.git"
+
 setup_github_repo() {
-    header "Configuring GitHub repository"
+    header "Configuring GitHub repository (${GITHUB_REPO})"
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+    # Ensure 'github' remote exists and points to the right place
+    if git -C "$SCRIPT_DIR" remote get-url github &>/dev/null; then
+        git -C "$SCRIPT_DIR" remote set-url github "$GITHUB_REMOTE_URL"
+    else
+        git -C "$SCRIPT_DIR" remote add github "$GITHUB_REMOTE_URL"
+    fi
+    success "Remote 'github' -> $GITHUB_REMOTE_URL"
+
     if ! command_exists gh; then
-        warn "gh not found — skipping GitHub repo setup. Install gh and re-run."
+        warn "gh not installed — skipping auth check. Install gh and re-run to push."
         return
     fi
 
@@ -214,35 +226,15 @@ setup_github_repo() {
         gh auth login
     fi
 
-    GH_USER=$(gh api user --jq '.login' 2>/dev/null || echo "")
-    if [ -z "$GH_USER" ]; then
-        warn "Could not determine GitHub username. Skipping repo setup."
-        return
-    fi
-
-    REPO_NAME="$(basename "$SCRIPT_DIR")"
-    REMOTE_URL="https://github.com/$GH_USER/$REPO_NAME.git"
-
-    # Create repo on GitHub if it doesn't exist
-    if ! gh repo view "$GH_USER/$REPO_NAME" &>/dev/null; then
-        info "Creating GitHub repo: $GH_USER/$REPO_NAME"
-        gh repo create "$GH_USER/$REPO_NAME" --public --description "AI Dev environment setup" --source="$SCRIPT_DIR" --remote=github --push
-        success "Repo created and pushed: https://github.com/$GH_USER/$REPO_NAME"
-        return
-    fi
-
-    success "GitHub repo already exists: https://github.com/$GH_USER/$REPO_NAME"
-
-    # Ensure remote is set
-    if ! git -C "$SCRIPT_DIR" remote get-url github &>/dev/null; then
-        git -C "$SCRIPT_DIR" remote add github "$REMOTE_URL"
-        info "Added remote 'github' -> $REMOTE_URL"
-    fi
-
-    # Push current branch
+    # Push current branch to main on GitHub
     CURRENT_BRANCH=$(git -C "$SCRIPT_DIR" branch --show-current)
-    git -C "$SCRIPT_DIR" push github "$CURRENT_BRANCH":main
-    success "Pushed to github/main."
+    info "Pushing $CURRENT_BRANCH -> github/main ..."
+    if git -C "$SCRIPT_DIR" push github "${CURRENT_BRANCH}:main" 2>/dev/null; then
+        success "Pushed to https://github.com/${GITHUB_REPO}"
+    else
+        warn "Push failed — you may need to pull first or set up access."
+        info "Try: git pull github main --rebase && git push github main"
+    fi
 }
 
 # ─── 8. Shell profile ─────────────────────────────────────────────────────────
@@ -353,7 +345,7 @@ main() {
     echo "  2. Log in to Claude:   claude"
     echo "  3. Launch the AI CLI:  ai-dev"
     echo ""
-    echo "GitHub workflow:"
+    echo "GitHub workflow (repo: https://github.com/${GITHUB_REPO}):"
     echo "  git add .              — stage changes"
     echo "  git commit -m \"msg\"    — commit"
     echo "  git push github main   — push to GitHub"
