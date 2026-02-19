@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # AI Dev Environment Setup — Linux
-# Installs Node.js (via nvm), Git, and Claude Code
+# Installs Node.js (via nvm), Git, GitHub CLI (gh), and Claude Code
 # Gemini CLI and ShellGPT are optional (pass --with-gemini or --with-sgpt)
 # Usage: bash setup.sh [--with-gemini] [--with-sgpt]
 
@@ -81,7 +81,41 @@ install_node() {
     success "Node.js $(node --version) installed."
 }
 
-# ─── 3. Claude Code ───────────────────────────────────────────────────────────
+# ─── 3. GitHub CLI ────────────────────────────────────────────────────────────
+install_gh() {
+    header "Installing GitHub CLI (gh)"
+    if command_exists gh; then
+        success "GitHub CLI already installed: $(gh --version 2>/dev/null | head -1)"
+        return
+    fi
+
+    if command_exists apt-get; then
+        # Official GitHub CLI apt repo
+        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+            | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+        sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+            | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+        sudo apt-get update -qq
+        sudo apt-get install -y gh
+    elif command_exists dnf; then
+        sudo dnf install -y 'dnf-command(config-manager)'
+        sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
+        sudo dnf install -y gh
+    elif command_exists pacman; then
+        sudo pacman -Sy --noconfirm github-cli
+    elif command_exists brew; then
+        brew install gh
+    else
+        warn "Unknown package manager. Install gh manually from: https://cli.github.com"
+        return 1
+    fi
+
+    success "GitHub CLI installed: $(gh --version 2>/dev/null | head -1)"
+    info "Run 'gh auth login' to authenticate with your GitHub account."
+}
+
+# ─── 4a. Claude Code ──────────────────────────────────────────────────────────
 install_claude() {
     header "Installing Claude Code"
     export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
@@ -232,6 +266,7 @@ verify_tools() {
     check_required "node"   node --version
     check_required "npm"    npm --version
     check_required "git"    git --version
+    check_required "gh"     gh --version
     check_required "claude" claude --version
     check_optional "gemini" gemini --version
     check_optional "sgpt"   sgpt --version
@@ -248,6 +283,7 @@ main() {
     require_sudo
     install_system_packages
     install_node
+    install_gh
     install_claude
 
     if $WITH_GEMINI; then
@@ -267,8 +303,9 @@ main() {
     echo ""
     echo "Next steps:"
     echo "  1. Reload your shell:  source ~/.bashrc"
-    echo "  2. Log in to Claude:   claude"
-    echo "  3. Launch the AI CLI:  ai-dev"
+    echo "  2. Log in to GitHub:   gh auth login"
+    echo "  3. Log in to Claude:   claude"
+    echo "  4. Launch the AI CLI:  ai-dev"
     echo ""
     echo "Quick reference:"
     echo "  ai-dev claude \"prompt\"         — Claude Code"
