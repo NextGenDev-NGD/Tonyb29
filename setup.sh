@@ -1,10 +1,20 @@
 #!/usr/bin/env bash
 # AI Dev Environment Setup — Linux
-# Based on windows-ai-dev-setup.md
-# Installs Node.js (via nvm), Python 3, Git, Claude Code, Gemini CLI, ShellGPT
-# Usage: bash setup.sh
+# Installs Node.js (via nvm), Git, and Claude Code
+# Gemini CLI and ShellGPT are optional (pass --with-gemini or --with-sgpt)
+# Usage: bash setup.sh [--with-gemini] [--with-sgpt]
 
 set -euo pipefail
+
+# ─── Flags ────────────────────────────────────────────────────────────────────
+WITH_GEMINI=false
+WITH_SGPT=false
+for arg in "$@"; do
+    case "$arg" in
+        --with-gemini) WITH_GEMINI=true ;;
+        --with-sgpt)   WITH_SGPT=true ;;
+    esac
+done
 
 # ─── Colors ───────────────────────────────────────────────────────────────────
 RED='\033[0;31m'
@@ -34,15 +44,15 @@ install_system_packages() {
     header "Installing system packages (git, curl, build-essential)"
     if command_exists apt-get; then
         sudo apt-get update -qq
-        sudo apt-get install -y git curl build-essential python3 python3-pip python3-venv
+        sudo apt-get install -y git curl build-essential
     elif command_exists dnf; then
-        sudo dnf install -y git curl gcc make python3 python3-pip
+        sudo dnf install -y git curl gcc make
     elif command_exists pacman; then
-        sudo pacman -Sy --noconfirm git curl base-devel python python-pip
+        sudo pacman -Sy --noconfirm git curl base-devel
     elif command_exists brew; then
-        brew install git curl python
+        brew install git curl
     else
-        warn "Unknown package manager. Install git, curl, and python3 manually."
+        warn "Unknown package manager. Install git and curl manually."
     fi
     success "System packages installed."
 }
@@ -51,8 +61,7 @@ install_system_packages() {
 install_node() {
     header "Installing Node.js LTS via nvm"
     if command_exists node; then
-        NODE_VER=$(node --version)
-        success "Node.js already installed: $NODE_VER"
+        success "Node.js already installed: $(node --version)"
         return
     fi
 
@@ -62,9 +71,8 @@ install_node() {
         curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
     fi
 
-    # Load nvm for this session
-    # shellcheck source=/dev/null
     export NVM_DIR="$HOME/.nvm"
+    # shellcheck source=/dev/null
     [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
 
     nvm install --lts
@@ -76,8 +84,8 @@ install_node() {
 # ─── 3. Claude Code ───────────────────────────────────────────────────────────
 install_claude() {
     header "Installing Claude Code"
-    # Load nvm if needed
     export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+    # shellcheck source=/dev/null
     [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
 
     if command_exists claude; then
@@ -94,10 +102,11 @@ install_claude() {
     fi
 }
 
-# ─── 4. Gemini CLI ────────────────────────────────────────────────────────────
+# ─── 4. Gemini CLI (optional) ─────────────────────────────────────────────────
 install_gemini() {
-    header "Installing Gemini CLI"
+    header "Installing Gemini CLI (optional)"
     export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+    # shellcheck source=/dev/null
     [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
 
     if command_exists gemini; then
@@ -106,18 +115,17 @@ install_gemini() {
     fi
 
     npm install -g @google/gemini-cli
-    success "Gemini CLI installed."
+    success "Gemini CLI installed. Get a free key at: aistudio.google.com/apikey"
 }
 
-# ─── 5. ShellGPT ──────────────────────────────────────────────────────────────
+# ─── 5. ShellGPT (optional) ───────────────────────────────────────────────────
 install_shellgpt() {
-    header "Installing ShellGPT"
+    header "Installing ShellGPT (optional)"
     if command_exists sgpt; then
         success "ShellGPT already installed: $(sgpt --version 2>/dev/null || echo 'unknown version')"
         return
     fi
 
-    # Prefer pipx for isolated install; fall back to pip with --user
     if command_exists pipx; then
         pipx install shell-gpt
     elif command_exists pip3; then
@@ -125,11 +133,11 @@ install_shellgpt() {
     elif command_exists pip; then
         pip install --user shell-gpt
     else
-        error "pip not found. Python installation may have failed."
-        exit 1
+        error "pip/pipx not found. Install pipx first: sudo apt install pipx"
+        return 1
     fi
 
-    success "ShellGPT installed."
+    success "ShellGPT installed. Requires an OpenAI API key."
 }
 
 # ─── 6. .env file ─────────────────────────────────────────────────────────────
@@ -137,26 +145,24 @@ setup_env() {
     header "Setting up .env file"
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     ENV_FILE="$SCRIPT_DIR/.env"
-    EXAMPLE_FILE="$SCRIPT_DIR/.env.example"
 
     if [ -f "$ENV_FILE" ]; then
         warn ".env already exists — skipping. Edit it manually to update keys."
         return
     fi
 
-    if [ -f "$EXAMPLE_FILE" ]; then
-        cp "$EXAMPLE_FILE" "$ENV_FILE"
-        warn "Created .env from .env.example. Fill in your API keys:"
-        echo "      $ENV_FILE"
-    else
-        cat > "$ENV_FILE" <<'EOF'
-ANTHROPIC_API_KEY=your-anthropic-key-here
-GEMINI_API_KEY=your-gemini-key-here
-OPENAI_API_KEY=your-openai-key-here
+    cat > "$ENV_FILE" <<'EOF'
+# Claude Code authenticates via 'claude login' with your claude.ai subscription.
+# An API key below is only needed if you want direct API access (not required).
+# ANTHROPIC_API_KEY=your-anthropic-key-here
+
+# Optional — only needed if you installed Gemini CLI or ShellGPT
+# GEMINI_API_KEY=your-gemini-key-here
+# OPENAI_API_KEY=your-openai-key-here
 EOF
-        warn "Created blank .env. Fill in your API keys:"
-        echo "      $ENV_FILE"
-    fi
+    success "Created .env at: $ENV_FILE"
+    info "Claude Code uses your claude.ai subscription — no API key needed."
+    info "Run 'claude' to log in with your subscription."
 }
 
 # ─── 7. Shell profile ─────────────────────────────────────────────────────────
@@ -164,7 +170,6 @@ configure_profile() {
     header "Configuring shell profile"
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-    # Detect active shell profile
     if [ -n "${ZSH_VERSION-}" ] || [ "$(basename "$SHELL")" = "zsh" ]; then
         PROFILE="$HOME/.zshrc"
     else
@@ -184,7 +189,7 @@ export NVM_DIR="\$HOME/.nvm"
 [ -s "\$NVM_DIR/nvm.sh" ] && source "\$NVM_DIR/nvm.sh"
 [ -s "\$NVM_DIR/bash_completion" ] && source "\$NVM_DIR/bash_completion"
 
-# Load AI API keys if .env exists
+# Load API keys from .env if present (uncommented keys only)
 if [ -f "$SCRIPT_DIR/.env" ]; then
     set -a
     # shellcheck source=/dev/null
@@ -203,35 +208,33 @@ EOF
 verify_tools() {
     header "Verifying installations"
     export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+    # shellcheck source=/dev/null
     [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"
 
-    local all_ok=true
-
-    check() {
+    check_required() {
         local name="$1"; shift
         if "$@" &>/dev/null; then
             success "$name: $("$@" 2>/dev/null | head -1)"
         else
-            warn "$name: not found or not in PATH yet (may need to reload shell)"
-            all_ok=false
+            warn "$name: not found (may need to reload shell)"
         fi
     }
 
-    check "node"   node --version
-    check "npm"    npm --version
-    check "python" python3 --version
-    check "git"    git --version
-    check "claude" claude --version
-    check "gemini" gemini --version
-    check "sgpt"   sgpt --version
+    check_optional() {
+        local name="$1"; shift
+        if "$@" &>/dev/null; then
+            success "$name: $("$@" 2>/dev/null | head -1) (optional)"
+        else
+            info "$name: not installed (optional — skip or run with --with-${name})"
+        fi
+    }
 
-    if $all_ok; then
-        echo ""
-        success "All tools verified."
-    else
-        echo ""
-        warn "Some tools could not be verified. Run: source ~/.bashrc (or ~/.zshrc) and re-run this script."
-    fi
+    check_required "node"   node --version
+    check_required "npm"    npm --version
+    check_required "git"    git --version
+    check_required "claude" claude --version
+    check_optional "gemini" gemini --version
+    check_optional "sgpt"   sgpt --version
 }
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
@@ -246,8 +249,15 @@ main() {
     install_system_packages
     install_node
     install_claude
-    install_gemini
-    install_shellgpt
+
+    if $WITH_GEMINI; then
+        install_gemini
+    fi
+
+    if $WITH_SGPT; then
+        install_shellgpt
+    fi
+
     setup_env
     configure_profile
     verify_tools
@@ -256,15 +266,19 @@ main() {
     echo -e "${BOLD}${GREEN}Setup complete!${RESET}"
     echo ""
     echo "Next steps:"
-    echo "  1. Edit .env and add your API keys"
-    echo "  2. Reload your shell:  source ~/.bashrc"
+    echo "  1. Reload your shell:  source ~/.bashrc"
+    echo "  2. Log in to Claude:   claude"
     echo "  3. Launch the AI CLI:  ai-dev"
     echo ""
     echo "Quick reference:"
-    echo "  ai-dev claude \"prompt\"   — Claude Code"
-    echo "  ai-dev gemini \"prompt\"   — Gemini CLI"
-    echo "  ai-dev sgpt   \"prompt\"   — ShellGPT (OpenAI)"
-    echo "  ai-dev --help            — show all options"
+    echo "  ai-dev claude \"prompt\"         — Claude Code"
+    echo "  ai-dev --help                  — show all options"
+    echo ""
+    if ! $WITH_GEMINI && ! $WITH_SGPT; then
+        echo -e "${CYAN}Optional extras (add later if needed):${RESET}"
+        echo "  bash setup.sh --with-gemini    — add Gemini CLI (free tier available)"
+        echo "  bash setup.sh --with-sgpt      — add ShellGPT  (requires OpenAI key)"
+    fi
 }
 
 main "$@"

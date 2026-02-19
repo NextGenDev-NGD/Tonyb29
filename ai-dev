@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # ai-dev — Unified AI CLI Interface
-# Wraps Claude Code, Gemini CLI, and ShellGPT in one command
+# Primary: Claude Code (claude.ai subscription — no API key needed)
+# Optional: Gemini CLI, ShellGPT (install via: bash setup.sh --with-gemini / --with-sgpt)
 # Usage: ai-dev [tool] [options/prompt]
 #        ai-dev          — interactive menu
 #        ai-dev claude   — pass-through to claude
-#        ai-dev gemini   — pass-through to gemini
-#        ai-dev sgpt     — pass-through to sgpt
+#        ai-dev gemini   — pass-through to gemini (if installed)
+#        ai-dev sgpt     — pass-through to sgpt   (if installed)
 #        ai-dev --help   — show help
 
 set -euo pipefail
@@ -42,17 +43,7 @@ tool_status() {
     if command_exists "$cmd"; then
         echo -e "${GREEN}installed${RESET}"
     else
-        echo -e "${RED}not found${RESET}"
-    fi
-}
-
-key_status() {
-    local var="$1"
-    local val="${!var:-}"
-    if [ -n "$val" ] && [ "$val" != "your-${var,,}-here" ] && [[ "$val" != *"your-"* ]]; then
-        echo -e "${GREEN}set${RESET}"
-    else
-        echo -e "${YELLOW}not set${RESET}"
+        echo -e "${DIM}not installed${RESET}"
     fi
 }
 
@@ -66,12 +57,9 @@ print_banner() {
 
 print_status() {
     echo -e "${BOLD}Tool Status:${RESET}"
-    printf "  %-12s %s  (key: %s)\n" \
-        "claude" "$(tool_status claude)" "$(key_status ANTHROPIC_API_KEY)"
-    printf "  %-12s %s  (key: %s)\n" \
-        "gemini" "$(tool_status gemini)" "$(key_status GEMINI_API_KEY)"
-    printf "  %-12s %s  (key: %s)\n" \
-        "sgpt" "$(tool_status sgpt)" "$(key_status OPENAI_API_KEY)"
+    printf "  %-12s %s\n" "claude" "$(tool_status claude)  ${DIM}(primary — uses claude.ai subscription)${RESET}"
+    printf "  %-12s %s\n" "gemini" "$(tool_status gemini)  ${DIM}(optional — bash setup.sh --with-gemini)${RESET}"
+    printf "  %-12s %s\n" "sgpt"   "$(tool_status sgpt)    ${DIM}(optional — bash setup.sh --with-sgpt)${RESET}"
     echo ""
 }
 
@@ -90,16 +78,15 @@ usage() {
     echo ""
     echo -e "${BOLD}EXAMPLES${RESET}"
     echo "  ai-dev claude \"explain async/await in JS\""
-    echo "  ai-dev gemini \"summarize today's news\""
-    echo "  ai-dev sgpt \"write a Python hello world\""
-    echo "  ai-dev ask \"what is a REST API?\"   # sends to all three"
+    echo "  ai-dev ask \"what is a REST API?\"   # sends to all installed tools"
     echo ""
-    echo -e "${BOLD}API KEY SETUP${RESET}"
-    echo "  Edit ${ENV_FILE}"
-    echo "  Get keys at:"
-    echo "    Claude:  console.anthropic.com"
-    echo "    Gemini:  aistudio.google.com/apikey"
-    echo "    OpenAI:  platform.openai.com/api-keys"
+    echo -e "${BOLD}GETTING STARTED${RESET}"
+    echo "  Claude uses your claude.ai subscription — no API key needed."
+    echo "  Just run: claude   (and log in when prompted)"
+    echo ""
+    echo -e "${BOLD}OPTIONAL EXTRAS${RESET}"
+    echo "  bash $SCRIPT_DIR/setup.sh --with-gemini   # free tier available"
+    echo "  bash $SCRIPT_DIR/setup.sh --with-sgpt     # requires OpenAI API key"
     echo ""
     print_status
 }
@@ -110,23 +97,23 @@ interactive_menu() {
     print_status
 
     echo -e "${BOLD}Choose a tool:${RESET}"
-    echo "  1) Claude Code    (Anthropic)"
-    echo "  2) Gemini CLI     (Google)"
-    echo "  3) ShellGPT       (OpenAI)"
-    echo "  4) Ask all tools  (broadcast)"
-    echo "  5) Status"
-    echo "  6) Run setup.sh"
+    echo "  1) Claude Code    (primary)"
+    command_exists gemini && echo "  2) Gemini CLI     (optional)"
+    command_exists sgpt   && echo "  3) ShellGPT       (optional)"
+    echo "  a) Ask all tools  (broadcast to installed)"
+    echo "  s) Status"
+    echo "  u) Run setup.sh"
     echo "  q) Quit"
     echo ""
-    read -r -p "$(echo -e "${CYAN}Select [1-6/q]:${RESET} ")" choice
+    read -r -p "$(echo -e "${CYAN}Select:${RESET} ")" choice
 
     case "$choice" in
         1) interactive_tool "claude" ;;
         2) interactive_tool "gemini" ;;
         3) interactive_tool "sgpt" ;;
-        4) interactive_ask_all ;;
-        5) print_status ;;
-        6) bash "$SCRIPT_DIR/setup.sh" ;;
+        a|A) interactive_ask_all ;;
+        s|S) print_status ;;
+        u|U) bash "$SCRIPT_DIR/setup.sh" ;;
         q|Q) echo "Goodbye."; exit 0 ;;
         *) echo -e "${RED}Invalid choice.${RESET}"; interactive_menu ;;
     esac
@@ -135,7 +122,8 @@ interactive_menu() {
 interactive_tool() {
     local tool="$1"
     if ! command_exists "$tool"; then
-        echo -e "${RED}$tool is not installed. Run: ai-dev setup${RESET}"
+        echo -e "${RED}$tool is not installed.${RESET}"
+        echo "Run: bash $SCRIPT_DIR/setup.sh --with-$tool"
         return 1
     fi
     echo ""
@@ -157,7 +145,8 @@ interactive_ask_all() {
 run_tool() {
     local tool="$1"; shift
     if ! command_exists "$tool"; then
-        echo -e "${RED}[$tool] not installed. Run: ai-dev setup${RESET}" >&2
+        echo -e "${RED}[$tool] not installed.${RESET}" >&2
+        echo "Run: bash $SCRIPT_DIR/setup.sh --with-$tool" >&2
         return 1
     fi
     "$tool" "$@"
@@ -172,7 +161,7 @@ run_all() {
     command_exists sgpt   && tools+=("sgpt")
 
     if [ ${#tools[@]} -eq 0 ]; then
-        echo -e "${RED}No AI tools installed. Run: ai-dev setup${RESET}" >&2
+        echo -e "${RED}No AI tools installed. Run: bash $SCRIPT_DIR/setup.sh${RESET}" >&2
         exit 1
     fi
 
@@ -216,7 +205,7 @@ main() {
             print_status
             ;;
         setup)
-            bash "$SCRIPT_DIR/setup.sh"
+            bash "$SCRIPT_DIR/setup.sh" "$@"
             ;;
         --help|-h|help)
             usage
