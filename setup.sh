@@ -199,7 +199,53 @@ EOF
     info "Run 'claude' to log in with your subscription."
 }
 
-# ─── 7. Shell profile ─────────────────────────────────────────────────────────
+# ─── 7. GitHub repo setup ─────────────────────────────────────────────────────
+setup_github_repo() {
+    header "Configuring GitHub repository"
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+    if ! command_exists gh; then
+        warn "gh not found — skipping GitHub repo setup. Install gh and re-run."
+        return
+    fi
+
+    if ! gh auth status &>/dev/null; then
+        info "Not logged in to GitHub. Starting auth flow..."
+        gh auth login
+    fi
+
+    GH_USER=$(gh api user --jq '.login' 2>/dev/null || echo "")
+    if [ -z "$GH_USER" ]; then
+        warn "Could not determine GitHub username. Skipping repo setup."
+        return
+    fi
+
+    REPO_NAME="$(basename "$SCRIPT_DIR")"
+    REMOTE_URL="https://github.com/$GH_USER/$REPO_NAME.git"
+
+    # Create repo on GitHub if it doesn't exist
+    if ! gh repo view "$GH_USER/$REPO_NAME" &>/dev/null; then
+        info "Creating GitHub repo: $GH_USER/$REPO_NAME"
+        gh repo create "$GH_USER/$REPO_NAME" --public --description "AI Dev environment setup" --source="$SCRIPT_DIR" --remote=github --push
+        success "Repo created and pushed: https://github.com/$GH_USER/$REPO_NAME"
+        return
+    fi
+
+    success "GitHub repo already exists: https://github.com/$GH_USER/$REPO_NAME"
+
+    # Ensure remote is set
+    if ! git -C "$SCRIPT_DIR" remote get-url github &>/dev/null; then
+        git -C "$SCRIPT_DIR" remote add github "$REMOTE_URL"
+        info "Added remote 'github' -> $REMOTE_URL"
+    fi
+
+    # Push current branch
+    CURRENT_BRANCH=$(git -C "$SCRIPT_DIR" branch --show-current)
+    git -C "$SCRIPT_DIR" push github "$CURRENT_BRANCH":main
+    success "Pushed to github/main."
+}
+
+# ─── 8. Shell profile ─────────────────────────────────────────────────────────
 configure_profile() {
     header "Configuring shell profile"
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -296,6 +342,7 @@ main() {
 
     setup_env
     configure_profile
+    setup_github_repo
     verify_tools
 
     echo ""
@@ -303,9 +350,14 @@ main() {
     echo ""
     echo "Next steps:"
     echo "  1. Reload your shell:  source ~/.bashrc"
-    echo "  2. Log in to GitHub:   gh auth login"
-    echo "  3. Log in to Claude:   claude"
-    echo "  4. Launch the AI CLI:  ai-dev"
+    echo "  2. Log in to Claude:   claude"
+    echo "  3. Launch the AI CLI:  ai-dev"
+    echo ""
+    echo "GitHub workflow:"
+    echo "  git add .              — stage changes"
+    echo "  git commit -m \"msg\"    — commit"
+    echo "  git push github main   — push to GitHub"
+    echo "  git pull github main   — pull from GitHub"
     echo ""
     echo "Quick reference:"
     echo "  ai-dev claude \"prompt\"         — Claude Code"
