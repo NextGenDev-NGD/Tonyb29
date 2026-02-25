@@ -1,0 +1,181 @@
+{
+  "name": "Strahd von Zarovich",
+  "type": "npc",
+  "img": "icons/creatures/vampires/vampire-lord-red.webp",
+  "system": {
+    "details": {
+      "type": { "value": "undead" },
+      "alignment": "lawful evil",
+      "cr": 23,
+      "source": "Curse of Strahd (Updated 2024)"
+    },
+    "attributes": {
+      "ac": { "value": 18, "calc": "natural" },
+      "hp": { "value": 325, "max": 325, "formula": "25d12+150" },
+      "movement": {
+        "walk": 30,
+        "climb": 30,
+        "fly": 40,
+        "units": "ft"
+      },
+      "senses": {
+        "darkvision": 120,
+        "passive": 20
+      },
+      "prof": 7,
+      "spellcasting": null
+    },
+    "abilities": {
+      "str": { "value": 22 },
+      "dex": { "value": 20 },
+      "con": { "value": 22 },
+      "int": { "value": 20 },
+      "wis": { "value": 17 },
+      "cha": { "value": 22 }
+    },
+    "skills": {
+      "arc": { "value": 1 }, 
+      "ins": { "value": 1 },
+      "prc": { "value": 1 },
+      "ste": { "value": 1 }
+    },
+    "saves": {
+      "dex": { "proficient": 1 },
+      "wis": { "proficient": 1 },
+      "cha": { "proficient": 1 }
+    },
+    "traits": {
+      "di": ["poison", "psychic"],
+      "dr": ["necrotic", "bludgeoning", "piercing", "slashing"],
+      "ci": ["charmed", "exhaustion", "frightened", "poisoned"],
+      "languages": { "value": ["Common", "Elvish", "Infernal"] }
+    }
+  },
+  "items": [
+    {
+      "name": "Shapechanger",
+      "type": "feat",
+      "system": {
+        "description": {
+          "value": "<p>Strahd can use his action to polymorph into a Tiny bat, a Medium wolf, a cloud of mist, or back into his true form.</p>"
+        }
+      }
+    },
+    {
+      "name": "Legendary Resistance (3/Day)",
+      "type": "feat",
+      "system": {
+        "description": {
+          "value": "<p>If Strahd fails a saving throw, he can choose to succeed instead.</p>"
+        }
+      }
+    },
+    {
+      "name": "Regeneration",
+      "type": "feat",
+      "system": {
+        "description": {
+          "value": "<p>Strahd regains 30 hit points at the start of his turn unless in sunlight or running water.</p>"
+        }
+      }
+    },
+    {
+      "name": "Mist Escape",
+      "type": "feat",
+      "system": {
+        "description": {
+          "value": "<p>When reduced to 0 hit points outside his coffin, Strahd becomes mist instead of dying.</p>"
+        }
+      }
+    },
+    {
+      "name": "Sunlight Hypersensitivity",
+      "type": "feat",
+      "system": {
+        "description": {
+          "value": "<p>In sunlight, Strahd has disadvantage on attack rolls, ability checks, and saving throws, and takes 20 radiant damage each turn.</p>"
+        }
+      }
+    },
+    {
+      "name": "Multiattack",
+      "type": "weapon",
+      "system": {
+        "description": {
+          "value": "<p>Strahd makes three attacks: two unarmed strikes and one bite.</p>"
+        }
+      }
+    },
+    {
+      "name": "Unarmed Strike",
+      "type": "weapon",
+      "system": {
+        "attackBonus": 12,
+        "damage": {
+          "parts": [
+            ["1d10+6", "bludgeoning"],
+            ["4d8", "necrotic"]
+          ]
+        },
+        "description": {
+          "value": "<p>+12 to hit, reach 5 ft.</p>"
+        }
+      }
+    },
+    {
+      "name": "Bite",
+      "type": "weapon",
+      "system": {
+        "attackBonus": 12,
+        "damage": {
+          "parts": [
+            ["1d6+6", "piercing"],
+            ["4d8", "necrotic"]
+          ]
+        },
+        "description": {
+          "value": "<p>Target's hit point maximum is reduced by necrotic damage taken.</p>"
+        }
+      }
+    },
+    {
+      "name": "Charm",
+      "type": "feat",
+      "system": {
+        "description": {
+          "value": "<p>DC 20 Wisdom save or be charmed for 24 hours.</p>"
+        }
+      }
+    },
+    {
+      "name": "Fire-and-Necrotic Nova",
+      "type": "feat",
+      "system": {
+        "description": {
+          "value": "<p>Recharge 5–6. Creatures within 20 ft. make a DC 20 Dexterity save or take 45 (8d10) fire + necrotic damage.</p>"
+        }
+      }
+    },
+    {
+      "name": "Children of the Night",
+      "type": "feat",
+      "system": {
+        "description": {
+          "value": "<p>Strahd summons bat swarms, rat swarms, or wolves (1/day).</p>"
+        }
+      }
+    }
+  ],
+  "effects": [],
+  "flags": {},
+  "prototypeToken": {
+    "name": "Strahd von Zarovich",
+    "displayName": 20,
+    "width": 1,
+    "height": 1,
+    "disposition": -1,
+    "bar1": { "attribute": "attributes.hp" },
+    "vision": true,
+    "actorLink": false
+  }
+}
