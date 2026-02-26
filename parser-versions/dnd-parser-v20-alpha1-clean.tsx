@@ -1,8 +1,8 @@
 // dnd-parser-v20-alpha1-clean.tsx
 // D&D 5e Stat Block → Foundry VTT JSON Converter
 // Parsing order: name → size → type → alignment → AC → HP → speed →
-//   abilities → CR → saving throws → skills → senses → languages →
-//   initiative → actions → build Foundry actor JSON
+//   abilities → CR → saving throws → skills → damage immunities/resistances/vulnerabilities →
+//   condition immunities → senses → languages → initiative → actions → build Foundry actor JSON
 // DO NOT restructure the parseStatBlock sections without regression testing.
 
 import React, { useState } from 'react';
@@ -15,6 +15,11 @@ const profBonusFromCR = (cr) => {
   const n = crToFloat(cr);
   return n < 5 ? 2 : n < 9 ? 3 : n < 13 ? 4 : n < 17 ? 5 : n < 21 ? 6 : n < 25 ? 7 : n < 29 ? 8 : 9;
 };
+
+const DAMAGE_TYPES    = ['acid','bludgeoning','cold','fire','force','lightning','necrotic','piercing','poison','psychic','radiant','slashing','thunder'];
+const CONDITION_TYPES = ['blinded','charmed','deafened','exhaustion','frightened','grappled','incapacitated','invisible','paralyzed','petrified','poisoned','prone','restrained','stunned','unconscious'];
+const extractDamageTypes    = (t) => DAMAGE_TYPES.filter(d    => new RegExp(`\\b${d}\\b`,    'i').test(t));
+const extractConditionTypes = (t) => CONDITION_TYPES.filter(c => new RegExp(`\\b${c}\\b`, 'i').test(t));
 
 // ─── Action Parser ─────────────────────────────────────────────────────────────
 const parseActions = (text) => {
@@ -158,6 +163,34 @@ export default function StatBlockParser() {
       const initBonus = initM?.[1] || '';
       track('initiative', initBonus || 'auto', !!initM);
 
+      // Damage Resistances — handles "Damage Resistances" (2014) and "Resistances" (2024)
+      const drM    = text.match(/(?:Damage\s+)?Resistances?[:\s]+(.+?)(?=\n\s*(?:(?:Damage|Condition)\s+)?Immunities?|\n\s*Senses|\n\s*Languages|\n\s*Challenge|\n\s*CR|$)/is);
+      const drText = drM?.[1]?.trim() || '';
+      track('damage resistances', drText || 'none', !!drM);
+
+      // Damage Vulnerabilities — handles "Damage Vulnerabilities" (2014) and "Vulnerabilities" (2024)
+      const dvM    = text.match(/(?:Damage\s+)?Vulnerabilities?[:\s]+(.+?)(?=\n\s*(?:(?:Damage|Condition)\s+)?(?:Resistances?|Immunities?)|\n\s*Senses|\n\s*Languages|\n\s*Challenge|\n\s*CR|$)/is);
+      const dvText = dvM?.[1]?.trim() || '';
+      track('damage vulnerabilities', dvText || 'none', !!dvM);
+
+      // Immunities — handles:
+      //   2014: separate "Damage Immunities" and "Condition Immunities" lines
+      //   2024: combined "Immunities <damage>; <conditions>" on one line
+      const diOldM = text.match(/Damage\s+Immunities?[:\s]+(.+?)(?=\n\s*Condition|\n\s*Senses|\n\s*Languages|\n\s*Challenge|\n\s*CR|$)/is);
+      const ciOldM = text.match(/Condition\s+Immunities?[:\s]+(.+?)(?=\n\s*Senses|\n\s*Languages|\n\s*Challenge|\n\s*CR|$)/is);
+      let diText = diOldM?.[1]?.trim() || '';
+      let ciText = ciOldM?.[1]?.trim() || '';
+      if (!diOldM && !ciOldM) {
+        const immNewM = text.match(/\bImmunities?[:\s]+(.+?)(?=\n\s*Senses|\n\s*Languages|\n\s*Challenge|\n\s*CR|$)/is);
+        if (immNewM) {
+          const parts = immNewM[1].split(';');
+          diText = parts[0]?.trim() || '';
+          ciText = parts[1]?.trim() || '';
+        }
+      }
+      track('damage immunities',    diText || 'none', !!(diOldM || diText));
+      track('condition immunities', ciText || 'none', !!(ciOldM || ciText));
+
       // Actions
       const actions = parseActions(text);
       track('actions', `${actions.length} action(s)`, actions.length > 0);
@@ -182,7 +215,10 @@ export default function StatBlockParser() {
           traits: {
             size: sizeCode,
             languages: { value: languages ? languages.split(',').map(l => l.trim().toLowerCase().replace(/\s+/g, '')) : [], custom: '' },
-            di: { value: [], custom: '' }, dr: { value: [], custom: '' }, dv: { value: [], custom: '' }, ci: { value: [], custom: '' }
+            di: { value: extractDamageTypes(diText),    bypasses: [], custom: '' },
+            dr: { value: extractDamageTypes(drText),    bypasses: [], custom: '' },
+            dv: { value: extractDamageTypes(dvText),    bypasses: [], custom: '' },
+            ci: { value: extractConditionTypes(ciText), custom: '' }
           },
           skills
         },
