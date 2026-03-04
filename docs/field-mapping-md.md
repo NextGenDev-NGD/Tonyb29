@@ -556,6 +556,117 @@ Otherwise: value = 0
 
 ---
 
+## Actions / Items (dnd5e v4.0+ Activities System)
+
+**Context:** Foundry dnd5e v4.0+ replaced the old `system.actionType / attack / damage.parts` item structure with an **Activities map**. Every parsed action becomes a Foundry `Item` with a `system.activities` object.
+
+### Item Type Assignment
+
+| Action characteristic | Item `type` | Activity `type` |
+|---|---|---|
+| Contains "Melee/Ranged Attack Roll:" or "Weapon Attack:" | `"weapon"` | `"attack"` |
+| Contains a DC saving throw | `"feat"` | `"save"` |
+| Multiattack or no attack/save | `"feat"` | `"utility"` |
+
+### Weapon Attack Item (Foundry Location)
+
+```json
+{
+  "_id": "airelemental...",
+  "name": "Slam",
+  "type": "weapon",
+  "system": {
+    "description": { "value": "Melee Attack Roll: +8, reach 5 ft. Hit: 14 (2d8 + 5) bludgeoning damage." },
+    "activation": { "type": "action", "cost": 1, "condition": "" },
+    "uses": { "value": null, "max": null, "per": null, "recovery": [] },
+    "damage": {
+      "base": { "number": 2, "denomination": 8, "bonus": "+5", "types": ["bludgeoning"],
+                "custom": { "enabled": false, "formula": "" }, "scaling": { "mode": "", "number": null, "formula": "" } }
+    },
+    "activities": {
+      "airelemental...act": {
+        "_id": "airelemental...act",
+        "type": "attack",
+        "name": "",
+        "activation": { "type": "action", "cost": 1, "condition": "" },
+        "attack": { "ability": "str", "bonus": "", "flat": false, "type": { "value": "mwak", "classification": "weapon" } },
+        "damage": { "includeBase": true, "parts": [] },
+        "range": { "value": 5, "long": null, "units": "ft" },
+        "target": { "template": { "count": "", "contiguous": false, "type": "", "size": "", "width": "", "height": "", "angle": "", "range": "" },
+                    "affects": { "count": "1", "type": "creature", "choice": false, "special": "" }, "prompt": true },
+        "uses": { "spent": 0, "recovery": [] }
+      }
+    }
+  }
+}
+```
+
+**Attack ability inference:** `strMod + profBonus` vs `dexMod + profBonus` — whichever is closer to the listed attack bonus wins. Delta stored in `attack.bonus` (empty string if 0).
+
+**Attack type values:** `mwak` = Melee Weapon Attack, `rwak` = Ranged Weapon Attack, `mwak` = Melee or Ranged (defaults to melee).
+
+### Save-Based Item (Foundry Location)
+
+```json
+{
+  "_id": "airelemental...",
+  "name": "Whirlwind",
+  "type": "feat",
+  "system": {
+    "description": { "value": "Each creature in the elemental's space must make a DC 13 Strength saving throw..." },
+    "activation": { "type": "action", "cost": 1, "condition": "" },
+    "uses": { "value": 4, "max": "6", "per": null, "recovery": [{ "period": "recharge", "formula": "4", "type": "recoverAll" }] },
+    "activities": {
+      "airelementalwhirlwindact": {
+        "_id": "airelementalwhirlwindact",
+        "type": "save",
+        "name": "",
+        "activation": { "type": "action", "cost": 1, "condition": "" },
+        "save": { "ability": ["str"], "dc": { "calculation": "", "formula": "13" } },
+        "damage": { "onSave": "half", "parts": [] },
+        "uses": { "spent": 0, "recovery": [] }
+      }
+    }
+  }
+}
+```
+
+### DamageField Structure
+
+Replaces old raw formula strings. Used in `system.damage.base` and `activity.damage.parts[]`:
+
+```typescript
+interface DamageField {
+  number: number;          // Dice count (e.g. 2 for "2d8+5")
+  denomination: number;    // Dice type (e.g. 8)
+  bonus: string;           // Modifier (e.g. "+5", "" if none)
+  types: string[];         // Damage types (e.g. ["bludgeoning"])
+  custom: { enabled: boolean; formula: string; };  // enabled=true for unparsed formulas
+  scaling: { mode: string; number: number|null; formula: string; };
+}
+```
+
+### Senses (Updated — Numeric Extraction)
+
+Previously: `senses.special` contained the full sense string (e.g. "Darkvision 60 ft.").
+
+Now: Each sense type is extracted as a number:
+
+```json
+"senses": {
+  "darkvision": 60,
+  "blindsight": 0,
+  "tremorsense": 0,
+  "truesight": 0,
+  "units": "ft",
+  "special": ""
+}
+```
+
+Passive Perception is stripped from `special`. Unknown sense text remains in `special`.
+
+---
+
 ## Default Values
 
 When fields are not found, these defaults are used:

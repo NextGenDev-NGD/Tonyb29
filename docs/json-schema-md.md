@@ -817,12 +817,111 @@ interface Stats {
 
 ---
 
+## Activities System (dnd5e v4.0+)
+
+**Version note:** dnd5e v4.0 (March 2024) introduced the Activities system. Old item fields `system.actionType`, `system.attack`, and `system.damage.parts` are removed. Current tested version: dnd5e **v5.2.5**.
+
+### Item Interface (v4.0+)
+
+```typescript
+interface Item {
+  _id: string;             // 16-char deterministic ID (actorName+itemName, lowercased, stripped)
+  name: string;
+  type: "weapon" | "feat"; // weapon = attack-based, feat = save/utility
+  system: ItemSystem;
+}
+
+interface ItemSystem {
+  description: { value: string };
+  activation: { type: "action" | "bonus" | "reaction" | ""; cost: number; condition: string };
+  uses: ItemUses;
+  damage?: { base: DamageField };  // weapon attacks only
+  activities: Record<string, Activity>;
+}
+
+interface ItemUses {
+  value: number | null;
+  max: string | null;
+  per: string | null;
+  recovery: Array<{ period: string; formula: string; type: string }>;
+}
+
+// DamageField replaces old raw formula strings
+interface DamageField {
+  number: number;
+  denomination: number;
+  bonus: string;
+  types: string[];
+  custom: { enabled: boolean; formula: string };
+  scaling: { mode: string; number: number | null; formula: string };
+}
+```
+
+### Activity Interfaces
+
+```typescript
+type Activity = AttackActivity | SaveActivity | UtilityActivity;
+
+interface AttackActivity {
+  _id: string;
+  type: "attack";
+  name: string;
+  activation: { type: string; cost: number; condition: string };
+  attack: {
+    ability: "str" | "dex" | "";      // Inferred from stat block attack bonus
+    bonus: string;                      // Extra bonus beyond ability+prof (usually "")
+    flat: boolean;
+    type: { value: "mwak" | "rwak"; classification: "weapon" };
+  };
+  damage: { includeBase: boolean; parts: DamageField[] };  // parts = secondary damage
+  range: { value: number | null; long: number | null; units: string };
+  target: { template: TemplateData; affects: AffectsData; prompt: boolean };
+  uses: { spent: number; recovery: any[] };
+}
+
+interface SaveActivity {
+  _id: string;
+  type: "save";
+  name: string;
+  activation: { type: string; cost: number; condition: string };
+  save: {
+    ability: string[];                 // e.g. ["str"]
+    dc: { calculation: string; formula: string };  // formula = DC as string
+  };
+  damage: { onSave: "half" | "none"; parts: DamageField[] };
+  uses: { spent: number; recovery: any[] };
+}
+
+interface UtilityActivity {
+  _id: string;
+  type: "utility";
+  name: string;
+  activation: { type: string; cost: number; condition: string };
+  uses: { spent: number; recovery: any[] };
+}
+```
+
+### Recharge Uses
+
+```json
+"uses": {
+  "value": 4,
+  "max": "6",
+  "per": null,
+  "recovery": [{ "period": "recharge", "formula": "4", "type": "recoverAll" }]
+}
+```
+
+---
+
 ## Version Compatibility
 
 This schema is for:
-- **Foundry VTT:** v11+ (tested on v13.348)
-- **D&D5e System:** v3.3+ (tested on v5.1.8)
-- **Rules Edition:** 2014 (5th Edition)
+- **Foundry VTT:** v13+ (tested on v13.348)
+- **D&D5e System:** v4.0+ — **current: v5.2.5** (Activities system)
+- **Rules Edition:** 2014 and 2024 dual-format support
+
+**Breaking change in dnd5e v4.0:** `system.actionType`, `system.attack`, `system.damage.parts` on items were removed. Use `system.activities` instead.
 
 **Note:** Schema may change in future Foundry/system versions.
 

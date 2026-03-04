@@ -10,6 +10,7 @@
 |---|---|---|
 | 1.0 | Feb 18, 2026 | Initial gap analysis and obstacle planning |
 | 1.1 | Feb 19, 2026 | Added Obstacles #8 and #9 from Don-Jon Raskin stat block testing. Added Sidekick Format Decision section. Updated Sprint 4 scope. Added format detection to structural additions. |
+| 1.2 | Mar 3, 2026 | Marked all "Before Sprint 2" structural additions complete. Marked Obstacles #6, #8, #9 resolved. Added Activities System Discovery section. Revised Sprint 1/2 checklist to reflect Foundry dnd5e v4.0+ Activities schema. |
 
 ---
 
@@ -354,26 +355,48 @@ The shared section header constant recommended in Obstacle #6 should be implemen
 
 ---
 
+## Activities System Discovery (March 2026)
+
+**Finding:** Foundry VTT dnd5e v4.0+ (current: v5.2.5) completely replaced the old `system.actionType`, `system.attack`, and `system.damage.parts` item fields with a new **Activities system**. The old structure is functionally dead for any Foundry instance running dnd5e v4.0 or later.
+
+**New structure:** Each item has a `system.activities` map. Activity types relevant to NPC parsing:
+
+| Activity type | Use case | Item type |
+|---|---|---|
+| `attack` | Melee/ranged weapon attacks | `weapon` |
+| `save` | Saving throw abilities (breath weapon, etc.) | `feat` |
+| `utility` | Multiattack, passive triggered abilities | `feat` |
+
+**DamageField format** (replaces raw formula strings):
+```json
+{ "number": 2, "denomination": 8, "bonus": "+5", "types": ["slashing"],
+  "custom": { "enabled": false, "formula": "" }, "scaling": { "mode": "", "number": null, "formula": "" } }
+```
+
+**Implementation status:** Block 3 complete. `parseDiceFormula()` and `parseSaveInfo()` helpers added. `parseActions()` captures recharge qualifier. All items now emit Activities-based structure with correct `weapon`/`feat` type, `attack`/`save`/`utility` activity, DamageField damage, and recharge uses.
+
+---
+
 ## Summary Checklist
 
 ### Add Before Sprint 2 (No Parsing Required)
-- [ ] Add `system.resources` stub to actor output
-- [ ] Add `system.details.xp.value` computed from CR table
-- [ ] Add `_id` field to all items in the `items` array
-- [ ] Add `detectFormat()` stub with sidekick warning in UI
+- [x] Add `system.resources` stub to actor output
+- [x] Add `system.details.xp.value` computed from CR table
+- [x] Add `_id` field to all items in the `items` array
+- [x] Add `detectFormat()` stub with sidekick warning in UI
 
 ### Fix During Sprint 1 Completion
-- [ ] Add `system.actionType` inference (`mwak` / `rwak` / `other`)
-- [ ] Add `system.target` extraction
-- [ ] Fix "Melee or Ranged" dual-type handling
-- [ ] Fix ability score parser to handle comma-separated format (Obstacle #8)
-- [ ] Fix skills regex bleed from inline section headers (Obstacle #9)
-- [ ] Implement shared section header stop constant across all field regexes (Obstacle #6)
+- [x] ~~Add `system.actionType` inference~~ — **Replaced by Activities system** (attack/save/utility activity type)
+- [x] Fix "Melee or Ranged" dual-type handling — defaults to `mwak`
+- [x] Fix ability score parser to handle comma-separated format (Obstacle #8)
+- [x] Fix skills regex bleed from inline section headers (Obstacle #9)
+- [x] Implement shared section header stop constant across all field regexes (Obstacle #6)
+- [ ] Add `system.target` extraction (still pending)
 
 ### Address Before Sprint 2 Ends
-- [ ] Wire `damage.additional` → `damage.parts[1]`
-- [ ] Distinguish `weapon` vs. `feat` item type by action classification
-- [ ] Add Multiattack as `feat` type with `actionType: "other"`
+- [x] Wire `damage.additional` → activity `damage.parts[1]` (DamageField)
+- [x] Distinguish `weapon` vs. `feat` item type by action classification
+- [x] Multiattack / utility actions emit `feat` type with `utility` activity
 - [ ] Harden action name regex against flavor text false-positives (Obstacle #3)
 - [ ] Fix speed regex to use independent per-type matches (Obstacle #7)
 

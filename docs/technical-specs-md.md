@@ -292,6 +292,91 @@ Copy: navigator.clipboard.writeText()
 User feedback (copied message/file download)
 ```
 
+## Activities System (dnd5e v4.0+)
+
+### Background
+
+Foundry dnd5e v4.0 (current: v5.2.5) replaced `system.actionType / attack / damage.parts` on items with a new `system.activities` map. The parser was updated in v2.0-alpha.1 (Block 3) to emit this structure for all actions.
+
+### Helper Functions
+
+#### `parseDiceFormula(s: string): DamageField | null`
+Converts a dice formula string to a Foundry DamageField object.
+
+```
+"2d8+5" → { number:2, denomination:8, bonus:"+5", types:[], custom:{enabled:false, formula:""}, scaling:{...} }
+"3d6"   → { number:3, denomination:6, bonus:"",   types:[], ... }
+"5"     → { number:0, denomination:0, bonus:"",   types:[], custom:{enabled:true, formula:"5"}, ... }
+```
+
+`types[]` is populated by the caller (set to `[a.damage.type]` from action parsing).
+
+#### `parseSaveInfo(desc: string): { ability: string, dc: string } | null`
+Extracts saving throw info from action description text. Handles both D&D editions:
+
+- 2024 format: `"Strength Saving Throw: DC 13"` → `{ ability: "str", dc: "13" }`
+- 2014 format: `"DC 13 Strength saving throw"` → `{ ability: "str", dc: "13" }`
+
+Returns `null` if no saving throw detected.
+
+#### `SAVE_ABBR` map
+Maps full ability names and 3-letter codes to canonical 3-letter codes:
+```
+{ strength: 'str', dexterity: 'dex', constitution: 'con',
+  intelligence: 'int', wisdom: 'wis', charisma: 'cha',
+  str: 'str', dex: 'dex', ... }
+```
+
+### Action Classification Logic
+
+```
+parseActions() produces: { name, qualifier, description, attack, damage }
+                                    ↓
+items.map() classifies each action:
+
+isAttack  = !!a.attack                              → type:"weapon", activity:"attack"
+saveInfo  = parseSaveInfo(a.description) !== null   → type:"feat",   activity:"save"
+otherwise                                           → type:"feat",   activity:"utility"
+```
+
+### Attack Ability Inference
+
+For weapon attacks, the parser infers whether STR or DEX was used:
+
+```
+strTotal = mod(abilities.str) + profBonus
+dexTotal = mod(abilities.dex) + profBonus
+b        = a.attack.bonus (listed attack bonus)
+
+if |b - strTotal| ≤ |b - dexTotal| → ability = "str", bonus = b - strTotal
+else                                → ability = "dex", bonus = b - dexTotal
+
+bonus stored as "" if 0, else e.g. "+2"
+```
+
+### Recharge Parsing
+
+Qualifier text (e.g. `"Recharge 4–6"`) captured in `parseActions()` group 2:
+
+```
+a.qualifier = "Recharge 4–6"
+rchM = a.qualifier.match(/Recharge\s+(\d+)(?:[–\-]\d+)?/i)
+→ itemUses = { value:4, max:"6", per:null, recovery:[{period:"recharge", formula:"4", type:"recoverAll"}] }
+```
+
+### Deprecated Item Fields (dnd5e v4.0+)
+
+These fields are **no longer emitted** and should not be used:
+
+| Old field | Replacement |
+|---|---|
+| `system.actionType` | Activity `type` field (`"attack"`, `"save"`, `"utility"`) |
+| `system.attack.bonus` | `activity.attack.bonus` |
+| `system.damage.parts[]` | `system.damage.base` (DamageField) + `activity.damage.parts[]` |
+| `system.range` | `activity.range` |
+
+---
+
 ## Error Handling
 
 ### Try-Catch Blocks

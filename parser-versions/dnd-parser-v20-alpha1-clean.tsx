@@ -21,6 +21,50 @@ const CONDITION_TYPES = ['blinded','charmed','deafened','exhaustion','frightened
 const extractDamageTypes    = (t) => DAMAGE_TYPES.filter(d    => new RegExp(`\\b${d}\\b`,    'i').test(t));
 const extractConditionTypes = (t) => CONDITION_TYPES.filter(c => new RegExp(`\\b${c}\\b`, 'i').test(t));
 
+// ─── Format Detection ──────────────────────────────────────────────────────────
+// Returns 'standard' | 'sidekick'. Sidekick support is Sprint 4 — this stub
+// catches them early so the UI can warn rather than silently produce wrong output.
+const detectFormat = (text) => {
+  if (/\b(\d+(?:st|nd|rd|th)-level|Level:\s*NPC|Warrior|Expert|Spellcaster)\b/i.test(text)
+    && !/Challenge|\bCR\b/i.test(text)) return 'sidekick';
+  return 'standard';
+};
+
+// ─── CR → XP Table ─────────────────────────────────────────────────────────────
+const CR_XP = {
+  '0':0,'1/8':25,'1/4':50,'1/2':100,
+  '1':200,'2':450,'3':700,'4':1100,'5':1800,'6':2300,'7':2900,'8':3900,
+  '9':5000,'10':5900,'11':7200,'12':8400,'13':10000,'14':11500,'15':13000,
+  '16':15000,'17':18000,'18':20000,'19':22000,'20':25000,
+  '21':33000,'22':41000,'23':50000,'24':62000,'25':75000,
+  '26':90000,'27':105000,'28':120000,'29':135000,'30':155000
+};
+const crToXP = (cr) => CR_XP[cr] ?? CR_XP[String(Math.round(crToFloat(cr)))] ?? 0;
+
+// ─── Shared Section Stop ───────────────────────────────────────────────────────
+// Every field regex uses this lookahead to prevent bleed when a section header
+// is absent (Obstacle #6) or appears on the same line (Obstacle #9).
+const SECSTOP = '(?=\\n\\s*(?:Saving\\s+Throws?|Skills|(?:Damage\\s+)?Vulnerabilit|(?:Damage\\s+)?Resistanc|(?:Damage\\s+)?Immunit|Condition\\s+Immunit|Senses|Languages|Initiative|Challenge|\\bCR\\b|Traits?|Actions?|Reactions?|Legendary\\s+Actions?|Bonus\\s+Actions?|Lair\\s+Actions?)|$)';
+
+// ─── Dice Formula → DamageField (Foundry dnd5e v4.0+ Activities) ───────────────
+// "2d8+5" → { number, denomination, bonus, types[], custom, scaling }
+const parseDiceFormula = (s) => {
+  if (!s) return null;
+  const m = String(s).trim().match(/^(\d+)\s*d\s*(\d+)\s*([+-]\s*\d+)?$/i);
+  if (m) return { number:+m[1], denomination:+m[2], bonus:m[3]?m[3].replace(/\s/g,''):'', types:[], custom:{enabled:false,formula:''}, scaling:{mode:'',number:null,formula:''} };
+  return { number:0, denomination:0, bonus:'', types:[], custom:{enabled:true,formula:String(s).trim()}, scaling:{mode:'',number:null,formula:''} };
+};
+
+// ─── Save DC / Ability Extractor ────────────────────────────────────────────────
+const SAVE_ABBR = {strength:'str',dexterity:'dex',constitution:'con',intelligence:'int',wisdom:'wis',charisma:'cha',str:'str',dex:'dex',con:'con',int:'int',wis:'wis',cha:'cha'};
+const parseSaveInfo = (desc) => {
+  let m = desc.match(/(\w+)\s+Saving\s+Throw:\s*DC\s*(\d+)/i);           // 2024: "Strength Saving Throw: DC 13"
+  if (m) return { ability: SAVE_ABBR[m[1].toLowerCase()]||'str', dc: m[2] };
+  m = desc.match(/DC\s+(\d+)[^.]{0,60}?(\w+)\s+saving\s+throw/i);        // 2014: "DC 13 Strength saving throw"
+  if (m) return { ability: SAVE_ABBR[m[2].toLowerCase()]||'str', dc: m[1] };
+  return null;
+};
+
 // ─── Action Parser ─────────────────────────────────────────────────────────────
 const parseActions = (text) => {
   const section = text.match(/Actions\s+([\s\S]+?)(?=Reactions|Legendary Actions|Bonus Actions|$)/i)?.[1];
@@ -28,8 +72,8 @@ const parseActions = (text) => {
   const actions = [];
   let cur = null;
   for (const line of section.split('\n').map(l => l.trim()).filter(Boolean)) {
-    const m = line.match(/^([A-Z][A-Za-z\s]+?)\.\s+(.*)$/);
-    if (m) { if (cur) actions.push(cur); cur = { name: m[1].trim(), description: m[2].trim(), attack: null, damage: null }; }
+    const m = line.match(/^([A-Z][A-Za-z\s\-']+?)(?:\s*\(([^)]*)\))?\.\s+(.*)$/);
+    if (m) { if (cur) actions.push(cur); cur = { name: m[1].trim(), qualifier: m[2]?.trim()||'', description: m[3].trim(), attack: null, damage: null }; }
     else if (cur) cur.description += ' ' + line;
   }
   if (cur) actions.push(cur);
@@ -67,6 +111,10 @@ export default function StatBlockParser() {
     const track = (name, value, ok) => { stats.total++; if (ok) { stats.parsed++; stats.exact++; } stats.fields.push({ name, value: String(value), method: ok ? 'exact' : 'default' }); };
     try {
       if (!text.trim()) throw new Error('No content to parse');
+
+      // Format detection
+      const format = detectFormat(text);
+      if (format === 'sidekick') warns.push('Sidekick format detected — full support coming in v2.0');
 
       // Name
       const name = text.split('\n').map(l => l.trim()).find(Boolean) || 'Unknown';
@@ -107,7 +155,7 @@ export default function StatBlockParser() {
 
       // Abilities
       let abilities = { str:10, dex:10, con:10, int:10, wis:10, cha:10 };
-      let abM = text.match(/STR\s+(\d+)\s+DEX\s+(\d+)\s+CON\s+(\d+)\s+INT\s+(\d+)\s+WIS\s+(\d+)\s+CHA\s+(\d+)/i)
+      let abM = text.match(/STR\s+(\d+),?\s+DEX\s+(\d+),?\s+CON\s+(\d+),?\s+INT\s+(\d+),?\s+WIS\s+(\d+),?\s+CHA\s+(\d+)/i)
              || text.match(/STR\s+(\d+)\s*\([+-]\d+\)\s+DEX\s+(\d+)\s*\([+-]\d+\)\s+CON\s+(\d+)\s*\([+-]\d+\)\s+INT\s+(\d+)\s*\([+-]\d+\)\s+WIS\s+(\d+)\s*\([+-]\d+\)\s+CHA\s+(\d+)/i);
       if (abM) { abilities = { str:+abM[1], dex:+abM[2], con:+abM[3], int:+abM[4], wis:+abM[5], cha:+abM[6] }; }
       else {
@@ -125,7 +173,7 @@ export default function StatBlockParser() {
       const profBonus = profBonusFromCR(cr);
 
       // Saving Throws
-      let savesText = text.match(/(?:Saving Throws|Save)[:\s]+(.+?)(?=\n\s*Skills|\n\s*Damage|\n\s*Senses|\n\s*Languages|\n\s*Challenge|\n\s*CR|$)/is)?.[1]?.trim() || '';
+      let savesText = text.match(new RegExp('(?:Saving Throws|Save)[:\\s]+(.+?)' + SECSTOP, 'is'))?.[1]?.trim() || '';
       if (!savesText) {
         const fs = ['Str','Dex','Con','Int','Wis','Cha'].map(ab => {
           const m1 = text.match(new RegExp(`${ab}\\s+\\d+\\s+[+-]?\\d+\\s+([+-]\\d+)`, 'i'));
@@ -139,7 +187,7 @@ export default function StatBlockParser() {
       savesText.split(',').forEach(e => { const m = e.trim().match(/^(str|dex|con|int|wis|cha)\s*([+-]\d+)/i); if (m && +m[2] > mod(abilities[m[1].toLowerCase()])) saves[m[1].toLowerCase()] = 1; });
 
       // Skills
-      const skillM  = text.match(/Skills[:\s]+(.+?)(?=\n\s*Damage|\n\s*Senses|\n\s*Languages|\n\s*Challenge|\n\s*CR|\n\s*Condition|$)/is);
+      const skillM  = text.match(new RegExp('Skills[:\\s]+(.+?)' + SECSTOP, 'is'));
       const skillTxt = skillM?.[1]?.trim() || '';
       track('skills', skillTxt || 'none', !!skillM);
       const SKILL_MAP = { 'acrobatics':'acr','animal handling':'ani','arcana':'arc','athletics':'ath','deception':'dec','history':'his','insight':'ins','intimidation':'itm','investigation':'inv','medicine':'med','nature':'nat','perception':'prc','performance':'prf','persuasion':'per','religion':'rel','sleight of hand':'slt','stealth':'ste','survival':'sur' };
@@ -151,11 +199,22 @@ export default function StatBlockParser() {
       });
 
       // Senses / Languages / Initiative
-      const senseM = text.match(/Senses[:\s]+(.+?)(?=\n\s*Languages|\n\s*Challenge|\n\s*CR|$)/is);
-      const senses = senseM?.[1]?.trim() || '';
-      track('senses', senses || 'none', !!senseM);
+      const senseM = text.match(new RegExp('Senses[:\\s]+(.+?)' + SECSTOP, 'is'));
+      const sensesRaw = senseM?.[1]?.trim() || '';
+      track('senses', sensesRaw || 'none', !!senseM);
+      const darkvision  = +(sensesRaw.match(/darkvision\s+(\d+)\s*ft/i)?.[1]  || 0);
+      const blindsight  = +(sensesRaw.match(/blindsight\s+(\d+)\s*ft/i)?.[1]  || 0);
+      const tremorsense = +(sensesRaw.match(/tremorsense\s+(\d+)\s*ft/i)?.[1] || 0);
+      const truesight   = +(sensesRaw.match(/truesight\s+(\d+)\s*ft/i)?.[1]   || 0);
+      const sensesSpecial = sensesRaw
+        .replace(/darkvision\s+\d+\s*ft\.?,?\s*/i,  '')
+        .replace(/blindsight\s+\d+\s*ft\.?,?\s*/i,  '')
+        .replace(/tremorsense\s+\d+\s*ft\.?,?\s*/i, '')
+        .replace(/truesight\s+\d+\s*ft\.?,?\s*/i,   '')
+        .replace(/,?\s*passive\s+perception\s+\d+/i, '')
+        .replace(/^[,;\s]+|[,;\s]+$/g, '').trim();
 
-      const langM    = text.match(/Languages[:\s]+(.+?)(?=\n\s*Challenge|\n\s*CR|$)/is);
+      const langM    = text.match(new RegExp('Languages[:\\s]+(.+?)' + SECSTOP, 'is'));
       const languages = langM?.[1]?.trim().replace(/\([^)]*\)/g, '').trim() || '';
       track('languages', languages || 'none', !!langM);
 
@@ -164,24 +223,24 @@ export default function StatBlockParser() {
       track('initiative', initBonus || 'auto', !!initM);
 
       // Damage Resistances — handles "Damage Resistances" (2014) and "Resistances" (2024)
-      const drM    = text.match(/(?:Damage\s+)?Resistances?[:\s]+(.+?)(?=\n\s*(?:(?:Damage|Condition)\s+)?Immunities?|\n\s*Senses|\n\s*Languages|\n\s*Challenge|\n\s*CR|$)/is);
+      const drM    = text.match(new RegExp('(?:Damage\\s+)?Resistances?[:\\s]+(.+?)' + SECSTOP, 'is'));
       const drText = drM?.[1]?.trim() || '';
       track('damage resistances', drText || 'none', !!drM);
 
       // Damage Vulnerabilities — handles "Damage Vulnerabilities" (2014) and "Vulnerabilities" (2024)
-      const dvM    = text.match(/(?:Damage\s+)?Vulnerabilities?[:\s]+(.+?)(?=\n\s*(?:(?:Damage|Condition)\s+)?(?:Resistances?|Immunities?)|\n\s*Senses|\n\s*Languages|\n\s*Challenge|\n\s*CR|$)/is);
+      const dvM    = text.match(new RegExp('(?:Damage\\s+)?Vulnerabilities?[:\\s]+(.+?)' + SECSTOP, 'is'));
       const dvText = dvM?.[1]?.trim() || '';
       track('damage vulnerabilities', dvText || 'none', !!dvM);
 
       // Immunities — handles:
       //   2014: separate "Damage Immunities" and "Condition Immunities" lines
       //   2024: combined "Immunities <damage>; <conditions>" on one line
-      const diOldM = text.match(/Damage\s+Immunities?[:\s]+(.+?)(?=\n\s*Condition|\n\s*Senses|\n\s*Languages|\n\s*Challenge|\n\s*CR|$)/is);
-      const ciOldM = text.match(/Condition\s+Immunities?[:\s]+(.+?)(?=\n\s*Senses|\n\s*Languages|\n\s*Challenge|\n\s*CR|$)/is);
+      const diOldM = text.match(new RegExp('Damage\\s+Immunities?[:\\s]+(.+?)' + SECSTOP, 'is'));
+      const ciOldM = text.match(new RegExp('Condition\\s+Immunities?[:\\s]+(.+?)' + SECSTOP, 'is'));
       let diText = diOldM?.[1]?.trim() || '';
       let ciText = ciOldM?.[1]?.trim() || '';
       if (!diOldM && !ciOldM) {
-        const immNewM = text.match(/\bImmunities?[:\s]+(.+?)(?=\n\s*Senses|\n\s*Languages|\n\s*Challenge|\n\s*CR|$)/is);
+        const immNewM = text.match(new RegExp('\\bImmunities?[:\\s]+(.+?)' + SECSTOP, 'is'));
         if (immNewM) {
           const parts = immNewM[1].split(';');
           diText = parts[0]?.trim() || '';
@@ -206,11 +265,11 @@ export default function StatBlockParser() {
             hp:       { value: hp, max: hp, temp: 0, tempmax: 0, formula: hpFormula },
             init:     { ability: 'dex', bonus: initBonus },
             movement: { ...speeds, units: 'ft', hover: false },
-            senses:   { darkvision: 0, blindsight: 0, tremorsense: 0, truesight: 0, units: 'ft', special: senses }
+            senses:   { darkvision, blindsight, tremorsense, truesight, units: 'ft', special: sensesSpecial }
           },
           details: {
             alignment, type: { value: type, subtype: '', custom: '' },
-            cr: crToFloat(cr), biography: { value: '', public: '' }
+            cr: crToFloat(cr), xp: { value: crToXP(cr) }, biography: { value: '', public: '' }
           },
           traits: {
             size: sizeCode,
@@ -220,19 +279,63 @@ export default function StatBlockParser() {
             dv: { value: extractDamageTypes(dvText),    bypasses: [], custom: '' },
             ci: { value: extractConditionTypes(ciText), custom: '' }
           },
-          skills
-        },
-        items: actions.map(a => ({
-          name: a.name, type: 'weapon',
-          system: {
-            description: { value: a.description },
-            activation: { type: 'action', cost: 1 },
-            attack: a.attack  ? { bonus: String(a.attack.bonus), flat: false } : null,
-            damage: a.damage  ? { parts: [[a.damage.formula, a.damage.type]] } : null,
-            range:  a.attack?.range ? { value: a.attack.range.normal, long: a.attack.range.long, units: 'ft' }
-                  : a.attack?.reach ? { value: a.attack.reach, long: null, units: 'ft' } : null
+          skills,
+          resources: {
+            legact: { value: 0, max: 0, sr: false, lr: true, label: 'Legendary Actions' },
+            legres: { value: 0, max: 0, sr: false, lr: true, label: 'Legendary Resistances' },
+            lair:   { value: 0, max: 0, sr: false, lr: true, label: 'Lair Actions' }
           }
-        })),
+        },
+        items: actions.map(a => {
+          const itemId = `${name}${a.name}`.toLowerCase().replace(/[\s']/g,'').slice(0,16);
+          const actId  = `${name}${a.name}act`.toLowerCase().replace(/[\s']/g,'').slice(0,16);
+          // Recharge (e.g. qualifier = "Recharge 4–6")
+          const rchM = a.qualifier?.match(/Recharge\s+(\d+)(?:[–\-]\d+)?/i);
+          const itemUses = rchM
+            ? { value:+rchM[1], max:'6', per:null, recovery:[{period:'recharge',formula:rchM[1],type:'recoverAll'}] }
+            : { value:null, max:null, per:null, recovery:[] };
+          // Classify
+          const isMeleeOrRanged = /Melee\s+or\s+Ranged/i.test(a.description);
+          const isMelee  = /Melee\s+(?:Weapon\s+)?Attack(?:\s+Roll)?:/i.test(a.description);
+          const isRanged = /Ranged\s+(?:Weapon\s+)?Attack(?:\s+Roll)?:/i.test(a.description);
+          const isAttack = !!a.attack;
+          const saveInfo = parseSaveInfo(a.description);
+          const atkValue = isMeleeOrRanged||isMelee ? 'mwak' : isRanged ? 'rwak' : 'mwak';
+          // Infer attack ability from stat bonus vs listed attack bonus
+          let atkAbility='', atkBonus='';
+          if (isAttack && a.attack?.bonus!=null) {
+            const strTot=mod(abilities.str)+profBonus, dexTot=mod(abilities.dex)+profBonus, b=a.attack.bonus;
+            if (Math.abs(b-strTot)<=Math.abs(b-dexTot)) { atkAbility='str'; const d=b-strTot; atkBonus=d?String(d):''; }
+            else { atkAbility='dex'; const d=b-dexTot; atkBonus=d?String(d):''; }
+          }
+          // Damage fields (DamageField format)
+          const baseDmg = a.damage ? {...parseDiceFormula(a.damage.formula), types:[a.damage.type]} : null;
+          const addDmg  = a.damage?.additional ? {...parseDiceFormula(a.damage.additional.formula), types:[a.damage.additional.type]} : null;
+          // Build activity entry
+          let activity;
+          if (isAttack) {
+            activity = { _id:actId, type:'attack', name:'', activation:{type:'action',cost:1,condition:''},
+              attack:{ ability:atkAbility, bonus:atkBonus, flat:false, type:{value:atkValue,classification:'weapon'} },
+              damage:{ includeBase:true, parts:addDmg?[addDmg]:[] },
+              range: a.attack?.range ? {value:a.attack.range.normal,long:a.attack.range.long??null,units:'ft'}
+                   : a.attack?.reach ? {value:a.attack.reach,long:null,units:'ft'} : {value:null,long:null,units:'ft'},
+              target:{ template:{count:'',contiguous:false,type:'',size:'',width:'',height:'',angle:'',range:''},
+                       affects:{count:'1',type:'creature',choice:false,special:''}, prompt:true },
+              uses:{spent:0,recovery:[]} };
+          } else if (saveInfo) {
+            activity = { _id:actId, type:'save', name:'', activation:{type:'action',cost:1,condition:''},
+              save:{ ability:[saveInfo.ability], dc:{calculation:'',formula:saveInfo.dc} },
+              damage:{ onSave:'half', parts:baseDmg?[baseDmg]:[] },
+              uses:{spent:0,recovery:[]} };
+          } else {
+            activity = { _id:actId, type:'utility', name:'', activation:{type:'action',cost:1,condition:''},
+              uses:{spent:0,recovery:[]} };
+          }
+          return { _id:itemId, name:a.name, type:isAttack?'weapon':'feat',
+            system:{ description:{value:a.description}, activation:{type:'action',cost:1,condition:''},
+              uses:itemUses, ...(baseDmg&&isAttack?{damage:{base:baseDmg}}:{}),
+              activities:{[actId]:activity} } };
+        }),
         effects: [], flags: {}
       };
 
@@ -327,14 +430,23 @@ export default function StatBlockParser() {
                   <div className="bg-slate-800 rounded-lg p-4 border border-orange-500/30">
                     <div className="flex items-center gap-2 text-orange-400 mb-3"><Sword size={18} /><span className="font-semibold">Parsed Actions ({output.items.length})</span></div>
                     <div className="space-y-3">
-                      {output.items.map((item, idx) => (
+                      {output.items.map((item, idx) => {
+                        const act = Object.values(item.system.activities||{})[0];
+                        return (
                         <div key={idx} className="bg-slate-700 rounded p-3">
-                          <div className="font-semibold text-white mb-1">{item.name}</div>
-                          {item.system.attack && <div className="text-sm text-green-400">Attack: +{item.system.attack.bonus}{item.system.range && ` • Range: ${item.system.range.value} ft`}</div>}
-                          {item.system.damage?.parts && <div className="text-sm text-red-400">Damage: {item.system.damage.parts[0][0]} {item.system.damage.parts[0][1]}</div>}
+                          <div className="font-semibold text-white mb-1">
+                            {item.name}
+                            {item.system.uses?.recovery?.length > 0 && <span className="ml-2 text-xs text-yellow-400">(Recharge {item.system.uses.value}–6)</span>}
+                            <span className="ml-2 text-xs text-slate-500">[{item.type}]</span>
+                          </div>
+                          {act?.type==='attack' && <div className="text-sm text-green-400">Attack [{act.attack?.type?.value?.toUpperCase()}] · {act.attack?.ability?.toUpperCase()}{act.attack?.bonus ? ` +${act.attack.bonus} extra` : ''}</div>}
+                          {act?.type==='save' && <div className="text-sm text-blue-400">Save: DC {act.save?.dc?.formula} {act.save?.ability?.[0]?.toUpperCase()}</div>}
+                          {act?.type==='utility' && <div className="text-sm text-slate-400">Utility / no roll</div>}
+                          {item.system.damage?.base && <div className="text-sm text-red-400">Damage: {item.system.damage.base.number}d{item.system.damage.base.denomination}{item.system.damage.base.bonus} {item.system.damage.base.types?.[0]}</div>}
                           <div className="text-xs text-slate-400 mt-2 line-clamp-2">{item.system.description.value}</div>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}

@@ -1,6 +1,78 @@
 # Version History
 
-## Version 1.6 - Phase 5.0 Complete (Current - STABLE)
+---
+
+## Version 2.0-alpha.1 — Phase 6 Block 3 Complete
+**Release Date:** March 3, 2026
+**Status:** Alpha — Active Development
+**Phase:** Phase 6 — Sprint 1/2 (Actions & Features)
+**File:** `dnd-parser-v20-alpha1-clean.tsx`
+
+### Major Changes
+
+#### Activities System Migration (Block 3)
+- **Breaking schema change:** Items now use Foundry dnd5e v4.0+ `system.activities` map
+- Old `system.attack`, `system.actionType`, `system.damage.parts` removed from item output
+- New `parseDiceFormula()` helper: converts formula strings to Foundry DamageField objects (`{number, denomination, bonus, types, custom, scaling}`)
+- New `parseSaveInfo()` helper: extracts DC and ability from both 2024 format ("Strength Saving Throw: DC 13") and 2014 format ("DC 13 Strength saving throw")
+- New `SAVE_ABBR` map: full ability name → 3-letter code
+- `parseActions()` now captures recharge qualifier in group 2 (`m[2]`); description shifts to group 3
+
+#### Activity Classification Logic
+- Weapon attacks (contain "Melee/Ranged Attack Roll:" or "Weapon Attack:") → `type: "weapon"` + `attack` activity
+  - Attack ability (`str`/`dex`) inferred by comparing attack bonus vs `abilityMod + profBonus`
+  - `attack.bonus` = delta only (0 extra = empty string)
+  - `attack.type.value`: `mwak` (melee), `rwak` (ranged), `mwak` (melee-or-ranged default)
+  - Additional damage wired to `activity.damage.parts[0]` (DamageField)
+  - Base damage stored in `system.damage.base`
+- Save abilities (DC X saving throw detected) → `type: "feat"` + `save` activity
+  - `save.ability`: array (e.g. `["str"]`)
+  - `save.dc.formula`: DC as string
+  - `save.damage.onSave`: `"half"`
+- All other actions → `type: "feat"` + `utility` activity
+
+#### Recharge Support
+- Qualifier "Recharge 4–6" → `system.uses = { value:4, max:'6', per:null, recovery:[{period:'recharge',formula:'4',type:'recoverAll'}] }`
+
+#### Structural Additions (Block 1 — completed this session)
+- `detectFormat()`: sidekick detection stub; emits UI warning
+- `CR_XP` table + `crToXP()`: populates `system.details.xp.value` on every actor
+- `system.resources` stub: `legact`/`legres`/`lair` zeroed on every actor
+- `_id` on every item: deterministic 16-char string from actor+item name
+
+#### Section Regex Safety (Block 2 — completed this session)
+- `SECSTOP` constant: shared lookahead covering 14+ section headers
+- All 9 field regexes (`saves`, `skills`, `senses`, `languages`, `dr`, `dv`, `diOld`, `ciOld`, `immNew`) converted to `new RegExp('...' + SECSTOP, 'is')`
+- Comma-separated ability scores: added `,?` to first ability pattern (Obstacle #8 resolved)
+
+#### Senses Fix
+- Darkvision, blindsight, tremorsense, truesight now extracted as numeric values
+- Passive perception stripped from `system.attributes.senses.special`
+
+#### Action Regex Fix
+- `(Recharge 4–6)` parentheticals no longer break action name parsing
+- Recharge qualifier now captured separately from action name
+
+### Bug Fixes
+- Whirlwind (Recharge 4–6) was grouping with the next action — fixed
+- Darkvision was landing in `senses.special` instead of `senses.darkvision` — fixed
+- Skills regex was consuming Actions section on compact stat blocks — fixed (SECSTOP)
+
+### UI Updates
+- Actions panel now shows: activity type badge, attack type (MWAK/RWAK), ability, save DC, recharge tag, item type tag (`[weapon]`/`[feat]`)
+- Version badge updated to `v2.0-alpha.1`
+
+### Known Limitations (alpha)
+- `system.target` not yet extracted
+- Speed regex still positional for fly/climb/swim/burrow (Obstacle #7)
+- Action name regex can false-positive on flavor sentences (Obstacle #3)
+- Legendary actions, reactions, traits not yet parsed (Sprint 3)
+- Conditional resistances not yet routed to `custom` (Obstacle #4)
+- Sidekick format: detection only, no parsing (Sprint 4)
+
+---
+
+## Version 1.6 - Phase 5.0 Complete (Stable Baseline)
 **Release Date:** December 18, 2025  
 **Status:** Stable - Production Ready  
 **Phase:** Phase 5.0 - Stats & Abilities Parser Complete
