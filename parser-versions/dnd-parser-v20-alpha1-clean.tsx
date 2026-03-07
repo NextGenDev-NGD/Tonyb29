@@ -30,7 +30,7 @@ const detectFormat = (text) => {
   return 'standard';
 };
 
-// ─── CR → XP Table ─────────────────────────────────────────────────────────────
+// ─── CR → XP Table ───────────────────────────────────────────────────────────
 const CR_XP = {
   '0':0,'1/8':25,'1/4':50,'1/2':100,
   '1':200,'2':450,'3':700,'4':1100,'5':1800,'6':2300,'7':2900,'8':3900,
@@ -88,6 +88,40 @@ const parseActions = (text) => {
     if (hit) { a.damage = { formula: hit[2], type: hit[3].toLowerCase() }; if (add) a.damage.additional = { formula: add[2], type: add[3].toLowerCase() }; }
   });
   return actions;
+};
+
+// ─── Generic Section Parser ───────────────────────────────────────────────────
+// Extracts { name, qualifier, description } entries from any named section.
+// Used for Traits (passive), Reactions, and Bonus Actions.
+const ALL_SEC_STOP = 'Traits?|Actions?|Bonus\\s+Actions?|Reactions?|Legendary\\s+Actions?|Lair\\s+Actions?';
+const parseSection = (text, headerRx) => {
+  const sec = text.match(
+    new RegExp(`(?:^|\\n)[ \\t]*${headerRx}[ \\t]*(?:\\n|$)([\\s\\S]+?)(?=\\n[ \\t]*(?:${ALL_SEC_STOP})[ \\t]*(?:\\n|$)|$)`, 'i')
+  )?.[1];
+  if (!sec) return [];
+  const out = []; let cur = null;
+  for (const line of sec.split('\n').map(l => l.trim()).filter(Boolean)) {
+    const m = line.match(/^([A-Z][A-Za-z\s\-']+?)(?:\s*\(([^)]*)\))?\.\s+(.*)$/);
+    if (m) { if (cur) out.push(cur); cur = { name:m[1].trim(), qualifier:m[2]?.trim()||'', description:m[3].trim() }; }
+    else if (cur) cur.description += ' ' + line;
+  }
+  if (cur) out.push(cur);
+  return out;
+};
+
+// ─── Simple Feat Item Builder ─────────────────────────────────────────────────
+// Produces a Foundry feat item with a utility activity.
+// actType: '' = passive trait, 'reaction' = reaction, 'bonus' = bonus action.
+const makeSimpleItem = (a, actorName, actType) => {
+  const itemId = `${actorName}${a.name}`.toLowerCase().replace(/[\s']/g,'').slice(0,16).padEnd(16,'0');
+  const actId  = `${actorName}${a.name}act`.toLowerCase().replace(/[\s']/g,'').slice(0,16).padEnd(16,'0');
+  const cost   = actType ? 1 : 0;
+  return { _id:itemId, name:a.name, type:'feat',
+    system:{ description:{value:a.description},
+      activation:{type:actType||'', cost, condition:''},
+      uses:{value:null,max:null,per:null,recovery:[]},
+      activities:{[actId]:{ _id:actId, type:'utility', name:'',
+        activation:{type:actType||'', cost, condition:''}, uses:{spent:0,recovery:[]} }} } };
 };
 
 // ─── Main Component ────────────────────────────────────────────────────────────
@@ -173,7 +207,7 @@ export default function StatBlockParser() {
       const profBonus = profBonusFromCR(cr);
 
       // Saving Throws
-      let savesText = text.match(new RegExp('(?:Saving Throws|Save)[:\\s]+(.+?)' + SECSTOP, 'is'))?.[1]?.trim() || '';
+      let savesText = text.match(new RegExp('(?:Saving Throws|Save):\\s*(.+?)' + SECSTOP, 'is'))?.[1]?.trim() || '';
       if (!savesText) {
         const fs = ['Str','Dex','Con','Int','Wis','Cha'].map(ab => {
           const m1 = text.match(new RegExp(`${ab}\\s+\\d+\\s+[+-]?\\d+\\s+([+-]\\d+)`, 'i'));
@@ -250,9 +284,15 @@ export default function StatBlockParser() {
       track('damage immunities',    diText || 'none', !!(diOldM || diText));
       track('condition immunities', ciText || 'none', !!(ciOldM || ciText));
 
-      // Actions
-      const actions = parseActions(text);
-      track('actions', `${actions.length} action(s)`, actions.length > 0);
+      // Sections — Traits / Actions / Bonus Actions / Reactions
+      const traits       = parseSection(text, 'Traits?');
+      const actions      = parseActions(text);
+      const bonusActions = parseSection(text, 'Bonus\\s+Actions?');
+      const reactions    = parseSection(text, 'Reactions?');
+      track('traits',        `${traits.length} trait(s)`,            traits.length > 0);
+      track('actions',       `${actions.length} action(s)`,          actions.length > 0);
+      track('bonus actions', `${bonusActions.length} bonus action(s)`, bonusActions.length > 0);
+      track('reactions',     `${reactions.length} reaction(s)`,      reactions.length > 0);
 
       // ── Build Foundry Actor ──
       const ABS = ['str','dex','con','int','wis','cha'];
@@ -286,9 +326,11 @@ export default function StatBlockParser() {
             lair:   { value: 0, max: 0, sr: false, lr: true, label: 'Lair Actions' }
           }
         },
-        items: actions.map(a => {
-          const itemId = `${name}${a.name}`.toLowerCase().replace(/[\s']/g,'').slice(0,16);
-          const actId  = `${name}${a.name}act`.toLowerCase().replace(/[\s']/g,'').slice(0,16);
+        items: [
+          ...traits.map(a => makeSimpleItem(a, name, '')),
+          ...actions.map(a => {
+          const itemId = `${name}${a.name}`.toLowerCase().replace(/[\s']/g,'').slice(0,16).padEnd(16,'0');
+          const actId  = `${name}${a.name}act`.toLowerCase().replace(/[\s']/g,'').slice(0,16).padEnd(16,'0');
           // Recharge (e.g. qualifier = "Recharge 4–6")
           const rchM = a.qualifier?.match(/Recharge\s+(\d+)(?:[–\-]\d+)?/i);
           const itemUses = rchM
@@ -335,7 +377,10 @@ export default function StatBlockParser() {
             system:{ description:{value:a.description}, activation:{type:'action',cost:1,condition:''},
               uses:itemUses, ...(baseDmg&&isAttack?{damage:{base:baseDmg}}:{}),
               activities:{[actId]:activity} } };
-        }),
+          }),
+          ...bonusActions.map(a => makeSimpleItem(a, name, 'bonus')),
+          ...reactions.map(a => makeSimpleItem(a, name, 'reaction')),
+        ],
         effects: [], flags: {}
       };
 
@@ -437,11 +482,14 @@ export default function StatBlockParser() {
                           <div className="font-semibold text-white mb-1">
                             {item.name}
                             {item.system.uses?.recovery?.length > 0 && <span className="ml-2 text-xs text-yellow-400">(Recharge {item.system.uses.value}–6)</span>}
-                            <span className="ml-2 text-xs text-slate-500">[{item.type}]</span>
+                            {item.system.activation?.type === 'reaction' && <span className="ml-2 text-xs text-blue-400">[reaction]</span>}
+                            {item.system.activation?.type === 'bonus'    && <span className="ml-2 text-xs text-emerald-400">[bonus]</span>}
+                            {!item.system.activation?.type && item.type === 'feat' && <span className="ml-2 text-xs text-purple-400">[trait]</span>}
+                            {item.type === 'weapon' && <span className="ml-2 text-xs text-slate-500">[weapon]</span>}
                           </div>
                           {act?.type==='attack' && <div className="text-sm text-green-400">Attack [{act.attack?.type?.value?.toUpperCase()}] · {act.attack?.ability?.toUpperCase()}{act.attack?.bonus ? ` +${act.attack.bonus} extra` : ''}</div>}
                           {act?.type==='save' && <div className="text-sm text-blue-400">Save: DC {act.save?.dc?.formula} {act.save?.ability?.[0]?.toUpperCase()}</div>}
-                          {act?.type==='utility' && <div className="text-sm text-slate-400">Utility / no roll</div>}
+                          {act?.type==='utility' && !!item.system.activation?.type && <div className="text-sm text-slate-400">No roll</div>}
                           {item.system.damage?.base && <div className="text-sm text-red-400">Damage: {item.system.damage.base.number}d{item.system.damage.base.denomination}{item.system.damage.base.bonus} {item.system.damage.base.types?.[0]}</div>}
                           <div className="text-xs text-slate-400 mt-2 line-clamp-2">{item.system.description.value}</div>
                         </div>
