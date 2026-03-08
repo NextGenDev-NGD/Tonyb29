@@ -46,6 +46,25 @@ const parseDamageField = (text) => {
   return { value, custom: customs.join('; ') };
 };
 
+// ─── Deterministic Item ID Generator ─────────────────────────────────────────
+// djb2 hash → base36 string. Replaces the old slice(0,16) approach which broke
+// whenever the actor name was ≥ 15 chars (e.g. "adultblackdragon" = 16 chars),
+// causing every item on that actor to get the same truncated ID.
+// Two hash passes give 14 chars; padEnd to 16. Collision probability is negligible.
+const _djb2 = (s) => {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = (Math.imul(h, 33) ^ s.charCodeAt(i)) >>> 0;
+  return h.toString(36).padStart(7, '0').slice(0, 7);
+};
+const makeItemId = (prefix, actorName, itemName) => {
+  const k = `${prefix}${actorName}${itemName}`.toLowerCase().replace(/[\s']/g, '');
+  return (_djb2(k) + _djb2(k + '~')).slice(0, 16).padEnd(16, '0');
+};
+const makeActId = (prefix, actorName, itemName) => {
+  const k = `${prefix}${actorName}${itemName}~act`.toLowerCase().replace(/[\s']/g, '');
+  return (_djb2(k) + _djb2(k + '~')).slice(0, 16).padEnd(16, '0');
+};
+
 // ─── Format Detection ──────────────────────────────────────────────────────────
 // Returns 'standard' | 'sidekick'. Sidekick support is Sprint 4 — this stub
 // catches them early so the UI can warn rather than silently produce wrong output.
@@ -183,9 +202,8 @@ const parseLegendaryCount = (text) => {
 // prefix: single char to namespace IDs by section ('t'=trait,'b'=bonus,'r'=reaction,'l'=legendary,'i'=lair)
 // This prevents cross-section ID collisions when two items share the same actor+name prefix.
 const makeSimpleItem = (a, actorName, actType, itemCost = 1, prefix = 't') => {
-  const key    = `${prefix}${actorName}${a.name}`.toLowerCase().replace(/[\s']/g,'');
-  const itemId = key.slice(0,16).padEnd(16,'0');
-  const actId  = `${key}act`.slice(0,16).padEnd(16,'0');
+  const itemId = makeItemId(prefix, actorName, a.name);
+  const actId  = makeActId(prefix, actorName, a.name);
   const cost   = actType ? itemCost : 0;
   return { _id:itemId, name:a.name, type:'feat',
     system:{ description:{value:a.description},
@@ -445,9 +463,8 @@ export default function StatBlockParser() {
         items: [
           ...traits.map(a => makeSimpleItem(a, name, '', 1, 't')),
           ...actions.map(a => {
-          const key    = `a${name}${a.name}`.toLowerCase().replace(/[\s']/g,'');
-          const itemId = key.slice(0,16).padEnd(16,'0');
-          const actId  = `${key}act`.slice(0,16).padEnd(16,'0');
+          const itemId = makeItemId('a', name, a.name);
+          const actId  = makeActId('a', name, a.name);
           // Recharge (e.g. qualifier = "Recharge 4–6")
           const rchM = a.qualifier?.match(/Recharge\s+(\d+)(?:[–\-]\d+)?/i);
           const itemUses = rchM
