@@ -213,7 +213,15 @@ export default function StatBlockParser() {
   const parseStatBlock = (text) => {
     const errs = [], warns = [];
     const stats = { parsed: 0, total: 0, exact: 0, fields: [] };
-    const track = (name, value, ok) => { stats.total++; if (ok) { stats.parsed++; stats.exact++; } stats.fields.push({ name, value: String(value), method: ok ? 'exact' : 'default' }); };
+    // optional=true: if not found, record as 'n/a' and exclude from accuracy score entirely.
+    // This prevents legitimate absences (no reactions, no legendary actions, etc.) from
+    // dragging the score down and making the parser look worse than it is.
+    const track = (name, value, ok, optional = false) => {
+      if (optional && !ok) { stats.fields.push({ name, value: 'n/a', method: 'n/a' }); return; }
+      stats.total++;
+      if (ok) { stats.parsed++; stats.exact++; }
+      stats.fields.push({ name, value: String(value), method: ok ? 'exact' : 'default' });
+    };
     try {
       if (!text.trim()) throw new Error('No content to parse');
 
@@ -334,17 +342,17 @@ export default function StatBlockParser() {
 
       const initM    = text.match(/Initiative\s+([+-]\d+)/i);
       const initBonus = initM?.[1] || '';
-      track('initiative', initBonus || 'auto', !!initM);
+      track('initiative', initBonus || 'auto', !!initM, true);
 
       // Damage Resistances — handles "Damage Resistances" (2014) and "Resistances" (2024)
       const drM    = text.match(new RegExp('(?:Damage\\s+)?Resistances?[:\\s]+(.+?)' + SECSTOP, 'is'));
       const drText = drM?.[1]?.trim() || '';
-      track('damage resistances', drText || 'none', !!drM);
+      track('damage resistances', drText || 'none', !!drM, true);
 
       // Damage Vulnerabilities — handles "Damage Vulnerabilities" (2014) and "Vulnerabilities" (2024)
       const dvM    = text.match(new RegExp('(?:Damage\\s+)?Vulnerabilities?[:\\s]+(.+?)' + SECSTOP, 'is'));
       const dvText = dvM?.[1]?.trim() || '';
-      track('damage vulnerabilities', dvText || 'none', !!dvM);
+      track('damage vulnerabilities', dvText || 'none', !!dvM, true);
 
       // Immunities — handles:
       //   2014: separate "Damage Immunities" and "Condition Immunities" lines
@@ -361,8 +369,8 @@ export default function StatBlockParser() {
           ciText = parts[1]?.trim() || '';
         }
       }
-      track('damage immunities',    diText || 'none', !!(diOldM || diText));
-      track('condition immunities', ciText || 'none', !!(ciOldM || ciText));
+      track('damage immunities',    diText || 'none', !!(diOldM || diText), true);
+      track('condition immunities', ciText || 'none', !!(ciOldM || ciText), true);
       // Warn if any conditional resistance/immunity was routed to custom
       const conditionalFields = [
         parseDamageField(drText).custom && 'resistances',
@@ -395,10 +403,10 @@ export default function StatBlockParser() {
 
       track('traits',             `${traits.length} trait(s)`,                    traits.length > 0);
       track('actions',            `${actions.length} action(s)`,                  actions.length > 0);
-      track('bonus actions',      `${bonusActions.length} bonus action(s)`,       bonusActions.length > 0);
-      track('reactions',          `${reactions.length} reaction(s)`,              reactions.length > 0);
-      track('legendary actions',  `${legendaryActions.length} (max ${legBase})`, legendaryActions.length > 0);
-      track('lair actions',       `${lairActions.length} lair action(s)`,        lairActions.length > 0);
+      track('bonus actions',      `${bonusActions.length} bonus action(s)`,       bonusActions.length > 0, true);
+      track('reactions',          `${reactions.length} reaction(s)`,              reactions.length > 0,    true);
+      track('legendary actions',  `${legendaryActions.length} (max ${legBase})`, legendaryActions.length > 0, true);
+      track('lair actions',       `${lairActions.length} lair action(s)`,        lairActions.length > 0,  true);
       if (legLair !== legBase || legResLair !== legResBase)
         warns.push(`Lair bonus detected — imported with base values (${legBase} legendary action(s), ${legResBase} resistance(s)). Manually set to ${legLair}/${legResLair} if using this creature in its lair.`);
 
@@ -548,6 +556,9 @@ export default function StatBlockParser() {
                   <div className="flex justify-between"><span className="text-slate-400">Parsed:</span><span className="text-green-400 font-bold">{parseStats.parsed}/{parseStats.total}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Exact:</span><span className="text-blue-400 font-bold">{parseStats.exact}</span></div>
                 </div>
+                {parseStats.fields.filter(f => f.method === 'n/a').length > 0 && (
+                  <div className="text-xs text-slate-500 mt-1">{parseStats.fields.filter(f => f.method === 'n/a').length} optional field(s) not present — excluded from score</div>
+                )}
               </div>
             )}
 
@@ -578,7 +589,7 @@ export default function StatBlockParser() {
                           ) : (
                             <>
                               <span className="flex-1 text-white truncate">{field.value}</span>
-                              <span className={`text-xs px-2 py-0.5 rounded ${field.method === 'exact' ? 'bg-green-600/30 text-green-400' : 'bg-slate-600/30 text-slate-400'}`}>{field.method}</span>
+                              <span className={`text-xs px-2 py-0.5 rounded ${field.method === 'exact' ? 'bg-green-600/30 text-green-400' : field.method === 'n/a' ? 'bg-slate-800/60 text-slate-600' : 'bg-slate-600/30 text-slate-400'}`}>{field.method}</span>
                               <button onClick={() => startEdit(field.name)} className="text-amber-400 hover:text-amber-300"><Edit2 size={14} /></button>
                             </>
                           )}
