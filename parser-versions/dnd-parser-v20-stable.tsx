@@ -21,6 +21,31 @@ const CONDITION_TYPES = ['blinded','charmed','deafened','exhaustion','frightened
 const extractDamageTypes    = (t) => DAMAGE_TYPES.filter(d    => new RegExp(`\\b${d}\\b`,    'i').test(t));
 const extractConditionTypes = (t) => CONDITION_TYPES.filter(c => new RegExp(`\\b${c}\\b`, 'i').test(t));
 
+// ─── Damage Field Parser (Obstacle #4) ────────────────────────────────────────
+// Splits resistance/immunity/vulnerability text on ';' and checks each chunk
+// for conditional phrases. Conditional chunks route to `custom` (Foundry silently
+// drops them if pushed into `value`). Simple chunks extract damage type keywords.
+// Examples:
+//   "Fire, Cold"                                      → value:['fire','cold'], custom:''
+//   "Fire; Bludgeoning from Nonmagical Attacks"       → value:['fire'], custom:'Bludgeoning from Nonmagical Attacks'
+//   "Bludgeoning, Piercing, Slashing from Nonmagical" → value:[], custom:'Bludgeoning, Piercing, Slashing from Nonmagical'
+const CONDITIONAL_RX = /\b(nonmagical|silvered|adamantine|that\s+aren|that\s+are\s+not|not\s+made|while\s+in|from\s+non)/i;
+const parseDamageField = (text) => {
+  if (!text) return { value: [], custom: '' };
+  const chunks  = text.split(/\s*;\s*/);
+  const value   = [], customs = [];
+  for (const chunk of chunks) {
+    if (!chunk.trim()) continue;
+    if (CONDITIONAL_RX.test(chunk)) {
+      customs.push(chunk.trim());
+    } else {
+      DAMAGE_TYPES.filter(d => new RegExp(`\\b${d}\\b`, 'i').test(chunk))
+        .forEach(d => { if (!value.includes(d)) value.push(d); });
+    }
+  }
+  return { value, custom: customs.join('; ') };
+};
+
 // ─── Format Detection ──────────────────────────────────────────────────────────
 // Returns 'standard' | 'sidekick'. Sidekick support is Sprint 4 — this stub
 // catches them early so the UI can warn rather than silently produce wrong output.
@@ -63,6 +88,33 @@ const parseSaveInfo = (desc) => {
   m = desc.match(/DC\s+(\d+)[^.]{0,60}?(\w+)\s+saving\s+throw/i);        // 2014: "DC 13 Strength saving throw"
   if (m) return { ability: SAVE_ABBR[m[2].toLowerCase()]||'str', dc: m[1] };
   return null;
+};
+
+// ─── Target Parser ────────────────────────────────────────────────────────────
+// Returns a Foundry activity `target` object from action description text.
+// Handles AoE templates (cone/line/sphere/cube/cylinder) and single-target counts.
+const parseTarget = (desc) => {
+  const tpl = { count:'', contiguous:false, type:'', size:'', width:'', height:'', angle:'', range:'' };
+  const aff = { count:'1', type:'creature', choice:false, special:'' };
+  const n   = (rx) => desc.match(rx)?.[1];
+  // AoE templates — check in specificity order
+  const cone   = n(/(\d+)[- ]foot\s+cone/i);
+  const line   = n(/(\d+)[- ]foot\s+line/i);
+  const sphere = n(/(\d+)[- ]foot[- ]radius\s+sphere/i) || n(/radius\s+of\s+(\d+)\s*feet/i);
+  const cube   = n(/(\d+)[- ]foot\s+cube/i);
+  const cyl    = n(/(\d+)[- ]foot[- ]radius\s+cylinder/i);
+  if      (cone)   { tpl.type = 'cone';     tpl.size = cone; }
+  else if (line)   { tpl.type = 'line';     tpl.size = line;   tpl.width = '5'; }
+  else if (sphere) { tpl.type = 'sphere';   tpl.size = sphere; }
+  else if (cube)   { tpl.type = 'cube';     tpl.size = cube; }
+  else if (cyl)    { tpl.type = 'cylinder'; tpl.size = cyl; }
+  // Target count for non-AoE
+  if (!tpl.type) {
+    const cntM = desc.match(/\b(one|two|three|four|five|\d)\b\s+(?:creature|target|enemy|willing creature)/i);
+    const nums  = { one:'1', two:'2', three:'3', four:'4', five:'5' };
+    if (cntM) aff.count = nums[cntM[1].toLowerCase()] ?? cntM[1];
+  }
+  return { template: tpl, affects: aff, prompt: true };
 };
 
 // ─── Action Parser ─────────────────────────────────────────────────────────────
@@ -167,7 +219,7 @@ export default function StatBlockParser() {
 
       // Format detection
       const format = detectFormat(text);
-      if (format === 'sidekick') warns.push('Sidekick format detected — full support coming in v2.0');
+      if (format === 'sidekick') warns.push('Sidekick format detected — basic stats will be attempted, full support coming in v3.0.');
 
       // Name
       const name = text.split('\n').map(l => l.trim()).find(Boolean) || 'Unknown';
@@ -201,10 +253,19 @@ export default function StatBlockParser() {
       if (!hpM) warns.push('HP not found, using 5');
       track('hp', hp, !!hpM);
 
-      // Speed
-      const spdM  = text.match(/Speed\s+(\d+)\s*ft\.(?:,\s*(?:Fly|fly)\s+(\d+)\s*ft\.)?(?:,\s*(?:Climb|climb)\s+(\d+)\s*ft\.)?(?:,\s*(?:Swim|swim)\s+(\d+)\s*ft\.)?(?:,\s*(?:Burrow|burrow)\s+(\d+)\s*ft\.)?/i);
-      const speeds = { walk: spdM ? +spdM[1] : 30, fly: spdM?.[2] ? +spdM[2] : 0, climb: spdM?.[3] ? +spdM[3] : 0, swim: spdM?.[4] ? +spdM[4] : 0, burrow: spdM?.[5] ? +spdM[5] : 0 };
-      track('speed', `${speeds.walk} ft.`, !!spdM);
+      // Speed — per-type matches so order in the stat block doesn't matter (Obstacle #7)
+      const spdLineM = text.match(/Speed[:\s]+(.+?)(?:\n|$)/i);
+      const spdLine  = spdLineM?.[1]?.trim() || '';
+      const spdGet   = (rx) => { const m = spdLine.match(rx); return m ? +m[1] : 0; };
+      const speeds = {
+        walk:   spdGet(/^(\d+)/),                   // first number on line = walk
+        fly:    spdGet(/\bfly\s+(\d+)/i),
+        climb:  spdGet(/\bclimb\s+(\d+)/i),
+        swim:   spdGet(/\bswim\s+(\d+)/i),
+        burrow: spdGet(/\bburrow\s+(\d+)/i),
+      };
+      if (!speeds.walk && !spdLine) { speeds.walk = 30; warns.push('Speed not found, using 30 ft.'); }
+      track('speed', `${speeds.walk} ft.`, !!spdLineM);
 
       // Abilities
       let abilities = { str:10, dex:10, con:10, int:10, wis:10, cha:10 };
@@ -302,6 +363,14 @@ export default function StatBlockParser() {
       }
       track('damage immunities',    diText || 'none', !!(diOldM || diText));
       track('condition immunities', ciText || 'none', !!(ciOldM || ciText));
+      // Warn if any conditional resistance/immunity was routed to custom
+      const conditionalFields = [
+        parseDamageField(drText).custom && 'resistances',
+        parseDamageField(diText).custom && 'immunities',
+        parseDamageField(dvText).custom && 'vulnerabilities',
+      ].filter(Boolean);
+      if (conditionalFields.length)
+        warns.push(`Conditional damage ${conditionalFields.join('/')} detected (e.g. "nonmagical attacks") — routed to custom field. Verify in Foundry actor traits.`);
 
       // Sections — Traits / Actions / Bonus Actions / Reactions
       const traits       = parseSection(text, 'Traits?');
@@ -353,9 +422,9 @@ export default function StatBlockParser() {
           traits: {
             size: sizeCode,
             languages: { value: languages ? languages.split(',').map(l => l.trim().toLowerCase().replace(/\s+/g, '')) : [], custom: '' },
-            di: { value: extractDamageTypes(diText),    bypasses: [], custom: '' },
-            dr: { value: extractDamageTypes(drText),    bypasses: [], custom: '' },
-            dv: { value: extractDamageTypes(dvText),    bypasses: [], custom: '' },
+            di: { ...parseDamageField(diText), bypasses: [] },
+            dr: { ...parseDamageField(drText), bypasses: [] },
+            dv: { ...parseDamageField(dvText), bypasses: [] },
             ci: { value: extractConditionTypes(ciText), custom: '' }
           },
           skills,
@@ -401,13 +470,13 @@ export default function StatBlockParser() {
               damage:{ includeBase:true, parts:addDmg?[addDmg]:[] },
               range: a.attack?.range ? {value:a.attack.range.normal,long:a.attack.range.long??null,units:'ft'}
                    : a.attack?.reach ? {value:a.attack.reach,long:null,units:'ft'} : {value:null,long:null,units:'ft'},
-              target:{ template:{count:'',contiguous:false,type:'',size:'',width:'',height:'',angle:'',range:''},
-                       affects:{count:'1',type:'creature',choice:false,special:''}, prompt:true },
+              target: parseTarget(a.description),
               uses:{spent:0,recovery:[]} };
           } else if (saveInfo) {
             activity = { _id:actId, type:'save', name:'', activation:{type:'action',cost:1,condition:''},
               save:{ ability:[saveInfo.ability], dc:{calculation:'',formula:saveInfo.dc} },
               damage:{ onSave:'half', parts:baseDmg?[baseDmg]:[] },
+              target: parseTarget(a.description),
               uses:{spent:0,recovery:[]} };
           } else {
             activity = { _id:actId, type:'utility', name:'', activation:{type:'action',cost:1,condition:''},
