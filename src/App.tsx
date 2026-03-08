@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import StatBlockParser from '../parser-versions/dnd-parser-v20-alpha1-clean'
+import StatBlockParser from '../parser-versions/dnd-parser-v20-stable'
 import JSONValidator from '../validaton-scripts/json-validator'
 
 export default function App() {
