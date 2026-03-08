@@ -1,4 +1,4 @@
-// dnd-parser-v20-alpha1-clean.tsx
+// dnd-parser-v20-stable.tsx
 // D&D 5e Stat Block → Foundry VTT JSON Converter
 // Parsing order: name → size → type → alignment → AC → HP → speed →
 //   abilities → CR → saving throws → skills → damage immunities/resistances/vulnerabilities →
@@ -109,13 +109,32 @@ const parseSection = (text, headerRx) => {
   return out;
 };
 
+// ─── Legendary Action Count Extractor ────────────────────────────────────────
+// Returns { base, lair } where lair = base+1 if present, else equals base.
+// Handles:
+//   2014: "The creature can take 3 legendary actions..."
+//   2024: "Legendary Action Uses: 3 (4 in Lair)."
+const parseLegendaryCount = (text) => {
+  const sec = text.match(/(?:^|\n)[ \t]*Legendary\s+Actions?[ \t]*(?:\n|$)([\s\S]+?)(?=\n[ \t]*(?:Lair\s+Actions?|Mythic\s+Actions?)[ \t]*(?:\n|$)|$)/i)?.[1] || '';
+  // 2024 format: "Legendary Action Uses: 3 (4 in Lair)."
+  const m24 = sec.match(/Legendary\s+Action\s+Uses?:\s*(\d+)(?:\s*\((\d+)\s+in\s+Lair\))?/i);
+  if (m24) return { base: +m24[1], lair: m24[2] ? +m24[2] : +m24[1] };
+  // 2014 format: "The creature can take 3 legendary actions"
+  const m14 = sec.match(/can\s+take\s+(\d+)\s+legendary\s+action/i);
+  if (m14) return { base: +m14[1], lair: +m14[1] };
+  return null;
+};
+
 // ─── Simple Feat Item Builder ─────────────────────────────────────────────────
 // Produces a Foundry feat item with a utility activity.
 // actType: '' = passive trait, 'reaction' = reaction, 'bonus' = bonus action.
-const makeSimpleItem = (a, actorName, actType) => {
-  const itemId = `${actorName}${a.name}`.toLowerCase().replace(/[\s']/g,'').slice(0,16).padEnd(16,'0');
-  const actId  = `${actorName}${a.name}act`.toLowerCase().replace(/[\s']/g,'').slice(0,16).padEnd(16,'0');
-  const cost   = actType ? 1 : 0;
+// prefix: single char to namespace IDs by section ('t'=trait,'b'=bonus,'r'=reaction,'l'=legendary,'i'=lair)
+// This prevents cross-section ID collisions when two items share the same actor+name prefix.
+const makeSimpleItem = (a, actorName, actType, itemCost = 1, prefix = 't') => {
+  const key    = `${prefix}${actorName}${a.name}`.toLowerCase().replace(/[\s']/g,'');
+  const itemId = key.slice(0,16).padEnd(16,'0');
+  const actId  = `${key}act`.slice(0,16).padEnd(16,'0');
+  const cost   = actType ? itemCost : 0;
   return { _id:itemId, name:a.name, type:'feat',
     system:{ description:{value:a.description},
       activation:{type:actType||'', cost, condition:''},
@@ -289,10 +308,28 @@ export default function StatBlockParser() {
       const actions      = parseActions(text);
       const bonusActions = parseSection(text, 'Bonus\\s+Actions?');
       const reactions    = parseSection(text, 'Reactions?');
-      track('traits',        `${traits.length} trait(s)`,            traits.length > 0);
-      track('actions',       `${actions.length} action(s)`,          actions.length > 0);
-      track('bonus actions', `${bonusActions.length} bonus action(s)`, bonusActions.length > 0);
-      track('reactions',     `${reactions.length} reaction(s)`,      reactions.length > 0);
+      // Legendary Actions (Block 5)
+      const legendaryActions = parseSection(text, 'Legendary\\s+Actions?');
+      const legCounts = parseLegendaryCount(text);
+      const legBase = legCounts?.base ?? (legendaryActions.length > 0 ? 3 : 0);
+      const legLair = legCounts?.lair ?? legBase;
+
+      // Lair Actions (Block 6) — 2014 only; 2024 format dropped this section
+      const lairActions = parseSection(text, 'Lair\\s+Actions?');
+
+      // Legendary Resistance — "Legendary Resistance (3/Day, or 4/Day in Lair)"
+      // Handles both "3/Day" (2014) and "3/Day, or 4/Day in Lair" (2024)
+      const legResTrait = traits.find(t => /Legendary\s+Resistance/i.test(t.name));
+      const legResNums  = legResTrait?.qualifier?.match(/(\d+)/g)?.map(Number) || [];
+      const legResBase  = legResNums[0] || 0;
+      const legResLair  = legResNums[1] || legResBase;
+
+      track('traits',             `${traits.length} trait(s)`,                    traits.length > 0);
+      track('actions',            `${actions.length} action(s)`,                  actions.length > 0);
+      track('bonus actions',      `${bonusActions.length} bonus action(s)`,       bonusActions.length > 0);
+      track('reactions',          `${reactions.length} reaction(s)`,              reactions.length > 0);
+      track('legendary actions',  `${legendaryActions.length} (${legBase}/${legLair} in lair)`, legendaryActions.length > 0);
+      track('lair actions',       `${lairActions.length} lair action(s)`,         lairActions.length > 0);
 
       // ── Build Foundry Actor ──
       const ABS = ['str','dex','con','int','wis','cha'];
@@ -321,16 +358,17 @@ export default function StatBlockParser() {
           },
           skills,
           resources: {
-            legact: { value: 0, max: 0, sr: false, lr: true, label: 'Legendary Actions' },
-            legres: { value: 0, max: 0, sr: false, lr: true, label: 'Legendary Resistances' },
-            lair:   { value: 0, max: 0, sr: false, lr: true, label: 'Lair Actions' }
+            legact: { value: legBase,    max: legBase,    sr: false, lr: true, label: legLair !== legBase ? `Legendary Actions (${legLair} in Lair)` : 'Legendary Actions' },
+            legres: { value: legResBase, max: legResBase, sr: false, lr: true, label: legResLair !== legResBase ? `Legendary Resistances (${legResLair} in Lair)` : 'Legendary Resistances' },
+            lair:   { value: lairActions.length > 0 ? 1 : 0, max: lairActions.length > 0 ? 1 : 0, sr: false, lr: true, label: 'Lair Actions' }
           }
         },
         items: [
-          ...traits.map(a => makeSimpleItem(a, name, '')),
+          ...traits.map(a => makeSimpleItem(a, name, '', 1, 't')),
           ...actions.map(a => {
-          const itemId = `${name}${a.name}`.toLowerCase().replace(/[\s']/g,'').slice(0,16).padEnd(16,'0');
-          const actId  = `${name}${a.name}act`.toLowerCase().replace(/[\s']/g,'').slice(0,16).padEnd(16,'0');
+          const key    = `a${name}${a.name}`.toLowerCase().replace(/[\s']/g,'');
+          const itemId = key.slice(0,16).padEnd(16,'0');
+          const actId  = `${key}act`.slice(0,16).padEnd(16,'0');
           // Recharge (e.g. qualifier = "Recharge 4–6")
           const rchM = a.qualifier?.match(/Recharge\s+(\d+)(?:[–\-]\d+)?/i);
           const itemUses = rchM
@@ -378,8 +416,16 @@ export default function StatBlockParser() {
               uses:itemUses, ...(baseDmg&&isAttack?{damage:{base:baseDmg}}:{}),
               activities:{[actId]:activity} } };
           }),
-          ...bonusActions.map(a => makeSimpleItem(a, name, 'bonus')),
-          ...reactions.map(a => makeSimpleItem(a, name, 'reaction')),
+          ...bonusActions.map(a => makeSimpleItem(a, name, 'bonus',     1, 'b')),
+          ...reactions.map(a =>    makeSimpleItem(a, name, 'reaction',  1, 'r')),
+          ...legendaryActions.map(a => {
+            // 2024: all legendary actions cost 1 (no "Costs N Actions" qualifier)
+            // 2014: parse "(Costs N Actions)" qualifier
+            const costM = a.qualifier?.match(/Costs?\s+(\d+)\s+Actions?/i);
+            const legCost = costM ? +costM[1] : 1;
+            return makeSimpleItem(a, name, 'legendary', legCost, 'l');
+          }),
+          ...lairActions.map(a => makeSimpleItem(a, name, 'lair', 1, 'i')),
         ],
         effects: [], flags: {}
       };
@@ -400,7 +446,7 @@ export default function StatBlockParser() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-8 flex items-center gap-3">
           <h1 className="text-4xl font-bold text-white">D&D Stat Block Converter</h1>
-          <span className="bg-orange-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1"><Sword size={14} /> v2.0-alpha.1</span>
+          <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1"><Sword size={14} /> v2.0</span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -482,8 +528,10 @@ export default function StatBlockParser() {
                           <div className="font-semibold text-white mb-1">
                             {item.name}
                             {item.system.uses?.recovery?.length > 0 && <span className="ml-2 text-xs text-yellow-400">(Recharge {item.system.uses.value}–6)</span>}
-                            {item.system.activation?.type === 'reaction' && <span className="ml-2 text-xs text-blue-400">[reaction]</span>}
-                            {item.system.activation?.type === 'bonus'    && <span className="ml-2 text-xs text-emerald-400">[bonus]</span>}
+                            {item.system.activation?.type === 'reaction'  && <span className="ml-2 text-xs text-blue-400">[reaction]</span>}
+                            {item.system.activation?.type === 'bonus'     && <span className="ml-2 text-xs text-emerald-400">[bonus]</span>}
+                            {item.system.activation?.type === 'legendary' && <span className="ml-2 text-xs text-yellow-400">[legendary ×{item.system.activation.cost}]</span>}
+                            {item.system.activation?.type === 'lair'      && <span className="ml-2 text-xs text-cyan-400">[lair]</span>}
                             {!item.system.activation?.type && item.type === 'feat' && <span className="ml-2 text-xs text-purple-400">[trait]</span>}
                             {item.type === 'weapon' && <span className="ml-2 text-xs text-slate-500">[weapon]</span>}
                           </div>

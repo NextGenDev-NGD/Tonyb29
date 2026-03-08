@@ -11,6 +11,7 @@
 | 1.0 | Feb 18, 2026 | Initial gap analysis and obstacle planning |
 | 1.1 | Feb 19, 2026 | Added Obstacles #8 and #9 from Don-Jon Raskin stat block testing. Added Sidekick Format Decision section. Updated Sprint 4 scope. Added format detection to structural additions. |
 | 1.2 | Mar 3, 2026 | Marked all "Before Sprint 2" structural additions complete. Marked Obstacles #6, #8, #9 resolved. Added Activities System Discovery section. Revised Sprint 1/2 checklist to reflect Foundry dnd5e v4.0+ Activities schema. |
+| 1.3 | Mar 8, 2026 | **v2.0 stable released.** Marked all Sprint 3 items complete. Marked Obstacles #4, #5, #7 resolved. Marked system.target complete. Added new obstacles #10 and #11. Noted 2024 format changes (lair actions removed, legact/legres +1 in lair). Sprint 4 deferred to Phase 7. |
 
 ---
 
@@ -391,33 +392,54 @@ The shared section header constant recommended in Obstacle #6 should be implemen
 - [x] Fix ability score parser to handle comma-separated format (Obstacle #8)
 - [x] Fix skills regex bleed from inline section headers (Obstacle #9)
 - [x] Implement shared section header stop constant across all field regexes (Obstacle #6)
-- [ ] Add `system.target` extraction (still pending)
+- [x] Add `system.target` extraction — `parseTarget()` handles cone/line/sphere/cube/cylinder AoE and single-target counts
 
 ### Address Before Sprint 2 Ends
 - [x] Wire `damage.additional` → activity `damage.parts[1]` (DamageField)
 - [x] Distinguish `weapon` vs. `feat` item type by action classification
 - [x] Multiattack / utility actions emit `feat` type with `utility` activity
-- [ ] Harden action name regex against flavor text false-positives (Obstacle #3)
-- [ ] Fix speed regex to use independent per-type matches (Obstacle #7)
+- [ ] Harden action name regex against flavor text false-positives (Obstacle #3) — deferred to Phase 7
+- [x] Fix speed regex to use independent per-type matches (Obstacle #7)
 
 ### Address Before Sprint 3 Ends
-- [ ] Build `parseTraits()` for passive features
-- [ ] Build `parseReactions()` with `activation.type: "reaction"`
-- [ ] Build `parseLegendaryActions()` with cost parsing (Obstacle #5)
-- [ ] Build damage resistance/immunity/vulnerability parser
-- [ ] Route conditional resistances to `custom`, not `value` (Obstacle #4)
-- [ ] Populate `system.resources.legact` when legendary section is found
+- [x] Build `parseTraits()` for passive features — uses `parseSection()`
+- [x] Build `parseReactions()` with `activation.type: "reaction"` — uses `parseSection()`
+- [x] Build `parseLegendaryActions()` with cost parsing (Obstacle #5) — uses `parseSection()` + `parseLegendaryCount()`
+- [x] Build damage resistance/immunity/vulnerability parser — `parseDamageField()`
+- [x] Route conditional resistances to `custom`, not `value` (Obstacle #4) — `CONDITIONAL_RX` in `parseDamageField()`
+- [x] Populate `system.resources.legact` when legendary section is found
 
-### Address During Sprint 4
-- [ ] Confirm standard CR stat blocks at 90%+ accuracy before proceeding (hard gate)
-- [ ] Implement sidekick format detection fully in `detectFormat()`
-- [ ] Add Level → proficiency bonus mapping (character table)
-- [ ] Add Level → XP mapping (character advancement table)
-- [ ] Add comma-separated ability score parsing to sidekick branch
-- [ ] Add bullet-point action parsing to sidekick branch
-- [ ] Handle `Equipment:` and `Features:` sections as non-action sections
-- [ ] Create SIDEKICK_FORMAT.md documentation
-- [ ] Full test suite pass and v2.0 release
+### Phase 6 Complete — v2.0 Stable Released (Mar 8, 2026)
+All Sprint 1–3 items are complete. Sprint 4 (Sidekick format) is deferred to Phase 7.
+
+**Additional fixes applied post-sprint:**
+- [x] 2024 Monster Manual format support — `parseLegendaryCount()` handles "Legendary Action Uses: N (M in Lair)", lair actions section removed in favour of +1 in-lair bonus, legres +1 in-lair from trait qualifier
+- [x] In-lair bonus warning — fires when legact or legres has a lair variant
+- [x] ID generation rewritten — djb2 hash replaces `slice(0,16)`; old approach produced identical IDs for all items when actor name ≥ 15 chars (e.g. "adultblackdragon" = 16)
+- [x] Optional field tracking — absent optional fields (resistances, legendary/lair/bonus/reactions) marked `n/a` and excluded from accuracy score
+- [x] Section-type ID prefix — `t/a/b/r/l/i` per section prevents cross-section name collisions (superseded by hash but prefix retained for readability)
+
+### Address During Phase 7 (v3.0)
+- [ ] Spellcasting section parsing — detect Spellcasting action, parse spell save DC/attack bonus, extract At Will / N/Day spell lists (both 2014 and 2024 formats)
+- [ ] Innate spellcasting section
+- [ ] Obstacle #3 — harden action name regex against flavor text false-positives
+- [ ] Sidekick format full support (was Sprint 4)
+  - [ ] Confirm standard CR stat blocks at 90%+ accuracy (hard gate — now met)
+  - [ ] Level → proficiency bonus mapping (character table)
+  - [ ] Level → XP mapping (character advancement table)
+  - [ ] Bullet-point action parsing for sidekick branch
+  - [ ] Handle `Equipment:` and `Features:` sections
+  - [ ] Create SIDEKICK_FORMAT.md
+
+### New Obstacles Discovered (Mar 8, 2026)
+#### Obstacle #10 — Actor Name Length Breaks ID Uniqueness
+**Risk: Critical | Silent item overwrite**
+**Resolved:** djb2 hash now generates IDs from full string regardless of length.
+The old `slice(0,16)` approach caused every item on "Adult Black Dragon" to get the same ID since the actor name alone fills 16 chars.
+
+#### Obstacle #11 — 2024 Lair Actions Removed from Stat Blocks
+**Risk: Low | Feature gap**
+In the 2024 Monster Manual, lair actions no longer appear as a separate section. Instead, creatures gain +1 legendary action use and +1 legendary resistance use when in their lair. The parser now handles this correctly with in-lair detection and a warning. The lair actions section parser remains for 2014 compatibility.
 
 ---
 
