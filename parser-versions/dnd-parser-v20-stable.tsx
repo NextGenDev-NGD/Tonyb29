@@ -21,6 +21,9 @@ const CONDITION_TYPES = ['blinded','charmed','deafened','exhaustion','frightened
 const extractDamageTypes    = (t) => DAMAGE_TYPES.filter(d    => new RegExp(`\\b${d}\\b`,    'i').test(t));
 const extractConditionTypes = (t) => CONDITION_TYPES.filter(c => new RegExp(`\\b${c}\\b`, 'i').test(t));
 
+const SPELL_LEVEL_WORD = {'1st':1,'2nd':2,'3rd':3,'4th':4,'5th':5,'6th':6,'7th':7,'8th':8,'9th':9};
+const SPELL_AB_MAP = {intelligence:'int',wisdom:'wis',charisma:'cha',int:'int',wis:'wis',cha:'cha'};
+
 // ─── Damage Field Parser (Obstacle #4) ────────────────────────────────────────
 // Splits resistance/immunity/vulnerability text on ';' and checks each chunk
 // for conditional phrases. Conditional chunks route to `custom` (Foundry silently
@@ -207,10 +210,187 @@ const makeSimpleItem = (a, actorName, actType, itemCost = 1, prefix = 't') => {
   const cost   = actType ? itemCost : 0;
   return { _id:itemId, name:a.name, type:'feat',
     system:{ description:{value:a.description},
+      // Fix #1: type.value:'monster' required for NPC feat items to appear
+      // in the correct section of the Foundry NPC sheet (not the PC features tab).
+      type:{ value:'monster', subtype:'' },
       activation:{type:actType||'', cost, condition:''},
       uses:{value:null,max:null,per:null,recovery:[]},
       activities:{[actId]:{ _id:actId, type:'utility', name:'',
         activation:{type:actType||'', cost, condition:''}, uses:{spent:0,recovery:[]} }} } };
+};
+
+// ─── Spell Item Builder ───────────────────────────────────────────────────────
+// mode: 'spell' (slot-based), 'atwill' (at will), 'innate' (N/Day)
+// uses: { value, max, per } for N/Day — null for slot/atwill
+// prefix: 's' = slot spell, 'n' = innate spell (prevents cross-list ID collisions)
+//
+// Fix #2: `preparation` (old field) replaced by top-level `method` + `prepared` (dnd5e 5.1+).
+//   method:  'spell'|'innate'|'atwill'|'pact'  — how the spell is prepared/cast
+//   prepared: 0=unprepared, 1=prepared, 2=always prepared
+//
+// Fix #3: `consumption.spellSlot` must be false for innate/atwill spells.
+//   Without this Foundry tries to consume a slot on the NPC and silently errors.
+//   Innate/atwill uses are tracked on the item itself via system.uses.
+const makeSpellItem = (spellName, level, mode, uses, actorName, prefix = 's') => {
+  const itemId = makeItemId(prefix, actorName, spellName + level);
+  const actId  = makeActId(prefix, actorName, spellName + level);
+  const display = spellName.split(' ').map(w => w ? w[0].toUpperCase() + w.slice(1) : w).join(' ');
+
+  // Slot-based spells consume a spell slot; innate/atwill consume their own uses.
+  const isSlotSpell  = mode === 'spell';
+  const isAtwill     = mode === 'atwill';
+
+  // Build the spell activity — a basic cast/attack shell.
+  // consumption.spellSlot controls whether a slot is consumed on use.
+  const spellActivity = {
+    _id: actId,
+    type: 'utility',
+    sort: 0,
+    name: '',
+    img: null,
+    activation: { type: 'action', value: null, override: false },
+    consumption: {
+      spellSlot: isSlotSpell,
+      targets: (!isSlotSpell && !isAtwill && uses)
+        // N/Day: consume 1 use from this item's use pool
+        ? [{ type: 'itemUses', target: '', value: '1', scaling: {} }]
+        : [],
+      scaling: { allowed: false, max: '' }
+    },
+    duration:  { units: 'inst', concentration: false, override: false },
+    range:     { override: false },
+    target:    { template: { contiguous: false, units: 'ft' }, affects: { choice: false }, override: false, prompt: true },
+    uses:      { spent: 0, recovery: [], max: '' },
+    flags:     {}
+  };
+
+  // Item-level uses (for innate N/Day spells)
+  const itemUses = uses
+    ? { spent: 0, max: String(uses.max), recovery: [{ period: uses.per, type: 'recoverAll' }] }
+    : { spent: 0, max: '', recovery: [] };
+
+  return {
+    _id: itemId,
+    name: display,
+    type: 'spell',
+    system: {
+      description: { value: '' },
+      level,
+      school: '',
+      // Fix #2: method + prepared replaces deprecated preparation.mode + preparation.prepared
+      method:   mode,         // 'spell' | 'innate' | 'atwill'
+      prepared: isAtwill ? 2  // atwill = always prepared
+               : isSlotSpell ? 1  // prepared
+               : 1,              // innate = prepared
+      uses: itemUses,
+      activities: { [actId]: spellActivity }
+    }
+  };
+};
+
+// ─── Spell List Extractor ─────────────────────────────────────────────────────
+// Works on the single-line concatenated string produced by parseSection().
+// Two modes:
+//   Level-based  (2014): "Cantrips (at will): ..."  "1st level (4 slots): ..."
+//   Frequency-based (2024/innate): "At Will: ..."  "3/Day Each: ..."
+// Uses position-based slicing so spell names between two headers are captured
+// correctly without relying on newlines (which parseSection collapses to spaces).
+const LEVEL_HDR_RX = /(?:Cantrips?(?:\s*\([^)]+\))?|(?:1st|2nd|3rd|[4-9]th)\s+level(?:\s*\([^)]+\))?)\s*:/gi;
+const FREQ_HDR_RX  = /(?:At\s+Will|\d+\/Day(?:\s+Each)?)\s*:/gi;
+
+const extractSpellLists = (desc) => {
+  const cleanNames = (raw) => raw.split(',')
+    .map(s => s.replace(/\([^)]*\)/g, '').replace(/[*†]/g, '').trim())
+    .filter(Boolean);
+
+  // ── Level-based (2014) ──────────────────────────────────────────────────
+  const lvlHeaders = [];
+  let m;
+  LEVEL_HDR_RX.lastIndex = 0;
+  while ((m = LEVEL_HDR_RX.exec(desc)) !== null)
+    lvlHeaders.push({ text: m[0], pos: m.index, end: m.index + m[0].length });
+
+  if (lvlHeaders.length) {
+    const spells = {}, slots = {};
+    for (let i = 0; i < lvlHeaders.length; i++) {
+      const h   = lvlHeaders[i];
+      const stop = i + 1 < lvlHeaders.length ? lvlHeaders[i + 1].pos : desc.length;
+      const names = cleanNames(desc.slice(h.end, stop));
+      const lower = h.text.toLowerCase();
+      const lvl   = /cantrip/i.test(lower) ? 0 : SPELL_LEVEL_WORD[lower.match(/^\w+/)?.[0]] || 0;
+      const slotM = h.text.match(/\((\d+)\s+slots?\)/i);
+      if (slotM && lvl > 0) slots[lvl] = +slotM[1];
+      if (names.length) spells[lvl] = names;
+    }
+    return { spells, slots, freqSpells: {}, isSlotBased: true };
+  }
+
+  // ── Frequency-based (2024 / innate) ─────────────────────────────────────
+  const freqHeaders = [];
+  FREQ_HDR_RX.lastIndex = 0;
+  while ((m = FREQ_HDR_RX.exec(desc)) !== null)
+    freqHeaders.push({ text: m[0], pos: m.index, end: m.index + m[0].length });
+
+  const freqSpells = {};
+  for (let i = 0; i < freqHeaders.length; i++) {
+    const h    = freqHeaders[i];
+    const stop = i + 1 < freqHeaders.length ? freqHeaders[i + 1].pos : desc.length;
+    const names = cleanNames(desc.slice(h.end, stop));
+    const key  = /at\s+will/i.test(h.text) ? 'atwill' : h.text.match(/(\d+)/)?.[1] || '1';
+    if (names.length) freqSpells[key] = names;
+  }
+  return { spells: {}, slots: {}, freqSpells, isSlotBased: false };
+};
+
+// ─── Spellcasting Parser ──────────────────────────────────────────────────────
+// Checks three sources in the parsed section arrays:
+//   1. traits "Spellcasting"        — 2014 slot-based (level lists)
+//   2. actions "Spellcasting"       — 2024 frequency-based (no slot levels)
+//   3. traits "Innate Spellcasting" — 2014/2024 innate (frequency, no slots)
+//
+// Returns:
+//   { ability, dc, atk, casterLevel, slots, spells, freqSpells, innate, isSlotBased }
+// or null if no spellcasting found anywhere.
+//
+// `innate` is a sub-object { ability, dc, atk, freqSpells } when the creature has
+// a separate "Innate Spellcasting" trait — most common on demons, genies, dragons.
+// Innate spells don't consume spell slots; they use N/Day uses instead.
+const parseSpellcasting = (traits, actions) => {
+  const spellTrait  = traits.find(t => /^Spellcasting$/i.test(t.name));
+  const spellAction = actions.find(a => /^Spellcasting$/i.test(a.name));
+  const innateTrait = traits.find(t => /^Innate\s+Spellcasting$/i.test(t.name));
+
+  let result = null;
+
+  if (spellTrait || spellAction) {
+    const desc      = (spellTrait || spellAction).description;
+    const abilityM  = desc.match(/spellcasting ability is (\w+)/i)
+                   || desc.match(/using (\w+) as the spellcasting ability/i);
+    const ability   = SPELL_AB_MAP[abilityM?.[1]?.toLowerCase()] || 'int';
+    const dc        = +(desc.match(/spell save DC\s*(\d+)/i)?.[1]                       || 0);
+    const atk       = +(desc.match(/\+(\d+)\s+to\s+hit\s+with\s+spell\s+attacks?/i)?.[1] || 0);
+    const lvlM      = desc.match(/(\d+)(?:st|nd|rd|th)[- ]level\s+spellcaster/i);
+    const { spells, slots, freqSpells, isSlotBased } = extractSpellLists(desc);
+    result = { ability, dc, atk, casterLevel: lvlM ? +lvlM[1] : 0, slots, spells, freqSpells, isSlotBased };
+  }
+
+  if (innateTrait) {
+    const desc      = innateTrait.description;
+    const abilityM  = desc.match(/innate spellcasting ability is (\w+)/i)
+                   || desc.match(/spellcasting ability is (\w+)/i);
+    const ability   = SPELL_AB_MAP[abilityM?.[1]?.toLowerCase()] || 'int';
+    const dc        = +(desc.match(/spell save DC\s*(\d+)/i)?.[1]                       || 0);
+    const atk       = +(desc.match(/\+(\d+)\s+to\s+hit\s+with\s+spell\s+attacks?/i)?.[1] || 0);
+    const { freqSpells } = extractSpellLists(desc);
+    const innate = { ability, dc, atk, freqSpells };
+    if (result) { result.innate = innate; }
+    else {
+      // Innate-only creature (e.g. succubus, genie) — no slot spellcasting
+      result = { ability, dc, atk, casterLevel: 0, slots: {}, spells: {}, freqSpells: {}, isSlotBased: false, innate };
+    }
+  }
+
+  return result;
 };
 
 // ─── Main Component ────────────────────────────────────────────────────────────
@@ -313,7 +493,10 @@ export default function StatBlockParser() {
       const profBonus = profBonusFromCR(cr);
 
       // Saving Throws
-      let savesText = text.match(new RegExp('(?:Saving Throws|Save):\\s*(.+?)' + SECSTOP, 'is'))?.[1]?.trim() || '';
+      // Colon is optional — "Saving Throws Int +9" and "Saving Throws: Int +9" both appear.
+      // Line-start anchor (?:^|\n)\s* prevents false matches on "saving throw" inside
+      // ability descriptions (e.g. "...must succeed on a DC 13 Constitution saving throw...").
+      let savesText = text.match(new RegExp('(?:^|\\n)\\s*(?:Saving Throws?|Save):?\\s+(.+?)' + SECSTOP, 'is'))?.[1]?.trim() || '';
       if (!savesText) {
         const fs = ['Str','Dex','Con','Int','Wis','Cha'].map(ab => {
           const m1 = text.match(new RegExp(`${ab}\\s+\\d+\\s+[+-]?\\d+\\s+([+-]\\d+)`, 'i'));
@@ -412,6 +595,58 @@ export default function StatBlockParser() {
       // Lair Actions (Block 6) — 2014 only; 2024 format dropped this section
       const lairActions = parseSection(text, 'Lair\\s+Actions?');
 
+      // ── Spellcasting (Phase 7) ─────────────────────────────────────────────
+      // parseSpellcasting checks traits[] for "Spellcasting"/"Innate Spellcasting"
+      // and actions[] for 2024-format "Spellcasting" action.
+      const spellInfo = parseSpellcasting(traits, actions);
+
+      // Build prepared spell items (2014 slot-based or 2024 frequency)
+      const spellItems = [];
+      if (spellInfo) {
+        if (spellInfo.isSlotBased) {
+          // 2014: slot-based — we know the spell level from the header
+          for (const [lvl, names] of Object.entries(spellInfo.spells))
+            for (const n of names)
+              spellItems.push(makeSpellItem(n, +lvl, 'spell', null, name, 's'));
+        } else if (Object.keys(spellInfo.freqSpells).length) {
+          // 2024: frequency only — spell level unknown, default to 0 with warning
+          for (const [key, names] of Object.entries(spellInfo.freqSpells)) {
+            const isAtwill = key === 'atwill';
+            const uses = isAtwill ? null : { value: +key, max: +key, per: 'day' };
+            for (const n of names)
+              spellItems.push(makeSpellItem(n, 0, isAtwill ? 'atwill' : 'innate', uses, name, 's'));
+          }
+          warns.push('2024-format spellcasting detected — spell levels unknown (set manually in Foundry spell tab).');
+        }
+      }
+
+      // Build innate spell items — separate prefix 'n' to avoid ID collision with
+      // any same-named prepared spell. Innate spells don't consume spell slots;
+      // N/Day uses are tracked on the item itself.
+      const innateItems = [];
+      if (spellInfo?.innate) {
+        for (const [key, names] of Object.entries(spellInfo.innate.freqSpells)) {
+          const isAtwill = key === 'atwill';
+          const uses = isAtwill ? null : { value: +key, max: +key, per: 'day' };
+          for (const n of names)
+            innateItems.push(makeSpellItem(n, 0, isAtwill ? 'atwill' : 'innate', uses, name, 'n'));
+        }
+        warns.push('Innate spellcasting detected — spell levels set to 0 (cantrip slot). Set actual levels manually in Foundry spell tab.');
+      }
+
+      // Track spellcasting presence (optional — absent on non-casters)
+      if (spellInfo) {
+        const totalSpells = spellItems.length + innateItems.length;
+        const slotSummary = spellInfo.isSlotBased
+          ? `slots: ${Object.entries(spellInfo.slots).map(([l,n]) => `${l}×${n}`).join(' ')}`
+          : 'freq-based';
+        track('spellcasting', `${spellInfo.ability.toUpperCase()} · DC ${spellInfo.dc} · +${spellInfo.atk} atk · ${totalSpells} spell(s) (${slotSummary})`, true, true);
+        if (spellInfo.dc)
+          warns.push(`Spellcasting ability: ${spellInfo.ability.toUpperCase()} · DC ${spellInfo.dc} · +${spellInfo.atk} to hit. Foundry recalculates DC/attack from ability+proficiency — verify on sheet if different.`);
+      } else {
+        track('spellcasting', 'none', false, true);
+      }
+
       // Legendary Resistance — "Legendary Resistance (3/Day, or 4/Day in Lair)"
       // Handles both "3/Day" (2014) and "3/Day, or 4/Day in Lair" (2024)
       const legResTrait = traits.find(t => /Legendary\s+Resistance/i.test(t.name));
@@ -435,11 +670,22 @@ export default function StatBlockParser() {
         system: {
           abilities: Object.fromEntries(ABS.map(ab => [ab, { value: abilities[ab], proficient: saves[ab] }])),
           attributes: {
-            ac:       { flat: ac, calc: 'natural', formula: '' },
-            hp:       { value: hp, max: hp, temp: 0, tempmax: 0, formula: hpFormula },
-            init:     { ability: 'dex', bonus: initBonus },
-            movement: { ...speeds, units: 'ft', hover: false },
-            senses:   { darkvision, blindsight, tremorsense, truesight, units: 'ft', special: sensesSpecial }
+            ac:           { flat: ac, calc: 'natural', formula: '' },
+            hp:           { value: hp, max: hp, temp: 0, tempmax: 0, formula: hpFormula },
+            init:         { ability: 'dex', bonus: initBonus },
+            movement:     { ...speeds, units: 'ft', hover: false },
+            // Fix #7: senses moved to ranges sub-object in dnd5e v4.0+
+            // 0-values become null (no sense), units:null = system default (ft)
+            senses: {
+              ranges:  { darkvision:  darkvision  || null, blindsight: blindsight || null,
+                         tremorsense: tremorsense || null, truesight:  truesight  || null },
+              units:   null,
+              special: sensesSpecial
+            },
+            spellcasting: spellInfo?.ability || '',
+            // Fix #5: spell.level = NPC caster level, required for proficiency-based
+            // DC/attack calculation when ability alone isn't enough.
+            spell: { level: spellInfo?.casterLevel ?? 0 }
           },
           details: {
             alignment, type: { value: type, subtype: '', custom: '' },
@@ -454,11 +700,28 @@ export default function StatBlockParser() {
             ci: { value: extractConditionTypes(ciText), custom: '' }
           },
           skills,
+          // Fix #6: resources schema changed in dnd5e v4.0+
+          // legact/legres: { max, spent } — old { value, max, sr, lr, label } is deprecated
+          // lair: { value:bool, initiative, inside } — completely different shape
           resources: {
-            legact: { value: legBase,    max: legBase,    sr: false, lr: true, label: 'Legendary Actions' },
-            legres: { value: legResBase, max: legResBase, sr: false, lr: true, label: 'Legendary Resistances' },
-            lair:   { value: lairActions.length > 0 ? 1 : 0, max: lairActions.length > 0 ? 1 : 0, sr: false, lr: true, label: 'Lair Actions' }
-          }
+            legact: { max: legBase,    spent: 0 },
+            legres: { max: legResBase, spent: 0 },
+            lair:   { value: lairActions.length > 0, initiative: null, inside: false }
+          },
+          // Spell slot tracking — only emitted for slot-based (2014) spellcasters.
+          // Foundry uses this to track remaining slots in combat. Innate/freq-based
+          // casters track uses on the individual spell item instead.
+          ...(spellInfo?.isSlotBased ? {
+            spells: Object.fromEntries(
+              Array.from({ length: 9 }, (_, i) => i + 1).map(i => {
+                // Fix #4: override must equal the slot count (not null) for NPCs.
+                // With override:null Foundry computes slots from class progression,
+                // which is 0 for NPCs with no class items attached.
+                const max = spellInfo.slots[i] ?? 0;
+                return [`spell${i}`, { value: max, override: max || null }];
+              })
+            )
+          } : {})
         },
         items: [
           ...traits.map(a => makeSimpleItem(a, name, '', 1, 't')),
@@ -508,7 +771,9 @@ export default function StatBlockParser() {
               uses:{spent:0,recovery:[]} };
           }
           return { _id:itemId, name:a.name, type:isAttack?'weapon':'feat',
-            system:{ description:{value:a.description}, activation:{type:'action',cost:1,condition:''},
+            system:{ description:{value:a.description},
+              type:{ value:'monster', subtype:'' },
+              activation:{type:'action',cost:1,condition:''},
               uses:itemUses, ...(baseDmg&&isAttack?{damage:{base:baseDmg}}:{}),
               activities:{[actId]:activity} } };
           }),
@@ -522,6 +787,9 @@ export default function StatBlockParser() {
             return makeSimpleItem(a, name, 'legendary', legCost, 'l');
           }),
           ...lairActions.map(a => makeSimpleItem(a, name, 'lair', 1, 'i')),
+          // Spells — go to the Spell tab in Foundry automatically via type:'spell'
+          ...spellItems,
+          ...innateItems,
         ],
         effects: [], flags: {}
       };
@@ -542,7 +810,7 @@ export default function StatBlockParser() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-8 flex items-center gap-3">
           <h1 className="text-4xl font-bold text-white">D&D Stat Block Converter</h1>
-          <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1"><Sword size={14} /> v2.0</span>
+          <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1"><Sword size={14} /> v3.0-alpha</span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -633,6 +901,9 @@ export default function StatBlockParser() {
                             {item.system.activation?.type === 'lair'      && <span className="ml-2 text-xs text-cyan-400">[lair]</span>}
                             {!item.system.activation?.type && item.type === 'feat' && <span className="ml-2 text-xs text-purple-400">[trait]</span>}
                             {item.type === 'weapon' && <span className="ml-2 text-xs text-slate-500">[weapon]</span>}
+                            {item.type === 'spell' && item.system.preparation?.mode === 'prepared' && <span className="ml-2 text-xs text-sky-400">[spell lv{item.system.level}]</span>}
+                            {item.type === 'spell' && item.system.preparation?.mode === 'atwill'   && <span className="ml-2 text-xs text-sky-300">[at will]</span>}
+                            {item.type === 'spell' && item.system.preparation?.mode === 'innate'   && <span className="ml-2 text-xs text-violet-400">[innate {item.system.uses?.max}/day]</span>}
                           </div>
                           {act?.type==='attack' && <div className="text-sm text-green-400">Attack [{act.attack?.type?.value?.toUpperCase()}] · {act.attack?.ability?.toUpperCase()}{act.attack?.bonus ? ` +${act.attack.bonus} extra` : ''}</div>}
                           {act?.type==='save' && <div className="text-sm text-blue-400">Save: DC {act.save?.dc?.formula} {act.save?.ability?.[0]?.toUpperCase()}</div>}
