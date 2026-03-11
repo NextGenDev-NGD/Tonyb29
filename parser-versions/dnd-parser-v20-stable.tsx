@@ -24,6 +24,158 @@ const extractConditionTypes = (t) => CONDITION_TYPES.filter(c => new RegExp(`\\b
 const SPELL_LEVEL_WORD = {'1st':1,'2nd':2,'3rd':3,'4th':4,'5th':5,'6th':6,'7th':7,'8th':8,'9th':9};
 const SPELL_AB_MAP = {intelligence:'int',wisdom:'wis',charisma:'cha',int:'int',wis:'wis',cha:'cha'};
 
+// ─── Spell Metadata Lookup ─────────────────────────────────────────────────────
+// Static map of common SRD/NPC spells → { level, school }.
+// Used to:
+//   1. Fill system.school on all spell items (never available from the stat block).
+//   2. Correct system.level for innate/2024-format spells, which default to 0
+//      because the stat block lists them by frequency (At Will / N/Day), not level.
+//      mode:'spell' + level:0 = intentional cantrip — lookup confirms, not overrides.
+//      mode:'innate'/'atwill' + level:0 = placeholder — lookup corrects to real level.
+// School codes: abj con div enc evo ill nec trs
+const SPELL_META: Record<string,{level:number,school:string}> = {
+  // ── Cantrips (0) ──────────────────────────────────────────────────────────
+  'acid splash':{level:0,school:'con'}, 'blade ward':{level:0,school:'abj'},
+  'chill touch':{level:0,school:'nec'}, 'dancing lights':{level:0,school:'evo'},
+  'druidcraft':{level:0,school:'trs'}, 'eldritch blast':{level:0,school:'evo'},
+  'fire bolt':{level:0,school:'evo'}, 'friends':{level:0,school:'enc'},
+  'guidance':{level:0,school:'div'}, 'light':{level:0,school:'evo'},
+  'mage hand':{level:0,school:'con'}, 'mending':{level:0,school:'trs'},
+  'message':{level:0,school:'trs'}, 'minor illusion':{level:0,school:'ill'},
+  'poison spray':{level:0,school:'con'}, 'prestidigitation':{level:0,school:'trs'},
+  'produce flame':{level:0,school:'con'}, 'ray of frost':{level:0,school:'evo'},
+  'resistance':{level:0,school:'abj'}, 'sacred flame':{level:0,school:'evo'},
+  'shillelagh':{level:0,school:'trs'}, 'shocking grasp':{level:0,school:'evo'},
+  'spare the dying':{level:0,school:'nec'}, 'thaumaturgy':{level:0,school:'trs'},
+  'toll the dead':{level:0,school:'nec'}, 'true strike':{level:0,school:'div'},
+  'vicious mockery':{level:0,school:'enc'}, 'word of radiance':{level:0,school:'evo'},
+  // ── 1st Level ─────────────────────────────────────────────────────────────
+  'alarm':{level:1,school:'abj'}, 'bane':{level:1,school:'enc'},
+  'bless':{level:1,school:'enc'}, 'burning hands':{level:1,school:'evo'},
+  'charm person':{level:1,school:'enc'}, 'color spray':{level:1,school:'ill'},
+  'command':{level:1,school:'enc'}, 'comprehend languages':{level:1,school:'div'},
+  'cure wounds':{level:1,school:'evo'}, 'detect evil and good':{level:1,school:'div'},
+  'detect magic':{level:1,school:'div'}, 'detect poison and disease':{level:1,school:'div'},
+  'disguise self':{level:1,school:'ill'}, 'dissonant whispers':{level:1,school:'enc'},
+  'divine favor':{level:1,school:'evo'}, 'false life':{level:1,school:'nec'},
+  'feather fall':{level:1,school:'trs'}, 'fog cloud':{level:1,school:'con'},
+  'grease':{level:1,school:'con'}, 'guiding bolt':{level:1,school:'evo'},
+  'healing word':{level:1,school:'evo'}, 'hellish rebuke':{level:1,school:'evo'},
+  'heroism':{level:1,school:'enc'}, 'hex':{level:1,school:'enc'},
+  'hideous laughter':{level:1,school:'enc'}, 'hunter\'s mark':{level:1,school:'div'},
+  'identify':{level:1,school:'div'}, 'inflict wounds':{level:1,school:'nec'},
+  'jump':{level:1,school:'trs'}, 'longstrider':{level:1,school:'trs'},
+  'mage armor':{level:1,school:'abj'}, 'magic missile':{level:1,school:'evo'},
+  'protection from evil and good':{level:1,school:'abj'},
+  'ray of sickness':{level:1,school:'nec'}, 'sanctuary':{level:1,school:'abj'},
+  'shield':{level:1,school:'abj'}, 'shield of faith':{level:1,school:'abj'},
+  'silent image':{level:1,school:'ill'}, 'sleep':{level:1,school:'enc'},
+  'speak with animals':{level:1,school:'div'}, 'thunderwave':{level:1,school:'evo'},
+  'unseen servant':{level:1,school:'con'}, 'witch bolt':{level:1,school:'evo'},
+  // ── 2nd Level ─────────────────────────────────────────────────────────────
+  'alter self':{level:2,school:'trs'}, 'arcane lock':{level:2,school:'abj'},
+  'augury':{level:2,school:'div'}, 'barkskin':{level:2,school:'trs'},
+  'blindness/deafness':{level:2,school:'nec'}, 'blur':{level:2,school:'ill'},
+  'calm emotions':{level:2,school:'enc'}, 'cloud of daggers':{level:2,school:'con'},
+  'crown of madness':{level:2,school:'enc'}, 'darkness':{level:2,school:'evo'},
+  'darkvision':{level:2,school:'trs'}, 'detect thoughts':{level:2,school:'div'},
+  'enlarge/reduce':{level:2,school:'trs'}, 'enthrall':{level:2,school:'enc'},
+  'flaming sphere':{level:2,school:'con'}, 'gust of wind':{level:2,school:'evo'},
+  'heat metal':{level:2,school:'trs'}, 'hold person':{level:2,school:'enc'},
+  'invisibility':{level:2,school:'ill'}, 'knock':{level:2,school:'trs'},
+  'levitate':{level:2,school:'trs'}, 'locate object':{level:2,school:'div'},
+  'magic mouth':{level:2,school:'ill'}, 'magic weapon':{level:2,school:'trs'},
+  'mirror image':{level:2,school:'ill'}, 'misty step':{level:2,school:'con'},
+  'moonbeam':{level:2,school:'evo'}, 'phantasmal force':{level:2,school:'ill'},
+  'ray of enfeeblement':{level:2,school:'nec'}, 'scorching ray':{level:2,school:'evo'},
+  'see invisibility':{level:2,school:'div'}, 'shatter':{level:2,school:'evo'},
+  'silence':{level:2,school:'ill'}, 'spider climb':{level:2,school:'trs'},
+  'suggestion':{level:2,school:'enc'}, 'web':{level:2,school:'con'},
+  // ── 3rd Level ─────────────────────────────────────────────────────────────
+  'animate dead':{level:3,school:'nec'}, 'bestow curse':{level:3,school:'nec'},
+  'blink':{level:3,school:'trs'}, 'call lightning':{level:3,school:'con'},
+  'clairvoyance':{level:3,school:'div'}, 'counterspell':{level:3,school:'abj'},
+  'daylight':{level:3,school:'evo'}, 'dispel magic':{level:3,school:'abj'},
+  'fear':{level:3,school:'ill'}, 'fireball':{level:3,school:'evo'},
+  'fly':{level:3,school:'trs'}, 'gaseous form':{level:3,school:'trs'},
+  'glyph of warding':{level:3,school:'abj'}, 'haste':{level:3,school:'trs'},
+  'hypnotic pattern':{level:3,school:'ill'}, 'lightning bolt':{level:3,school:'evo'},
+  'magic circle':{level:3,school:'abj'}, 'major image':{level:3,school:'ill'},
+  'mass healing word':{level:3,school:'evo'}, 'nondetection':{level:3,school:'abj'},
+  'phantom steed':{level:3,school:'ill'}, 'protection from energy':{level:3,school:'abj'},
+  'remove curse':{level:3,school:'abj'}, 'sending':{level:3,school:'evo'},
+  'sleet storm':{level:3,school:'con'}, 'slow':{level:3,school:'trs'},
+  'speak with dead':{level:3,school:'nec'}, 'spirit guardians':{level:3,school:'con'},
+  'stinking cloud':{level:3,school:'con'}, 'tongues':{level:3,school:'div'},
+  'vampiric touch':{level:3,school:'nec'}, 'water breathing':{level:3,school:'trs'},
+  'wind wall':{level:3,school:'evo'},
+  // ── 4th Level ─────────────────────────────────────────────────────────────
+  'arcane eye':{level:4,school:'div'}, 'banishment':{level:4,school:'abj'},
+  'blight':{level:4,school:'nec'}, 'compulsion':{level:4,school:'enc'},
+  'confusion':{level:4,school:'enc'}, 'control water':{level:4,school:'trs'},
+  'death ward':{level:4,school:'abj'}, 'dimension door':{level:4,school:'con'},
+  'divination':{level:4,school:'div'}, 'dominate beast':{level:4,school:'enc'},
+  'fire shield':{level:4,school:'evo'}, 'freedom of movement':{level:4,school:'abj'},
+  'greater invisibility':{level:4,school:'ill'}, 'hallucinatory terrain':{level:4,school:'ill'},
+  'ice storm':{level:4,school:'evo'}, 'locate creature':{level:4,school:'div'},
+  'phantasmal killer':{level:4,school:'ill'}, 'polymorph':{level:4,school:'trs'},
+  'stoneskin':{level:4,school:'abj'}, 'wall of fire':{level:4,school:'evo'},
+  // ── 5th Level ─────────────────────────────────────────────────────────────
+  'cloudkill':{level:5,school:'con'}, 'commune':{level:5,school:'div'},
+  'cone of cold':{level:5,school:'evo'}, 'conjure elemental':{level:5,school:'con'},
+  'contagion':{level:5,school:'nec'}, 'creation':{level:5,school:'ill'},
+  'dispel evil and good':{level:5,school:'abj'}, 'dominate person':{level:5,school:'enc'},
+  'dream':{level:5,school:'ill'}, 'flame strike':{level:5,school:'evo'},
+  'geas':{level:5,school:'enc'}, 'greater restoration':{level:5,school:'abj'},
+  'hold monster':{level:5,school:'enc'}, 'legend lore':{level:5,school:'div'},
+  'mass cure wounds':{level:5,school:'evo'}, 'mislead':{level:5,school:'ill'},
+  'modify memory':{level:5,school:'enc'}, 'passwall':{level:5,school:'trs'},
+  'planar binding':{level:5,school:'abj'}, 'raise dead':{level:5,school:'nec'},
+  'scrying':{level:5,school:'div'}, 'seeming':{level:5,school:'ill'},
+  'telekinesis':{level:5,school:'trs'}, 'teleportation circle':{level:5,school:'con'},
+  'wall of force':{level:5,school:'evo'}, 'wall of stone':{level:5,school:'evo'},
+  // ── 6th Level ─────────────────────────────────────────────────────────────
+  'arcane gate':{level:6,school:'con'}, 'chain lightning':{level:6,school:'evo'},
+  'circle of death':{level:6,school:'nec'}, 'create undead':{level:6,school:'nec'},
+  'disintegrate':{level:6,school:'trs'}, 'eyebite':{level:6,school:'nec'},
+  'flesh to stone':{level:6,school:'trs'}, 'globe of invulnerability':{level:6,school:'abj'},
+  'harm':{level:6,school:'nec'}, 'heal':{level:6,school:'evo'},
+  'heroes\' feast':{level:6,school:'con'}, 'mass suggestion':{level:6,school:'enc'},
+  'move earth':{level:6,school:'trs'}, 'programmed illusion':{level:6,school:'ill'},
+  'sunbeam':{level:6,school:'evo'}, 'true seeing':{level:6,school:'div'},
+  'wall of ice':{level:6,school:'evo'}, 'wall of thorns':{level:6,school:'con'},
+  // ── 7th Level ─────────────────────────────────────────────────────────────
+  'conjure celestial':{level:7,school:'con'}, 'delayed blast fireball':{level:7,school:'evo'},
+  'divine word':{level:7,school:'evo'}, 'etherealness':{level:7,school:'trs'},
+  'finger of death':{level:7,school:'nec'}, 'fire storm':{level:7,school:'evo'},
+  'forcecage':{level:7,school:'evo'}, 'mirage arcane':{level:7,school:'ill'},
+  'plane shift':{level:7,school:'con'}, 'prismatic spray':{level:7,school:'evo'},
+  'project image':{level:7,school:'ill'}, 'regenerate':{level:7,school:'trs'},
+  'resurrection':{level:7,school:'nec'}, 'reverse gravity':{level:7,school:'trs'},
+  'simulacrum':{level:7,school:'ill'}, 'symbol':{level:7,school:'abj'},
+  'teleport':{level:7,school:'con'},
+  // ── 8th Level ─────────────────────────────────────────────────────────────
+  'antimagic field':{level:8,school:'abj'}, 'antipathy/sympathy':{level:8,school:'enc'},
+  'clone':{level:8,school:'nec'}, 'control weather':{level:8,school:'trs'},
+  'demiplane':{level:8,school:'con'}, 'dominate monster':{level:8,school:'enc'},
+  'earthquake':{level:8,school:'evo'}, 'feeblemind':{level:8,school:'enc'},
+  'holy aura':{level:8,school:'abj'}, 'incendiary cloud':{level:8,school:'con'},
+  'maze':{level:8,school:'con'}, 'mind blank':{level:8,school:'abj'},
+  'power word stun':{level:8,school:'enc'}, 'sunburst':{level:8,school:'evo'},
+  // ── 9th Level ─────────────────────────────────────────────────────────────
+  'astral projection':{level:9,school:'nec'}, 'foresight':{level:9,school:'div'},
+  'gate':{level:9,school:'con'}, 'imprisonment':{level:9,school:'abj'},
+  'mass heal':{level:9,school:'evo'}, 'meteor swarm':{level:9,school:'evo'},
+  'power word heal':{level:9,school:'evo'}, 'power word kill':{level:9,school:'enc'},
+  'prismatic wall':{level:9,school:'abj'}, 'shapechange':{level:9,school:'trs'},
+  'time stop':{level:9,school:'trs'}, 'true polymorph':{level:9,school:'trs'},
+  'true resurrection':{level:9,school:'nec'}, 'weird':{level:9,school:'ill'},
+  'wish':{level:9,school:'con'},
+};
+// Normalize lookup key — lowercase, collapse spaces, strip trailing asterisks/notes
+const spellMeta = (name: string) =>
+  SPELL_META[name.toLowerCase().replace(/\s+/g,' ').replace(/[*†]/g,'').trim()] ?? null;
+
 // ─── Damage Field Parser (Obstacle #4) ────────────────────────────────────────
 // Splits resistance/immunity/vulnerability text on ';' and checks each chunk
 // for conditional phrases. Conditional chunks route to `custom` (Foundry silently
@@ -69,12 +221,38 @@ const makeActId = (prefix, actorName, itemName) => {
 };
 
 // ─── Format Detection ──────────────────────────────────────────────────────────
-// Returns 'standard' | 'sidekick'. Sidekick support is Sprint 4 — this stub
-// catches them early so the UI can warn rather than silently produce wrong output.
+// Returns 'standard' | 'sidekick'.
+// Sidekick blocks (Tasha's CoE) use Level instead of CR, may have PB:, and use
+// class keywords (Warrior/Expert/Spellcaster) in the header line.
 const detectFormat = (text) => {
-  if (/\b(\d+(?:st|nd|rd|th)-level|Level:\s*NPC|Warrior|Expert|Spellcaster)\b/i.test(text)
+  if (/\b(\d+(?:st|nd|rd|th)-level|Level:\s*\d|Warrior|Expert|Spellcaster)\b/i.test(text)
     && !/Challenge|\bCR\b/i.test(text)) return 'sidekick';
   return 'standard';
+};
+
+// ─── Sidekick Level Helpers ────────────────────────────────────────────────────
+// Character advancement XP table (PHB) — used instead of CR_XP for sidekicks.
+const LEVEL_XP = [0,300,900,2700,6500,14000,23000,34000,48000,64000,
+                  85000,100000,120000,140000,165000,195000,225000,265000,305000,355000];
+const levelToXP = (lvl) => LEVEL_XP[Math.max(0, Math.min(lvl - 1, 19))] ?? 0;
+
+// Extract sidekick level from text. Checks (in order):
+//   "5th-level Expert"  →  5
+//   "Level: 5"          →  5
+//   Explicit "PB: +3"   →  derives approximate level from PB value
+const parseSidekickLevel = (text) => {
+  const ordM = text.match(/\b(\d+)(?:st|nd|rd|th)[- ]level\b/i);
+  if (ordM) return +ordM[1];
+  const lblM = text.match(/\bLevel[:\s]+(\d+)/i);
+  if (lblM) return +lblM[1];
+  // Derive level from explicit PB if nothing else found
+  const pbM  = text.match(/\bPB[:\s]+\+(\d+)/i)
+            || text.match(/\bProficiency\s+Bonus[:\s]+\+(\d+)/i);
+  if (pbM) {
+    const pb = +pbM[1];
+    return pb <= 2 ? 1 : pb === 3 ? 5 : pb === 4 ? 9 : pb === 5 ? 13 : 17;
+  }
+  return 1;
 };
 
 // ─── CR → XP Table ───────────────────────────────────────────────────────────
@@ -91,7 +269,9 @@ const crToXP = (cr) => CR_XP[cr] ?? CR_XP[String(Math.round(crToFloat(cr)))] ?? 
 // ─── Shared Section Stop ───────────────────────────────────────────────────────
 // Every field regex uses this lookahead to prevent bleed when a section header
 // is absent (Obstacle #6) or appears on the same line (Obstacle #9).
-const SECSTOP = '(?=\\n\\s*(?:Saving\\s+Throws?|Skills|(?:Damage\\s+)?Vulnerabilit|(?:Damage\\s+)?Resistanc|(?:Damage\\s+)?Immunit|Condition\\s+Immunit|Senses|Languages|Initiative|Challenge|\\bCR\\b|Traits?|Actions?|Reactions?|Legendary\\s+Actions?|Bonus\\s+Actions?|Lair\\s+Actions?)|$)';
+// Equipment and Features added for sidekick format (Tasha's CoE) — prevents
+// those section headers from bleeding into traits/actions/skills parsing.
+const SECSTOP = '(?=\\n\\s*(?:Saving\\s+Throws?|Skills|(?:Damage\\s+)?Vulnerabilit|(?:Damage\\s+)?Resistanc|(?:Damage\\s+)?Immunit|Condition\\s+Immunit|Senses|Languages|Initiative|Challenge|\\bCR\\b|Traits?|Actions?|Reactions?|Legendary\\s+Actions?|Bonus\\s+Actions?|Lair\\s+Actions?|Equipment|Features?)|$)';
 
 // ─── Dice Formula → DamageField (Foundry dnd5e v4.0+ Activities) ───────────────
 // "2d8+5" → { number, denomination, bonus, types[], custom, scaling }
@@ -139,16 +319,37 @@ const parseTarget = (desc) => {
   return { template: tpl, affects: aff, prompt: true };
 };
 
+// ─── Action Name Guard (Obstacle #3) ─────────────────────────────────────────
+// Prevents flavor-text sentences from being misread as new action entries.
+// Used by both parseActions() and parseSection().
+//
+// Guards applied:
+//   1. Name capped at 1–4 words — real action names are rarely longer.
+//      Word chars only (no digits) so "30-foot cone" can't be part of a name.
+//   2. Description must be ≥ 15 chars — short trailing fragments aren't actions.
+//   3. Name must not start with a common sentence-opener (A/An/The/Each/On/If/When
+//      etc.). Real action names are proper nouns, never articles or conjunctions.
+//
+// Why not just use char-count on the name?  "Each creature in a" is 4 words and
+// 18 chars — it would slip past a char-only cap.  The sentence-starter filter
+// catches the remaining cases the word-cap misses.
+const ACTION_NAME_RX    = /^([A-Z][A-Za-z\-']*(?:\s+[A-Za-z\-']+){0,3})(?:\s*\(([^)]*)\))?\.\s+(.{15,})$/;
+const SENTENCE_START_RX = /^(?:A|An|The|On|Each|If|When|In|At|Once|As|While|After|Before|During|With|By|For|Any|This|That|It|Its|They|Their|He|She)\b/i;
+
 // ─── Action Parser ─────────────────────────────────────────────────────────────
 const parseActions = (text) => {
   const section = text.match(/Actions\s+([\s\S]+?)(?=Reactions|Legendary Actions|Bonus Actions|$)/i)?.[1];
   if (!section) return [];
   const actions = [];
   let cur = null;
-  for (const line of section.split('\n').map(l => l.trim()).filter(Boolean)) {
-    const m = line.match(/^([A-Z][A-Za-z\s\-']+?)(?:\s*\(([^)]*)\))?\.\s+(.*)$/);
-    if (m) { if (cur) actions.push(cur); cur = { name: m[1].trim(), qualifier: m[2]?.trim()||'', description: m[3].trim(), attack: null, damage: null }; }
-    else if (cur) cur.description += ' ' + line;
+  for (const raw of section.split('\n').map(l => l.trim()).filter(Boolean)) {
+    // Strip sidekick bullet markers (* / •) before matching
+    const line = raw.replace(/^[*•]\s*/, '');
+    const m = line.match(ACTION_NAME_RX);
+    if (m && !SENTENCE_START_RX.test(m[1])) {
+      if (cur) actions.push(cur);
+      cur = { name: m[1].trim(), qualifier: m[2]?.trim()||'', description: m[3].trim(), attack: null, damage: null };
+    } else if (cur) cur.description += ' ' + line;
   }
   if (cur) actions.push(cur);
   actions.forEach(a => {
@@ -167,17 +368,20 @@ const parseActions = (text) => {
 // ─── Generic Section Parser ───────────────────────────────────────────────────
 // Extracts { name, qualifier, description } entries from any named section.
 // Used for Traits (passive), Reactions, and Bonus Actions.
-const ALL_SEC_STOP = 'Traits?|Actions?|Bonus\\s+Actions?|Reactions?|Legendary\\s+Actions?|Lair\\s+Actions?';
+const ALL_SEC_STOP = 'Traits?|Actions?|Bonus\\s+Actions?|Reactions?|Legendary\\s+Actions?|Lair\\s+Actions?|Equipment|Features?';
 const parseSection = (text, headerRx) => {
   const sec = text.match(
     new RegExp(`(?:^|\\n)[ \\t]*${headerRx}[ \\t]*(?:\\n|$)([\\s\\S]+?)(?=\\n[ \\t]*(?:${ALL_SEC_STOP})[ \\t]*(?:\\n|$)|$)`, 'i')
   )?.[1];
   if (!sec) return [];
   const out = []; let cur = null;
-  for (const line of sec.split('\n').map(l => l.trim()).filter(Boolean)) {
-    const m = line.match(/^([A-Z][A-Za-z\s\-']+?)(?:\s*\(([^)]*)\))?\.\s+(.*)$/);
-    if (m) { if (cur) out.push(cur); cur = { name:m[1].trim(), qualifier:m[2]?.trim()||'', description:m[3].trim() }; }
-    else if (cur) cur.description += ' ' + line;
+  for (const raw of sec.split('\n').map(l => l.trim()).filter(Boolean)) {
+    const line = raw.replace(/^[*•]\s*/, '');
+    const m = line.match(ACTION_NAME_RX);
+    if (m && !SENTENCE_START_RX.test(m[1])) {
+      if (cur) out.push(cur);
+      cur = { name:m[1].trim(), qualifier:m[2]?.trim()||'', description:m[3].trim() };
+    } else if (cur) cur.description += ' ' + line;
   }
   if (cur) out.push(cur);
   return out;
@@ -232,8 +436,16 @@ const makeSimpleItem = (a, actorName, actType, itemCost = 1, prefix = 't') => {
 //   Without this Foundry tries to consume a slot on the NPC and silently errors.
 //   Innate/atwill uses are tracked on the item itself via system.uses.
 const makeSpellItem = (spellName, level, mode, uses, actorName, prefix = 's') => {
-  const itemId = makeItemId(prefix, actorName, spellName + level);
-  const actId  = makeActId(prefix, actorName, spellName + level);
+  const meta    = spellMeta(spellName);
+  // Level resolution rules:
+  //   mode:'spell'  + level:0 → intentional cantrip — lookup confirms, never overrides
+  //   mode:'atwill' + level:0 → 2024 "At Will" = cantrip-equivalent, keep at 0
+  //                             (these function as cantrips regardless of PHB slot level)
+  //   mode:'innate' + level:0 → placeholder — correct to real level via lookup
+  const resolvedLevel  = (level === 0 && mode === 'innate' && meta?.level != null) ? meta.level : level;
+  const resolvedSchool = meta?.school ?? '';
+  const itemId = makeItemId(prefix, actorName, spellName + resolvedLevel);
+  const actId  = makeActId(prefix, actorName, spellName + resolvedLevel);
   const display = spellName.split(' ').map(w => w ? w[0].toUpperCase() + w.slice(1) : w).join(' ');
 
   // Slot-based spells consume a spell slot; innate/atwill consume their own uses.
@@ -275,8 +487,8 @@ const makeSpellItem = (spellName, level, mode, uses, actorName, prefix = 's') =>
     type: 'spell',
     system: {
       description: { value: '' },
-      level,
-      school: '',
+      level: resolvedLevel,
+      school: resolvedSchool,
       // Fix #2: method + prepared replaces deprecated preparation.mode + preparation.prepared
       method:   mode,         // 'spell' | 'innate' | 'atwill'
       prepared: isAtwill ? 2  // atwill = always prepared
@@ -425,7 +637,10 @@ export default function StatBlockParser() {
 
       // Format detection
       const format = detectFormat(text);
-      if (format === 'sidekick') warns.push('Sidekick format detected — basic stats will be attempted, full support coming in v3.0.');
+      const isSidekick = format === 'sidekick';
+      // Sidekick level — extracted here so CR/XP/profBonus can use it below
+      const sidekickLevel = isSidekick ? parseSidekickLevel(text) : 0;
+      if (isSidekick) warns.push(`Sidekick format detected (level ${sidekickLevel}) — using character advancement XP and level-based proficiency bonus.`);
 
       // Name
       const name = text.split('\n').map(l => l.trim()).find(Boolean) || 'Unknown';
@@ -485,12 +700,20 @@ export default function StatBlockParser() {
       }
       track('abilities', `STR ${abilities.str} DEX ${abilities.dex} CON ${abilities.con}`, !!abM);
 
-      // CR
-      const crM = text.match(/CR\s+(\d+(?:\/\d+)?)\s*\([^)]*\)/i) || text.match(/Challenge[:\s]+(\d+(?:\/\d+)?)/i) || text.match(/\bCR[:\s]+(\d+(?:\/\d+)?)/i);
-      const cr  = crM?.[1] || '1';
-      if (!crM) warns.push('CR not found, using 1');
-      track('cr', cr, !!crM);
-      const profBonus = profBonusFromCR(cr);
+      // CR — sidekicks have no CR; use level-derived values instead
+      let cr = '0', profBonus = 2;
+      if (isSidekick) {
+        // PB may be explicit ("PB: +2") — use it directly if present, else derive from level
+        const pbM = text.match(/\bPB[:\s]+\+(\d+)/i) || text.match(/\bProficiency\s+Bonus[:\s]+\+(\d+)/i);
+        profBonus = pbM ? +pbM[1] : profBonusFromCR(String(sidekickLevel));
+        track('cr', `level ${sidekickLevel}`, true);
+      } else {
+        const crM = text.match(/CR\s+(\d+(?:\/\d+)?)\s*\([^)]*\)/i) || text.match(/Challenge[:\s]+(\d+(?:\/\d+)?)/i) || text.match(/\bCR[:\s]+(\d+(?:\/\d+)?)/i);
+        cr = crM?.[1] || '1';
+        if (!crM) warns.push('CR not found, using 1');
+        track('cr', cr, !!crM);
+        profBonus = profBonusFromCR(cr);
+      }
 
       // Saving Throws
       // Colon is optional — "Saving Throws Int +9" and "Saving Throws: Int +9" both appear.
@@ -595,6 +818,12 @@ export default function StatBlockParser() {
       // Lair Actions (Block 6) — 2014 only; 2024 format dropped this section
       const lairActions = parseSection(text, 'Lair\\s+Actions?');
 
+      // Features section — sidekick format (Tasha's CoE). Passive class features
+      // listed separately from Traits. Parsed as passive feat items identical to traits.
+      // Note: Foundry NPC sheets don't support PC-style leveling — this is a snapshot
+      // at the detected level. Features unlocked at higher levels must be added manually.
+      const features = isSidekick ? parseSection(text, 'Features?') : [];
+
       // ── Spellcasting (Phase 7) ─────────────────────────────────────────────
       // parseSpellcasting checks traits[] for "Spellcasting"/"Innate Spellcasting"
       // and actions[] for 2024-format "Spellcasting" action.
@@ -616,7 +845,9 @@ export default function StatBlockParser() {
             for (const n of names)
               spellItems.push(makeSpellItem(n, 0, isAtwill ? 'atwill' : 'innate', uses, name, 's'));
           }
-          warns.push('2024-format spellcasting detected — spell levels unknown (set manually in Foundry spell tab).');
+          const unknownFreq = spellItems.filter(s => s.system.level === 0 && s.system.method !== 'spell');
+          if (unknownFreq.length)
+            warns.push(`2024-format spellcasting: ${unknownFreq.map(s=>s.name).join(', ')} — level unknown, set manually in Foundry spell tab.`);
         }
       }
 
@@ -631,7 +862,9 @@ export default function StatBlockParser() {
           for (const n of names)
             innateItems.push(makeSpellItem(n, 0, isAtwill ? 'atwill' : 'innate', uses, name, 'n'));
         }
-        warns.push('Innate spellcasting detected — spell levels set to 0 (cantrip slot). Set actual levels manually in Foundry spell tab.');
+        const unknownInnate = innateItems.filter(s => s.system.level === 0 && s.system.method !== 'spell');
+        if (unknownInnate.length)
+          warns.push(`Innate spellcasting: ${unknownInnate.map(s=>s.name).join(', ')} — level unknown, set manually in Foundry spell tab.`);
       }
 
       // Track spellcasting presence (optional — absent on non-casters)
@@ -654,6 +887,7 @@ export default function StatBlockParser() {
       const legResBase  = legResNums[0] || 0;
       const legResLair  = legResNums[1] || legResBase;
 
+      track('features',           `${features.length} feature(s)`,               features.length > 0, true);
       track('traits',             `${traits.length} trait(s)`,                    traits.length > 0);
       track('actions',            `${actions.length} action(s)`,                  actions.length > 0);
       track('bonus actions',      `${bonusActions.length} bonus action(s)`,       bonusActions.length > 0, true);
@@ -689,7 +923,9 @@ export default function StatBlockParser() {
           },
           details: {
             alignment, type: { value: type, subtype: '', custom: '' },
-            cr: crToFloat(cr), xp: { value: crToXP(cr) }, biography: { value: '', public: '' }
+            cr: isSidekick ? 0 : crToFloat(cr),
+            xp: { value: isSidekick ? levelToXP(sidekickLevel) : crToXP(cr) },
+            biography: { value: '', public: '' }
           },
           traits: {
             size: sizeCode,
@@ -724,15 +960,24 @@ export default function StatBlockParser() {
           } : {})
         },
         items: [
+          ...features.map(a => makeSimpleItem(a, name, '', 1, 'f')),
           ...traits.map(a => makeSimpleItem(a, name, '', 1, 't')),
           ...actions.map(a => {
           const itemId = makeItemId('a', name, a.name);
           const actId  = makeActId('a', name, a.name);
-          // Recharge (e.g. qualifier = "Recharge 4–6")
+          // Recharge detection — three cases from qualifier text:
+          //   Combat die  "Recharge 5-6"            → period:'recharge', Foundry rolls d6
+          //   Short rest  "Recharges after a Short or Long Rest" → period:'sr'
+          //   Long rest   "Recharges after a Long Rest"          → period:'lr'
+          // Note: SR/LR recovery is stored correctly in JSON but the NPC sheet
+          // rest button may not surface it visually — a Foundry display limitation.
           const rchM = a.qualifier?.match(/Recharge\s+(\d+)(?:[–\-]\d+)?/i);
-          const itemUses = rchM
-            ? { value:+rchM[1], max:'6', per:null, recovery:[{period:'recharge',formula:rchM[1],type:'recoverAll'}] }
-            : { value:null, max:null, per:null, recovery:[] };
+          const srM  = !rchM && /short\s+(?:or\s+)?long\s+rest/i.test(a.qualifier||'');
+          const lrM  = !rchM && !srM && /long\s+rest/i.test(a.qualifier||'');
+          const itemUses = rchM ? { value:+rchM[1], max:'6',  per:null, recovery:[{period:'recharge', formula:rchM[1], type:'recoverAll'}] }
+                         : srM  ? { value:1,         max:'1',  per:null, recovery:[{period:'sr',       type:'recoverAll'}] }
+                         : lrM  ? { value:1,         max:'1',  per:null, recovery:[{period:'lr',       type:'recoverAll'}] }
+                         :        { value:null,       max:null, per:null, recovery:[] };
           // Classify
           const isMeleeOrRanged = /Melee\s+or\s+Ranged/i.test(a.description);
           const isMelee  = /Melee\s+(?:Weapon\s+)?Attack(?:\s+Roll)?:/i.test(a.description);
@@ -894,7 +1139,10 @@ export default function StatBlockParser() {
                         <div key={idx} className="bg-slate-700 rounded p-3">
                           <div className="font-semibold text-white mb-1">
                             {item.name}
-                            {item.system.uses?.recovery?.length > 0 && <span className="ml-2 text-xs text-yellow-400">(Recharge {item.system.uses.value}–6)</span>}
+                            {item.system.uses?.recovery?.[0]?.period === 'recharge' && <span className="ml-2 text-xs text-yellow-400">(Recharge {item.system.uses.value}–6)</span>}
+                            {item.system.uses?.recovery?.[0]?.period === 'day'      && <span className="ml-2 text-xs text-sky-300">({item.system.uses.max}/Day)</span>}
+                            {item.system.uses?.recovery?.[0]?.period === 'sr'       && <span className="ml-2 text-xs text-emerald-300">(Short Rest)</span>}
+                            {item.system.uses?.recovery?.[0]?.period === 'lr'       && <span className="ml-2 text-xs text-violet-300">(Long Rest)</span>}
                             {item.system.activation?.type === 'reaction'  && <span className="ml-2 text-xs text-blue-400">[reaction]</span>}
                             {item.system.activation?.type === 'bonus'     && <span className="ml-2 text-xs text-emerald-400">[bonus]</span>}
                             {item.system.activation?.type === 'legendary' && <span className="ml-2 text-xs text-yellow-400">[legendary ×{item.system.activation.cost}]</span>}

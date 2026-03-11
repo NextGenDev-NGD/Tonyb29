@@ -150,11 +150,41 @@ Decision: Implement after Obstacle #3 and spell lookup tables are done.
 - [x] Saves regex — colon optional, line-anchored
 - [x] Verified import in Foundry — spells, weapons, auto-roll confirmed working
 
-### Phase 7 — Remaining
-- [ ] Obstacle #3 — harden action name regex
-- [ ] Spell school + level lookup table for common SRD spells
-- [ ] Sidekick format full support
-- [ ] Documentation pass
+### Phase 7 — Session 2 (Mar 11, 2026) ✅
+- [x] Obstacle #3 — `ACTION_NAME_RX` + `SENTENCE_START_RX` guard; 4-word cap, ≥15 char desc, sentence-starter filter
+- [x] `SPELL_META` lookup table — ~160 common SRD spells with level + school
+- [x] `spellMeta()` — normalizes lookup key; fills school on all spells; corrects level for innate (not atwill)
+- [x] At Will 2024 spells stay at level 0 (cantrip-equivalent) — only `mode:'innate'` gets level correction
+- [x] UI: N/Day badge replaces "Recharge" label for day-based recovery
+- [x] Sidekick format full support:
+  - `parseSidekickLevel()` — detects level from ordinal, "Level: N", or PB back-calculation
+  - `LEVEL_XP` character advancement table — used instead of CR_XP for sidekicks
+  - `levelToXP()` — maps sidekick level to character XP
+  - `isSidekick` branch in CR block — profBonus from PB field or level, cr:0 on actor
+  - `Equipment` + `Features` added to `SECSTOP` and `ALL_SEC_STOP`
+  - Features section parsed via `parseSection(text, 'Features?')` → passive feat items
+  - Bullet-point actions (`* Name. desc` / `• Name. desc`) stripped before `ACTION_NAME_RX`
+  - SR/LR recharge detection — "Recharges after a Short or Long Rest" → `period:'sr'`
+  - UI badges: `(Short Rest)` in green, `(Long Rest)` in violet
+- [x] Saves regex — colon optional, `Saving Throws?` plural form added
+
+### Phase 8 — Sidekick PC Sheet (Future)
+**Decision:** Sidekicks that level with the party should use `type:'character'` (PC actor),
+not `type:'npc'`. NPC sheets lack level progression, ASI choices, class feature unlocks,
+and the full SR/LR rest workflow. This requires a separate output branch and is scoped to Phase 8.
+
+**What Phase 8 needs:**
+- PC actor JSON schema research (export reference from user)
+- `type:'character'` actor output when sidekick format detected
+- Class + level fields (`system.classes`, `system.details.level`)
+- XP threshold tracking (`system.details.xp` with both value and max)
+- SR/LR rest button works natively on PC sheets — no workaround needed
+- Create `SIDEKICK_FORMAT.md` spec document
+
+**Reference:** User can export a Foundry PC sheet for schema comparison when Phase 8 begins.
+
+### Remaining Phase 7
+- [ ] Documentation pass — VERSION_HISTORY.md, README.md updates
 
 ---
 
