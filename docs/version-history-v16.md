@@ -2,6 +2,89 @@
 
 ---
 
+## Version 3.0-alpha — Phase 7 Complete
+**Release Date:** March 11, 2026
+**Status:** Alpha — Active Development
+**Phase:** Phase 7 — Spellcasting, Schema Fixes, Sidekick Format
+**File:** `dnd-parser-v20-stable.tsx`
+
+### Major Changes
+
+#### Spellcasting Parser (Session 1)
+- `parseSpellcasting(traits, actions)` — handles all three formats:
+  - 2014 slot-based: level lists (`Cantrips:`, `1st level (4 slots):`) → `system.spells` slot tracking
+  - 2014 innate: `Innate Spellcasting.` trait with At Will / N/Day frequency lists
+  - 2024 frequency: `Spellcasting.` action with At Will / N/Day tiers
+- `makeSpellItem()` — `type:'spell'`, correct `method`/`prepared`/`consumption` fields
+- `extractSpellLists()` — position-based slicer, works on single-line parseSection output
+- Dual spellcasting supported — creatures with both Spellcasting and Innate Spellcasting traits
+- Innate prefix `'n'` prevents ID collision with same-named prepared spells
+
+#### Foundry dnd5e v4.0+ Schema Fixes (Session 1)
+All 7 fixes verified working via Foundry import — spells and weapons auto-roll correctly.
+
+| Fix | Change |
+|---|---|
+| 1 | `system.type.value:'monster'` on all feat items — required for NPC sheet rendering |
+| 2 | Spells: `method`+`prepared` replaces deprecated `preparation.mode` |
+| 3 | Innate/atwill: `consumption.spellSlot:false` + `itemUses` target |
+| 4 | `spells.spellN.override:N` — forces slot count on NPC (null = 0 for classless actors) |
+| 5 | `attributes.spell.level` — caster level for DC/attack calculation |
+| 6 | Resources: `legact/legres → {max, spent}`, `lair → {value:bool, initiative, inside}` |
+| 7 | Senses: flat values → `ranges:{}` sub-object, 0-values → null |
+
+#### Saves Regex Fix (Session 1)
+- Colon now optional — handles `Saving Throws Int +9` and `Saving Throws: Int +9`
+- Line-start anchor prevents false match on "saving throw" inside ability descriptions
+
+#### Action Name Guard — Obstacle #3 (Session 2)
+- `ACTION_NAME_RX`: 1–4 word name cap, ≥15 char description minimum
+- `SENTENCE_START_RX`: rejects A/An/The/On/Each/If/When/etc. as name starters
+- Bullet-point lines (`*` / `•`) stripped before matching — both `parseActions` and `parseSection`
+- Applied to all section parsers (traits, reactions, bonus/legendary/lair actions)
+
+#### Spell Metadata Lookup (Session 2)
+- `SPELL_META`: ~160 common SRD spells with level + school
+- `spellMeta()`: normalizes key (lowercase, strips asterisks/spaces)
+- School filled on all spell items (previously always blank)
+- Level correction: `mode:'innate'` only — `mode:'atwill'` stays 0 (cantrip-equivalent)
+- Unknown spells warn by name instead of blanket warning
+
+#### Sidekick Format — Tasha's Cauldron of Everything (Session 2)
+- `parseSidekickLevel()`: detects level from ordinal, `Level: N`, or PB back-calculation
+- `LEVEL_XP` + `levelToXP()`: character advancement XP table (replaces CR_XP for sidekicks)
+- `isSidekick` branch in CR block: `cr:0`, profBonus from PB or level, XP from character table
+- Features section parsed via `parseSection(text, 'Features?')` → passive feat items (prefix `'f'`)
+- `Equipment` + `Features` added to `SECSTOP` and `ALL_SEC_STOP` (prevents section bleed)
+- SR/LR recharge: "Short or Long Rest" → `period:'sr'`, "Long Rest" → `period:'lr'`
+- UI badges: `(Short Rest)`, `(Long Rest)`, `(N/Day)` distinct from `(Recharge X-6)`
+
+### Known Limitations
+- Spell descriptions empty — items created by name, link to compendium manually
+- Sidekick leveling requires PC actor (`type:'character'`) — current output is NPC snapshot (Phase 8)
+- SR/LR recovery on NPC sheets depends on Foundry configuration
+
+---
+
+## Version 2.0 Stable — Phase 6 Complete
+**Release Date:** March 8, 2026
+**Status:** Stable
+**Phase:** Phase 6 — Sprints 1–3 Complete
+**File:** `dnd-parser-v20-stable.tsx`
+
+### What Was Stable
+- Full actions parsing with Foundry Activities system (attack/save/utility)
+- Traits, reactions, bonus actions, legendary actions, lair actions
+- Damage resistances/immunities/vulnerabilities with conditional routing
+- Legendary action count parsing (2014 and 2024 formats)
+- In-lair bonus detection and warning
+- djb2 hash ID generation (replaced slice-based approach that collided on long actor names)
+- Optional field tracking (absent fields excluded from accuracy score)
+- `system.target` extraction for AoE templates and target counts
+- 2024 format: combined immunity lines, new legendary format, lair actions removed
+
+---
+
 ## Version 2.0-alpha.1 — Phase 6 Block 3 Complete
 **Release Date:** March 3, 2026
 **Status:** Alpha — Active Development

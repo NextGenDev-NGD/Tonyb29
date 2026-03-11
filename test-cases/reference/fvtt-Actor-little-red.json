@@ -1,0 +1,3950 @@
+{
+  "name": "Little Red",
+  "type": "character",
+  "img": "icons/svg/mystery-man.svg?1718746236003",
+  "system": {
+    "currency": {
+      "pp": 0,
+      "gp": 0,
+      "ep": 0,
+      "sp": 0,
+      "cp": 0
+    },
+    "abilities": {
+      "str": {
+        "value": 12,
+        "proficient": 1,
+        "max": null,
+        "bonuses": {
+          "check": "",
+          "save": ""
+        },
+        "check": {
+          "roll": {
+            "min": null,
+            "max": null,
+            "mode": 0
+          }
+        },
+        "save": {
+          "roll": {
+            "min": null,
+            "max": null,
+            "mode": 0
+          }
+        }
+      },
+      "dex": {
+        "value": 21,
+        "proficient": 0,
+        "max": null,
+        "bonuses": {
+          "check": "",
+          "save": ""
+        },
+        "check": {
+          "roll": {
+            "min": null,
+            "max": null,
+            "mode": 0
+          }
+        },
+        "save": {
+          "roll": {
+            "min": null,
+            "max": null,
+            "mode": 0
+          }
+        }
+      },
+      "con": {
+        "value": 14,
+        "proficient": 1,
+        "max": null,
+        "bonuses": {
+          "check": "",
+          "save": ""
+        },
+        "check": {
+          "roll": {
+            "min": null,
+            "max": null,
+            "mode": 0
+          }
+        },
+        "save": {
+          "roll": {
+            "min": null,
+            "max": null,
+            "mode": 0
+          }
+        }
+      },
+      "int": {
+        "value": 10,
+        "proficient": 0,
+        "max": null,
+        "bonuses": {
+          "check": "",
+          "save": ""
+        },
+        "check": {
+          "roll": {
+            "min": null,
+            "max": null,
+            "mode": 0
+          }
+        },
+        "save": {
+          "roll": {
+            "min": null,
+            "max": null,
+            "mode": 0
+          }
+        }
+      },
+      "wis": {
+        "value": 10,
+        "proficient": 0,
+        "max": null,
+        "bonuses": {
+          "check": "",
+          "save": ""
+        },
+        "check": {
+          "roll": {
+            "min": null,
+            "max": null,
+            "mode": 0
+          }
+        },
+        "save": {
+          "roll": {
+            "min": null,
+            "max": null,
+            "mode": 0
+          }
+        }
+      },
+      "cha": {
+        "value": 10,
+        "proficient": 0,
+        "max": null,
+        "bonuses": {
+          "check": "",
+          "save": ""
+        },
+        "check": {
+          "roll": {
+            "min": null,
+            "max": null,
+            "mode": 0
+          }
+        },
+        "save": {
+          "roll": {
+            "min": null,
+            "max": null,
+            "mode": 0
+          }
+        }
+      }
+    },
+    "bonuses": {
+      "mwak": {
+        "attack": "",
+        "damage": ""
+      },
+      "rwak": {
+        "attack": "",
+        "damage": ""
+      },
+      "msak": {
+        "attack": "",
+        "damage": ""
+      },
+      "rsak": {
+        "attack": "",
+        "damage": ""
+      },
+      "abilities": {
+        "check": "",
+        "save": "",
+        "skill": ""
+      },
+      "spell": {
+        "dc": ""
+      }
+    },
+    "skills": {
+      "acr": {
+        "ability": "dex",
+        "roll": {
+          "min": null,
+          "max": null,
+          "mode": 0
+        },
+        "value": 1,
+        "bonuses": {
+          "check": "",
+          "passive": ""
+        }
+      },
+      "ani": {
+        "ability": "wis",
+        "roll": {
+          "min": null,
+          "max": null,
+          "mode": 0
+        },
+        "value": 0,
+        "bonuses": {
+          "check": "",
+          "passive": ""
+        }
+      },
+      "arc": {
+        "ability": "int",
+        "roll": {
+          "min": null,
+          "max": null,
+          "mode": 0
+        },
+        "value": 0,
+        "bonuses": {
+          "check": "",
+          "passive": ""
+        }
+      },
+      "ath": {
+        "ability": "str",
+        "roll": {
+          "min": null,
+          "max": null,
+          "mode": 0
+        },
+        "value": 0,
+        "bonuses": {
+          "check": "",
+          "passive": ""
+        }
+      },
+      "dec": {
+        "ability": "cha",
+        "roll": {
+          "min": null,
+          "max": null,
+          "mode": 0
+        },
+        "value": 0,
+        "bonuses": {
+          "check": "",
+          "passive": ""
+        }
+      },
+      "his": {
+        "ability": "int",
+        "roll": {
+          "min": null,
+          "max": null,
+          "mode": 0
+        },
+        "value": 0,
+        "bonuses": {
+          "check": "",
+          "passive": ""
+        }
+      },
+      "ins": {
+        "ability": "wis",
+        "roll": {
+          "min": null,
+          "max": null,
+          "mode": 0
+        },
+        "value": 0,
+        "bonuses": {
+          "check": "",
+          "passive": ""
+        }
+      },
+      "itm": {
+        "ability": "cha",
+        "roll": {
+          "min": null,
+          "max": null,
+          "mode": 0
+        },
+        "value": 0,
+        "bonuses": {
+          "check": "",
+          "passive": ""
+        }
+      },
+      "inv": {
+        "ability": "int",
+        "roll": {
+          "min": null,
+          "max": null,
+          "mode": 0
+        },
+        "value": 0,
+        "bonuses": {
+          "check": "",
+          "passive": ""
+        }
+      },
+      "med": {
+        "ability": "wis",
+        "roll": {
+          "min": null,
+          "max": null,
+          "mode": 0
+        },
+        "value": 0,
+        "bonuses": {
+          "check": "",
+          "passive": ""
+        }
+      },
+      "nat": {
+        "ability": "int",
+        "roll": {
+          "min": null,
+          "max": null,
+          "mode": 0
+        },
+        "value": 0,
+        "bonuses": {
+          "check": "",
+          "passive": ""
+        }
+      },
+      "prc": {
+        "ability": "wis",
+        "roll": {
+          "min": null,
+          "max": null,
+          "mode": 0
+        },
+        "value": 1,
+        "bonuses": {
+          "check": "",
+          "passive": ""
+        }
+      },
+      "prf": {
+        "ability": "cha",
+        "roll": {
+          "min": null,
+          "max": null,
+          "mode": 0
+        },
+        "value": 0,
+        "bonuses": {
+          "check": "",
+          "passive": ""
+        }
+      },
+      "per": {
+        "ability": "cha",
+        "roll": {
+          "min": null,
+          "max": null,
+          "mode": 0
+        },
+        "value": 0,
+        "bonuses": {
+          "check": "",
+          "passive": ""
+        }
+      },
+      "rel": {
+        "ability": "int",
+        "roll": {
+          "min": null,
+          "max": null,
+          "mode": 0
+        },
+        "value": 0,
+        "bonuses": {
+          "check": "",
+          "passive": ""
+        }
+      },
+      "slt": {
+        "ability": "dex",
+        "roll": {
+          "min": null,
+          "max": null,
+          "mode": 0
+        },
+        "value": 0,
+        "bonuses": {
+          "check": "",
+          "passive": ""
+        }
+      },
+      "ste": {
+        "ability": "dex",
+        "roll": {
+          "min": null,
+          "max": null,
+          "mode": 0
+        },
+        "value": 0,
+        "bonuses": {
+          "check": "",
+          "passive": ""
+        }
+      },
+      "sur": {
+        "ability": "wis",
+        "roll": {
+          "min": null,
+          "max": null,
+          "mode": 0
+        },
+        "value": 0,
+        "bonuses": {
+          "check": "",
+          "passive": ""
+        }
+      }
+    },
+    "tools": {},
+    "spells": {
+      "spell1": {
+        "value": 0,
+        "override": null
+      },
+      "spell2": {
+        "value": 0,
+        "override": null
+      },
+      "spell3": {
+        "value": 0,
+        "override": null
+      },
+      "spell4": {
+        "value": 0,
+        "override": null
+      },
+      "spell5": {
+        "value": 0,
+        "override": null
+      },
+      "spell6": {
+        "value": 0,
+        "override": null
+      },
+      "spell7": {
+        "value": 0,
+        "override": null
+      },
+      "spell8": {
+        "value": 0,
+        "override": null
+      },
+      "spell9": {
+        "value": 0,
+        "override": null
+      },
+      "pact": {
+        "value": 0,
+        "override": null
+      }
+    },
+    "attributes": {
+      "init": {
+        "ability": "",
+        "roll": {
+          "min": null,
+          "max": null,
+          "mode": 0
+        },
+        "bonus": ""
+      },
+      "movement": {
+        "burrow": null,
+        "climb": null,
+        "fly": null,
+        "swim": null,
+        "walk": 35,
+        "units": null,
+        "hover": false,
+        "ignoredDifficultTerrain": [],
+        "special": ""
+      },
+      "attunement": {
+        "max": 3
+      },
+      "senses": {
+        "darkvision": null,
+        "blindsight": null,
+        "tremorsense": null,
+        "truesight": null,
+        "units": null,
+        "special": ""
+      },
+      "spellcasting": "int",
+      "exhaustion": 0,
+      "concentration": {
+        "ability": "",
+        "roll": {
+          "min": null,
+          "max": null,
+          "mode": 0
+        },
+        "bonuses": {
+          "save": ""
+        },
+        "limit": 1
+      },
+      "ac": {
+        "flat": null,
+        "calc": "default"
+      },
+      "hp": {
+        "value": 0,
+        "max": null,
+        "temp": null,
+        "tempmax": 0,
+        "bonuses": {}
+      },
+      "death": {
+        "roll": {
+          "min": null,
+          "max": null,
+          "mode": 0
+        },
+        "success": 0,
+        "failure": 0,
+        "bonuses": {
+          "save": ""
+        }
+      },
+      "inspiration": false,
+      "loyalty": {}
+    },
+    "details": {
+      "biography": {
+        "value": "",
+        "public": ""
+      },
+      "alignment": "",
+      "race": null,
+      "background": null,
+      "originalClass": "5kO4LQ2n9dyKqwTk",
+      "xp": {
+        "value": 6500
+      },
+      "appearance": "",
+      "trait": "",
+      "ideal": "",
+      "bond": "",
+      "flaw": "",
+      "eyes": "",
+      "height": "",
+      "faith": "",
+      "hair": "",
+      "weight": "",
+      "gender": "",
+      "skin": "",
+      "age": ""
+    },
+    "traits": {
+      "size": "med",
+      "di": {
+        "bypasses": [],
+        "value": [],
+        "custom": ""
+      },
+      "dr": {
+        "bypasses": [],
+        "value": [],
+        "custom": ""
+      },
+      "dv": {
+        "bypasses": [],
+        "value": [],
+        "custom": ""
+      },
+      "dm": {
+        "amount": {},
+        "bypasses": []
+      },
+      "ci": {
+        "value": [],
+        "custom": ""
+      },
+      "languages": {
+        "value": [],
+        "custom": "",
+        "communication": {}
+      },
+      "weaponProf": {
+        "value": [
+          "sim",
+          "mar"
+        ],
+        "custom": "",
+        "mastery": {
+          "value": [],
+          "bonus": []
+        }
+      },
+      "armorProf": {
+        "value": [
+          "lgt",
+          "med",
+          "hvy",
+          "shl"
+        ],
+        "custom": ""
+      }
+    },
+    "resources": {
+      "primary": {
+        "value": 0,
+        "max": 0,
+        "sr": false,
+        "lr": false,
+        "label": ""
+      },
+      "secondary": {
+        "value": 0,
+        "max": 0,
+        "sr": false,
+        "lr": false,
+        "label": ""
+      },
+      "tertiary": {
+        "value": 0,
+        "max": 0,
+        "sr": false,
+        "lr": false,
+        "label": ""
+      }
+    },
+    "favorites": [],
+    "bastion": {
+      "name": "",
+      "description": ""
+    }
+  },
+  "prototypeToken": {
+    "name": "Little Red",
+    "displayName": 40,
+    "actorLink": true,
+    "appendNumber": false,
+    "prependAdjective": false,
+    "texture": {
+      "src": "https://assets.forge-vtt.com/61e22856342cc71dfa3d306c/tokenizer/pc-images/wayne.Token.webp?1718746236003",
+      "scaleX": 1,
+      "scaleY": 1,
+      "offsetX": 0,
+      "offsetY": 0,
+      "rotation": 0,
+      "anchorX": 0.5,
+      "anchorY": 0.5,
+      "fit": "contain",
+      "tint": "#ffffff",
+      "alphaThreshold": 0.75
+    },
+    "width": 1,
+    "height": 1,
+    "lockRotation": false,
+    "rotation": 0,
+    "alpha": 1,
+    "disposition": 1,
+    "displayBars": 40,
+    "bar1": {
+      "attribute": "attributes.hp"
+    },
+    "bar2": {
+      "attribute": null
+    },
+    "light": {
+      "alpha": 0.5,
+      "angle": 360,
+      "bright": 0,
+      "coloration": 1,
+      "dim": 0,
+      "attenuation": 0.5,
+      "luminosity": 0.5,
+      "saturation": 0,
+      "contrast": 0,
+      "shadows": 0,
+      "animation": {
+        "type": null,
+        "speed": 5,
+        "intensity": 5,
+        "reverse": false
+      },
+      "darkness": {
+        "min": 0,
+        "max": 1
+      },
+      "negative": false,
+      "priority": 0,
+      "color": null
+    },
+    "sight": {
+      "enabled": true,
+      "range": 0,
+      "angle": 360,
+      "visionMode": "basic",
+      "attenuation": 0.1,
+      "brightness": 0,
+      "saturation": 0,
+      "contrast": 0,
+      "color": null
+    },
+    "detectionModes": [],
+    "flags": {
+      "monks-tokenbar": {
+        "include": "default"
+      },
+      "wall-height": {
+        "tokenHeight": 0
+      }
+    },
+    "randomImg": false,
+    "occludable": {
+      "radius": 0
+    },
+    "ring": {
+      "enabled": false,
+      "colors": {
+        "ring": null,
+        "background": null
+      },
+      "effects": 0,
+      "subject": {
+        "scale": 1,
+        "texture": null
+      }
+    },
+    "turnMarker": {
+      "mode": 1,
+      "animation": null,
+      "src": null,
+      "disposition": false
+    },
+    "movementAction": null
+  },
+  "items": [
+    {
+      "_id": "5kO4LQ2n9dyKqwTk",
+      "name": "Fighter",
+      "type": "class",
+      "system": {
+        "identifier": "fighter",
+        "description": {
+          "value": "<div class=\"mb-2 ve-flex-col\"><table class=\"cls-tbl shadow-big w-100 mb-3\">\n\t\t\t<tbody>\n\t\t\t<tr><th class=\"border\" colspan=\"15\"></th></tr>\n\t\t\t\n\t\t\t<tr>\n\t\t\t\t<th colspan=\"3\"></th>\n\t\t\t\t\n\t\t\t</tr>\n\t\t\t<tr>\n\t\t\t\t<th class=\"cls-tbl__col-level\">Level</th>\n\t\t\t\t<th class=\"cls-tbl__col-prof-bonus\">Proficiency Bonus</th>\n\t\t\t\t<th>Features</th>\n\t\t\t\t\n\t\t\t</tr>\n\t\t\t<tr class=\"cls-tbl__stripe-odd\">\n\t\t\t\t<td class=\"cls-tbl__col-level\">1st</td>\n\t\t\t\t<td class=\"cls-tbl__col-prof-bonus\">+2</td>\n\t\t\t\t<td><div class=\"inline-block\">Fighting Style<span class=\"mr-1\">,</span></div><div class=\"inline-block\">Second Wind</div></td>\n\t\t\t\t\n\t\t\t</tr><tr class=\"cls-tbl__stripe-odd\">\n\t\t\t\t<td class=\"cls-tbl__col-level\">2nd</td>\n\t\t\t\t<td class=\"cls-tbl__col-prof-bonus\">+2</td>\n\t\t\t\t<td><div class=\"inline-block\">Action Surge</div></td>\n\t\t\t\t\n\t\t\t</tr><tr class=\"cls-tbl__stripe-odd\">\n\t\t\t\t<td class=\"cls-tbl__col-level\">3rd</td>\n\t\t\t\t<td class=\"cls-tbl__col-prof-bonus\">+2</td>\n\t\t\t\t<td><div class=\"inline-block\">Martial Archetype</div></td>\n\t\t\t\t\n\t\t\t</tr><tr class=\"cls-tbl__stripe-odd\">\n\t\t\t\t<td class=\"cls-tbl__col-level\">4th</td>\n\t\t\t\t<td class=\"cls-tbl__col-prof-bonus\">+2</td>\n\t\t\t\t<td><div class=\"inline-block\">Ability Score Improvement<span class=\"mr-1\">,</span></div><div class=\"inline-block\">Martial Versatility</div></td>\n\t\t\t\t\n\t\t\t</tr><tr class=\"cls-tbl__stripe-odd\">\n\t\t\t\t<td class=\"cls-tbl__col-level\">5th</td>\n\t\t\t\t<td class=\"cls-tbl__col-prof-bonus\">+3</td>\n\t\t\t\t<td><div class=\"inline-block\">Extra Attack</div></td>\n\t\t\t\t\n\t\t\t</tr><tr class=\"cls-tbl__stripe-odd\">\n\t\t\t\t<td class=\"cls-tbl__col-level\">6th</td>\n\t\t\t\t<td class=\"cls-tbl__col-prof-bonus\">+3</td>\n\t\t\t\t<td><div class=\"inline-block\">Ability Score Improvement</div></td>\n\t\t\t\t\n\t\t\t</tr><tr class=\"cls-tbl__stripe-odd\">\n\t\t\t\t<td class=\"cls-tbl__col-level\">7th</td>\n\t\t\t\t<td class=\"cls-tbl__col-prof-bonus\">+3</td>\n\t\t\t\t<td><div class=\"inline-block\">Martial Archetype feature</div></td>\n\t\t\t\t\n\t\t\t</tr><tr class=\"cls-tbl__stripe-odd\">\n\t\t\t\t<td class=\"cls-tbl__col-level\">8th</td>\n\t\t\t\t<td class=\"cls-tbl__col-prof-bonus\">+3</td>\n\t\t\t\t<td><div class=\"inline-block\">Ability Score Improvement</div></td>\n\t\t\t\t\n\t\t\t</tr><tr class=\"cls-tbl__stripe-odd\">\n\t\t\t\t<td class=\"cls-tbl__col-level\">9th</td>\n\t\t\t\t<td class=\"cls-tbl__col-prof-bonus\">+4</td>\n\t\t\t\t<td><div class=\"inline-block\">Indomitable</div></td>\n\t\t\t\t\n\t\t\t</tr><tr class=\"cls-tbl__stripe-odd\">\n\t\t\t\t<td class=\"cls-tbl__col-level\">10th</td>\n\t\t\t\t<td class=\"cls-tbl__col-prof-bonus\">+4</td>\n\t\t\t\t<td><div class=\"inline-block\">Martial Archetype feature</div></td>\n\t\t\t\t\n\t\t\t</tr><tr class=\"cls-tbl__stripe-odd\">\n\t\t\t\t<td class=\"cls-tbl__col-level\">11th</td>\n\t\t\t\t<td class=\"cls-tbl__col-prof-bonus\">+4</td>\n\t\t\t\t<td><div class=\"inline-block\">Extra Attack (2)</div></td>\n\t\t\t\t\n\t\t\t</tr><tr class=\"cls-tbl__stripe-odd\">\n\t\t\t\t<td class=\"cls-tbl__col-level\">12th</td>\n\t\t\t\t<td class=\"cls-tbl__col-prof-bonus\">+4</td>\n\t\t\t\t<td><div class=\"inline-block\">Ability Score Improvement</div></td>\n\t\t\t\t\n\t\t\t</tr><tr class=\"cls-tbl__stripe-odd\">\n\t\t\t\t<td class=\"cls-tbl__col-level\">13th</td>\n\t\t\t\t<td class=\"cls-tbl__col-prof-bonus\">+5</td>\n\t\t\t\t<td><div class=\"inline-block\">Indomitable (two uses)</div></td>\n\t\t\t\t\n\t\t\t</tr><tr class=\"cls-tbl__stripe-odd\">\n\t\t\t\t<td class=\"cls-tbl__col-level\">14th</td>\n\t\t\t\t<td class=\"cls-tbl__col-prof-bonus\">+5</td>\n\t\t\t\t<td><div class=\"inline-block\">Ability Score Improvement</div></td>\n\t\t\t\t\n\t\t\t</tr><tr class=\"cls-tbl__stripe-odd\">\n\t\t\t\t<td class=\"cls-tbl__col-level\">15th</td>\n\t\t\t\t<td class=\"cls-tbl__col-prof-bonus\">+5</td>\n\t\t\t\t<td><div class=\"inline-block\">Martial Archetype feature</div></td>\n\t\t\t\t\n\t\t\t</tr><tr class=\"cls-tbl__stripe-odd\">\n\t\t\t\t<td class=\"cls-tbl__col-level\">16th</td>\n\t\t\t\t<td class=\"cls-tbl__col-prof-bonus\">+5</td>\n\t\t\t\t<td><div class=\"inline-block\">Ability Score Improvement</div></td>\n\t\t\t\t\n\t\t\t</tr><tr class=\"cls-tbl__stripe-odd\">\n\t\t\t\t<td class=\"cls-tbl__col-level\">17th</td>\n\t\t\t\t<td class=\"cls-tbl__col-prof-bonus\">+6</td>\n\t\t\t\t<td><div class=\"inline-block\">Action Surge (two uses)<span class=\"mr-1\">,</span></div><div class=\"inline-block\">Indomitable (three uses)</div></td>\n\t\t\t\t\n\t\t\t</tr><tr class=\"cls-tbl__stripe-odd\">\n\t\t\t\t<td class=\"cls-tbl__col-level\">18th</td>\n\t\t\t\t<td class=\"cls-tbl__col-prof-bonus\">+6</td>\n\t\t\t\t<td><div class=\"inline-block\">Martial Archetype feature</div></td>\n\t\t\t\t\n\t\t\t</tr><tr class=\"cls-tbl__stripe-odd\">\n\t\t\t\t<td class=\"cls-tbl__col-level\">19th</td>\n\t\t\t\t<td class=\"cls-tbl__col-prof-bonus\">+6</td>\n\t\t\t\t<td><div class=\"inline-block\">Ability Score Improvement</div></td>\n\t\t\t\t\n\t\t\t</tr><tr class=\"cls-tbl__stripe-odd\">\n\t\t\t\t<td class=\"cls-tbl__col-level\">20th</td>\n\t\t\t\t<td class=\"cls-tbl__col-prof-bonus\">+6</td>\n\t\t\t\t<td><div class=\"inline-block\">Extra Attack (3)</div></td>\n\t\t\t\t\n\t\t\t</tr>\n\t\t\t<tr><th class=\"border\" colspan=\"15\"></th></tr>\n\t\t\t</tbody>\n\t\t</table><div><div class=\"rd__b  rd__b--1\"><div data-source=\"PHB\" class=\"rd__b  rd__b--0\"><h1 class=\"rd__h rd__h--0\" data-title-index=\"1\"> <span class=\"entry-title-inner\">Fighter</span><span class=\"ve-flex-vh-center\"> <span class=\"rd__title-link \"><span class=\"help-subtle\" title=\"Player’s Handbook\">PHB</span> p70</span><span class=\"rd__h-toggle ml-2 clickable no-select no-print lst-is-exporting-image__hidden\" data-rd-h-toggle-button=\"true\" title=\"Toggle Visibility (CTRL to Toggle All)\">[–]</span></span></h1> <p>A human in clanging plate armor holds her shield before her as she runs toward the massed goblins. An elf behind her, clad in studded leather armor, peppers the goblins with arrows loosed from his exquisite bow. The half-orc nearby shouts orders, helping the two combatants coordinate their assault to the best advantage.</p><p>A dwarf in chain mail interposes his shield between the ogre's club and his companion, knocking the deadly blow aside. His companion, a half-elf in scale armor, swings two scimitars in a blinding whirl as she circles the ogre, looking for a blind spot in its defenses.</p><p>A gladiator fights for sport in an arena, a master with his trident and net, skilled at toppling foes and moving them around for the crowd's delight—and his own tactical advantage. His opponent's sword flares with blue light an instant before she sends lightning flashing forth to smite him.</p><p>All of these heroes are fighters, perhaps the most diverse class of characters in the worlds of Dungeons &amp; Dragons. Questing knights, conquering overlords, royal champions, elite foot soldiers, hardened mercenaries, and bandit kings—as fighters, they all share an unparalleled mastery with weapons and armor, and a thorough knowledge of the skills of combat. And they are well acquainted with death, both meting it out and staring it defiantly in the face.</p><div class=\"rd__b  rd__b--1\"><h2 class=\"rd__h rd__h--1\" data-title-index=\"2\"> <span class=\"entry-title-inner\">Well-Rounded Specialists</span><span class=\"ve-flex-vh-center\"><span class=\"rd__h-toggle ml-2 clickable no-select no-print lst-is-exporting-image__hidden\" data-rd-h-toggle-button=\"true\" title=\"Toggle Visibility (CTRL to Toggle All)\">[–]</span></span></h2> <p>Fighters learn the basics of all combat styles. Every fighter can swing an axe, fence with a rapier, wield a longsword or a greatsword, use a bow, and even trap foes in a net with some degree of skill. Likewise, a fighter is adept with shields and every form of armor. Beyond that basic degree of familiarity, each fighter specializes in a certain style of combat. Some concentrate on archery, some on fighting with two weapons at once, and some on augmenting their martial skills with magic. This combination of broad general ability and extensive specialization makes fighters superior combatants on battlefields and in dungeons alike.</p></div><div class=\"rd__b  rd__b--1\"><h2 class=\"rd__h rd__h--1\" data-title-index=\"3\"> <span class=\"entry-title-inner\">Trained for Danger</span><span class=\"ve-flex-vh-center\"><span class=\"rd__h-toggle ml-2 clickable no-select no-print lst-is-exporting-image__hidden\" data-rd-h-toggle-button=\"true\" title=\"Toggle Visibility (CTRL to Toggle All)\">[–]</span></span></h2> <p>Not every member of the city watch, the village militia, or the queen's army is a fighter. Most of these troops are relatively untrained soldiers with only the most basic combat knowledge. Veteran soldiers, military officers, trained bodyguards, dedicated knights, and similar figures are fighters.</p><p>Some fighters feel drawn to use their training as adventurers. The dungeon delving, monster slaying, and other dangerous work common among adventurers is second nature for a fighter, not all that different from the life he or she left behind. There are greater risks, perhaps, but also much greater rewards—few fighters in the city watch have the opportunity to discover a magic flame tongue sword, for example.</p></div><div class=\"rd__b  rd__b--1\"><h2 class=\"rd__h rd__h--1\" data-title-index=\"4\"> <span class=\"entry-title-inner\">Creating a Fighter</span><span class=\"ve-flex-vh-center\"><span class=\"rd__h-toggle ml-2 clickable no-select no-print lst-is-exporting-image__hidden\" data-rd-h-toggle-button=\"true\" title=\"Toggle Visibility (CTRL to Toggle All)\">[–]</span></span></h2> <p>As you build your fighter, think about two related elements of your character's background: Where did you get your combat training, and what set you apart from the mundane warriors around you? Were you particularly ruthless? Did you get extra help from a mentor, perhaps because of your exceptional dedication? What drove you to this training in the first place? A threat to your homeland, a thirst for revenge, or a need to prove yourself might all have been factors.</p><p>You might have enjoyed formal training in a noble's army or in a local militia. Perhaps you trained in a war academy, learning strategy, tactics, and military history. Or you might be self-taught—unpolished but well tested. Did you take up the sword as a way to escape the limits of life on a farm, or are you following a proud family tradition? Where did you acquire your weapons and armor? They might have been military issue or family heirlooms, or perhaps you scrimped and saved for years to buy them. Your armaments are now among your most important possessions—the only things that stand between you and death's embrace.</p><div class=\"rd__b  rd__b--2\"><h3 class=\"rd__h rd__h--2\" data-title-index=\"5\"> <span class=\"entry-title-inner\">Quick Build</span><span class=\"ve-flex-vh-center\"><span class=\"rd__h-toggle ml-2 clickable no-select no-print lst-is-exporting-image__hidden\" data-rd-h-toggle-button=\"true\" title=\"Toggle Visibility (CTRL to Toggle All)\">[–]</span></span></h3> <p>You can make a fighter quickly by following these suggestions. First, make Strength or Dexterity your highest ability score, depending on whether you want to focus on melee weapons or on archery (or finesse weapons). Your next-highest score should be Constitution, or Intelligence if you plan to adopt the Eldritch Knight martial archetype. Second, choose the @background[soldier] background.</p></div></div></div><hr class=\"rd__hr rd__hr--section\" /><div data-source=\"XGE\" class=\"rd__b  rd__b--0\"><div class=\"rd__quote\"><p class=\"rd__quote-line rd__quote-line--last\">“<i>Let me know when you're all done talking.</i>”</p><p><span class=\"rd__quote-by\">— Tordek</span></p></div><p>Of all the adventurers in the worlds of D&amp;D, the fighter is perhaps the greatest paradox. On the one hand, a singular feature of the class is that no two fighters ply their craft in quite the same way; their weapons, armor, and tactics differ across a vast spectrum. On the other hand, regardless of the tools and methods one uses, at the heart of every fighter's motivation lies the same basic truth: it is better to wound than to be wounded.</p><p>Although some adventuring fighters risk their lives fighting for glory or treasure, others are primarily concerned with the welfare of others. They put more value on the well-being of the society, the village, or the group than on their own safety. Even if there's gold in the offing, the true reward for most fighters comes from sending enemies to their doom.</p><p>The sections below offer ways to add a little depth and a few personal touches to your fighter character.</p><div class=\"rd__b  rd__b--1\"><h2 class=\"rd__h rd__h--1\" data-title-index=\"6\"> <span class=\"entry-title-inner\">Heraldic Sign</span><span class=\"ve-flex-vh-center\"><span class=\"rd__h-toggle ml-2 clickable no-select no-print lst-is-exporting-image__hidden\" data-rd-h-toggle-button=\"true\" title=\"Toggle Visibility (CTRL to Toggle All)\">[–]</span></span></h2> <p>Fighters typically do battle for a cause. Some fight on behalf of kingdoms besieged by monsters, while others quest only for personal glory. In either case, a fighter often displays a heraldic sign that represents that cause, either adopting the symbol of a nation or a royal line, or creating a crest to represent one's self-interest.</p><p>Your character could be affiliated with an organization or a cause, and thus might already travel under a banner of some sort. If that's not the case, consider devising a heraldic sign that symbolizes an aspect of your nature or speaks to what you see as your purpose in the world.</p><table class=\"w-100 rd__table  stripe-odd-table\"><caption>Heraldic Signs</caption><thead><tr><th class=\"ve-col-1 ve-text-center\" data-rd-isroller=\"true\">[[/r d6]]</th><th class=\"ve-col-11\" data-rd-isroller=\"false\">Heraldic Signs</th></tr></thead><tbody><tr><td class=\"ve-col-1 ve-text-center\" data-roll-min=\"1\" data-roll-max=\"1\">1</td><td class=\"ve-col-11\">A rampant golden dragon on a green field, representing valor and a quest for wealth</td></tr><tr><td class=\"ve-col-1 ve-text-center\" data-roll-min=\"2\" data-roll-max=\"2\">2</td><td class=\"ve-col-11\">The fist of a storm giant clutching lightning before a storm cloud, symbolizing wrath and power</td></tr><tr><td class=\"ve-col-1 ve-text-center\" data-roll-min=\"3\" data-roll-max=\"3\">3</td><td class=\"ve-col-11\">Crossed greatswords in front of a castle gate, signifying the defense of a city or kingdom</td></tr><tr><td class=\"ve-col-1 ve-text-center\" data-roll-min=\"4\" data-roll-max=\"4\">4</td><td class=\"ve-col-11\">A skull with a dagger through it, representing the doom you bring to your enemies</td></tr><tr><td class=\"ve-col-1 ve-text-center\" data-roll-min=\"5\" data-roll-max=\"5\">5</td><td class=\"ve-col-11\">A phoenix in a ring of fire, an expression of an indomitable spirit</td></tr><tr><td class=\"ve-col-1 ve-text-center\" data-roll-min=\"6\" data-roll-max=\"6\">6</td><td class=\"ve-col-11\">Three drops of blood beneath a horizontal sword blade on a black background, symbolizing three foes you have sworn to kill</td></tr></tbody></table></div><div class=\"rd__b  rd__b--1\"><h2 class=\"rd__h rd__h--1\" data-title-index=\"7\"> <span class=\"entry-title-inner\">Instructor</span><span class=\"ve-flex-vh-center\"><span class=\"rd__h-toggle ml-2 clickable no-select no-print lst-is-exporting-image__hidden\" data-rd-h-toggle-button=\"true\" title=\"Toggle Visibility (CTRL to Toggle All)\">[–]</span></span></h2> <p>Some fighters are natural-born combatants who have a talent for surviving in battle. Others learned the basics of their combat prowess in their formative years from spending time in a military or some other martial organization, when they were taught by the leaders of the group.</p><p>A third type of fighter comes from the ranks of those who received one-on-one instruction from an accomplished veteran of the craft. That instructor was, or perhaps still is, well versed in a certain aspect of combat that relates to the student's background.</p><p>If you decide that your character had an individual instructor, what is that person's specialty? Do you emulate your instructor in how you fight, or did you take the instructor's teachings and adapt them to your own purposes?</p><table class=\"w-100 rd__table  stripe-odd-table\"><caption>Instructor</caption><thead><tr><th class=\"ve-col-1 ve-text-center\" data-rd-isroller=\"true\">[[/r d6]]</th><th class=\"ve-col-11\" data-rd-isroller=\"false\">Instructor</th></tr></thead><tbody><tr><td class=\"ve-col-1 ve-text-center\" data-roll-min=\"1\" data-roll-max=\"1\">1</td><td class=\"ve-col-11\">Gladiator. Your instructor was a slave who fought for freedom in the arena, or one who willingly chose the gladiator's life to earn money and fame.</td></tr><tr><td class=\"ve-col-1 ve-text-center\" data-roll-min=\"2\" data-roll-max=\"2\">2</td><td class=\"ve-col-11\">Military. Your trainer served with a group of soldiers and knows much about working as a team.</td></tr><tr><td class=\"ve-col-1 ve-text-center\" data-roll-min=\"3\" data-roll-max=\"3\">3</td><td class=\"ve-col-11\">City Watch. Crowd control and peacekeeping are your instructor's specialties.</td></tr><tr><td class=\"ve-col-1 ve-text-center\" data-roll-min=\"4\" data-roll-max=\"4\">4</td><td class=\"ve-col-11\">Tribal Warrior. Your instructor grew up in a tribe, where fighting for one's life was practically an everyday occurrence.</td></tr><tr><td class=\"ve-col-1 ve-text-center\" data-roll-min=\"5\" data-roll-max=\"5\">5</td><td class=\"ve-col-11\">Street Fighter. Your trainer excels at urban combat, combining close-quarters work with silence and efficiency.</td></tr><tr><td class=\"ve-col-1 ve-text-center\" data-roll-min=\"6\" data-roll-max=\"6\">6</td><td class=\"ve-col-11\">Weapon Master. Your mentor helped you to become one with your chosen weapon, by imparting highly specialized knowledge of how to wield it most effectively.</td></tr></tbody></table></div><div class=\"rd__b  rd__b--1\"><h2 class=\"rd__h rd__h--1\" data-title-index=\"8\"> <span class=\"entry-title-inner\">Style</span><span class=\"ve-flex-vh-center\"><span class=\"rd__h-toggle ml-2 clickable no-select no-print lst-is-exporting-image__hidden\" data-rd-h-toggle-button=\"true\" title=\"Toggle Visibility (CTRL to Toggle All)\">[–]</span></span></h2> <p>Many fighters distinguish themselves from their peers by adopting and perfecting a particular style or method of waging combat. Although this style might be a natural outgrowth of a fighter's personality, that's not always the case—someone's approach to the world in general does not necessarily dictate how that person operates when lives are on the line.</p><p>Do you have a combat style that mirrors your outlook on life, or is something else inside you unleashed when weapons are drawn?</p><table class=\"w-100 rd__table  stripe-odd-table\"><caption>Style</caption><thead><tr><th class=\"ve-col-1 ve-text-center\" data-rd-isroller=\"true\">[[/r d6]]</th><th class=\"ve-col-11\" data-rd-isroller=\"false\">Style</th></tr></thead><tbody><tr><td class=\"ve-col-1 ve-text-center\" data-roll-min=\"1\" data-roll-max=\"1\">1</td><td class=\"ve-col-11\">Elegant. You move with precise grace and total control, never using more energy than you need.</td></tr><tr><td class=\"ve-col-1 ve-text-center\" data-roll-min=\"2\" data-roll-max=\"2\">2</td><td class=\"ve-col-11\">Brutal. Your attacks rain down like hammer blows, meant to splinter bone or send blood flying.</td></tr><tr><td class=\"ve-col-1 ve-text-center\" data-roll-min=\"3\" data-roll-max=\"3\">3</td><td class=\"ve-col-11\">Cunning. You dart in to attack at just the right moment and use small-scale tactics to tilt the odds in your favor.</td></tr><tr><td class=\"ve-col-1 ve-text-center\" data-roll-min=\"4\" data-roll-max=\"4\">4</td><td class=\"ve-col-11\">Effortless. You rarely perspire or display anything other than a stoic expression in battle.</td></tr><tr><td class=\"ve-col-1 ve-text-center\" data-roll-min=\"5\" data-roll-max=\"5\">5</td><td class=\"ve-col-11\">Energetic. You sing and laugh during combat as your spirit soars. You are happiest when you have a foe in front of you and a weapon in hand.</td></tr><tr><td class=\"ve-col-1 ve-text-center\" data-roll-min=\"6\" data-roll-max=\"6\">6</td><td class=\"ve-col-11\">Sinister. You scowl and sneer while fighting, and you enjoy mocking your foes as you defeat them.</td></tr></tbody></table></div></div></div></div></div>",
+          "chat": ""
+        },
+        "source": {
+          "custom": "",
+          "book": "PHB",
+          "page": "70",
+          "license": "",
+          "rules": "2014",
+          "revision": 1
+        },
+        "levels": 5,
+        "spellcasting": {
+          "progression": "none",
+          "ability": "",
+          "preparation": {}
+        },
+        "advancement": [
+          {
+            "type": "ScaleValue",
+            "configuration": {
+              "identifier": "indomitable",
+              "type": "number",
+              "distance": {
+                "units": ""
+              },
+              "scale": {
+                "9": {
+                  "value": 1
+                },
+                "13": {
+                  "value": 2
+                },
+                "17": {
+                  "value": 3
+                }
+              }
+            },
+            "value": {},
+            "title": "Indomitable Uses",
+            "icon": "systems/dnd5e/icons/svg/scale-value.svg",
+            "_id": "QY99EcKMsRFqFaQc"
+          },
+          {
+            "type": "ScaleValue",
+            "configuration": {
+              "identifier": "action-surge",
+              "type": "number",
+              "distance": {
+                "units": ""
+              },
+              "scale": {
+                "2": {
+                  "value": 1
+                },
+                "17": {
+                  "value": 2
+                }
+              }
+            },
+            "value": {},
+            "title": "Action Surge Uses",
+            "icon": "systems/dnd5e/icons/svg/scale-value.svg",
+            "_id": "upxazzRfyQVJskc5"
+          },
+          {
+            "type": "Trait",
+            "configuration": {
+              "mode": "default",
+              "allowReplacements": false,
+              "grants": [],
+              "choices": []
+            },
+            "value": {
+              "chosen": []
+            },
+            "level": 1,
+            "title": "Saving Throws",
+            "icon": "systems/dnd5e/icons/svg/trait-saves.svg",
+            "classRestriction": "primary",
+            "_id": "QGk8A42e6D2Hbf1k"
+          },
+          {
+            "type": "Trait",
+            "configuration": {
+              "mode": "default",
+              "allowReplacements": false,
+              "grants": [],
+              "choices": [
+                {
+                  "count": 2,
+                  "pool": []
+                }
+              ]
+            },
+            "value": {
+              "chosen": []
+            },
+            "level": 1,
+            "title": "Skills",
+            "icon": "systems/dnd5e/icons/svg/trait-skills.svg",
+            "classRestriction": "primary",
+            "_id": "aJnP3Bs9DQHjdhsS"
+          },
+          {
+            "type": "ItemGrant",
+            "configuration": {
+              "items": [],
+              "optional": false,
+              "spell": null
+            },
+            "value": {
+              "added": {
+                "gNokVW5efD0NpNvF": "",
+                "YteslsOGBwHWPXvD": ""
+              }
+            },
+            "level": 1,
+            "title": "Features",
+            "icon": "https://raw.githubusercontent.com/5etools-mirror-2/5etools-img/main/classes/PHB/Fighter.webp",
+            "_id": "R8A2h9c6DKOSVrrC"
+          },
+          {
+            "type": "ItemGrant",
+            "configuration": {
+              "items": [],
+              "optional": false,
+              "spell": null
+            },
+            "value": {
+              "added": {
+                "h0VIGHZVwBoQ2Rej": ""
+              }
+            },
+            "level": 2,
+            "title": "Features",
+            "icon": "https://raw.githubusercontent.com/5etools-mirror-2/5etools-img/main/classes/PHB/Fighter.webp",
+            "_id": "1UDxPktvZ6sIYwt7"
+          },
+          {
+            "type": "ItemGrant",
+            "configuration": {
+              "items": [],
+              "optional": false,
+              "spell": null
+            },
+            "value": {
+              "added": {
+                "KtBjxfZ8VqyX5iDu": ""
+              }
+            },
+            "level": 4,
+            "title": "Features",
+            "icon": "https://raw.githubusercontent.com/5etools-mirror-2/5etools-img/main/classes/PHB/Fighter.webp",
+            "_id": "18gUCMJF4ZsfC1LA"
+          },
+          {
+            "_id": "q8M9GZNKyHsfzTdd",
+            "type": "ItemGrant",
+            "level": 5,
+            "title": "Features",
+            "icon": "https://raw.githubusercontent.com/5etools-mirror-2/5etools-img/main/classes/PHB/Fighter.webp",
+            "configuration": {
+              "items": [],
+              "optional": false,
+              "spell": null
+            },
+            "value": {
+              "added": {
+                "wk8pl7r3nT1VkzmA": ""
+              }
+            }
+          }
+        ],
+        "startingEquipment": [],
+        "hd": {
+          "denomination": "d10",
+          "spent": 0,
+          "additional": ""
+        },
+        "primaryAbility": {
+          "value": [],
+          "all": true
+        },
+        "properties": []
+      },
+      "flags": {
+        "plutonium": {
+          "page": "classes.html",
+          "source": "PHB",
+          "hash": "fighter_phb",
+          "propDroppable": "class",
+          "filterValues": {
+            "Source": {
+              "TCE": 1,
+              "PHB": 1,
+              "XGE": 1,
+              "SCAG": 1,
+              "BGG": 1,
+              "TDCSR": 0,
+              "VRGR": 1,
+              "HWCS": 0,
+              "PSA": 0,
+              "DMG": 1,
+              "EGW": 0,
+              "FTD": 1,
+              "UATheMysticClass": 0,
+              "DSotDQ": 1,
+              "PSK": 0,
+              "_isActive": true,
+              "_totals": {
+                "yes": 9,
+                "no": 0,
+                "ignored": 6
+              },
+              "_combineBlue": "or",
+              "_combineRed": "or"
+            },
+            "Miscellaneous": {
+              "Reprinted": 2,
+              "Sidekick": 2,
+              "SRD": 0,
+              "Basic Rules": 0,
+              "Legacy": 0,
+              "_isActive": true,
+              "_totals": {
+                "yes": 0,
+                "no": 2,
+                "ignored": 3
+              },
+              "_combineBlue": "or",
+              "_combineRed": "or"
+            },
+            "Other/Text Options": {
+              "isDisplayClassIfSubclassActive": false,
+              "isClassFeatureVariant": true,
+              "_isActive": false
+            }
+          },
+          "isPrimaryClass": true,
+          "isDirectImport": true
+        }
+      },
+      "effects": [],
+      "img": "https://raw.githubusercontent.com/5etools-mirror-2/5etools-img/main/classes/PHB/Fighter.webp",
+      "folder": null,
+      "sort": 0,
+      "_stats": {
+        "systemId": "dnd5e",
+        "systemVersion": "3.1.2",
+        "coreVersion": "13.348",
+        "createdTime": 1718746798962,
+        "modifiedTime": 1718747062227,
+        "lastModifiedBy": "R8msCLOHPun6Bsoc"
+      },
+      "ownership": {
+        "default": 0
+      }
+    },
+    {
+      "_id": "JA9RW1jEGNKpGZre",
+      "name": "Champion",
+      "type": "subclass",
+      "system": {
+        "identifier": "champion",
+        "classIdentifier": "fighter",
+        "description": {
+          "value": "<div class=\"mb-2 ve-flex-col\"><div class=\"rd__b  rd__b--1\"><p>The archetypal Champion focuses on the development of raw physical power honed to deadly perfection. Those who model themselves on this archetype combine rigorous training with physical excellence to deal devastating blows.</p></div></div>",
+          "chat": ""
+        },
+        "source": {
+          "custom": "",
+          "book": "PHB",
+          "page": "72",
+          "license": "",
+          "rules": "2014",
+          "revision": 1
+        },
+        "spellcasting": {
+          "progression": "none",
+          "ability": "",
+          "preparation": {}
+        },
+        "advancement": [
+          {
+            "_id": "KgdZZCMNtcaepoeX",
+            "type": "ItemGrant",
+            "level": 3,
+            "title": "Features",
+            "icon": "icons/skills/melee/maneuver-greatsword-yellow.webp",
+            "configuration": {
+              "items": [],
+              "optional": false,
+              "spell": null
+            },
+            "value": {
+              "added": {
+                "DTRvcxfyb9EMJdGp": ""
+              }
+            }
+          }
+        ]
+      },
+      "flags": {
+        "plutonium": {
+          "page": "classes.html",
+          "source": "PHB",
+          "hash": "fighter_phb,state:sub-champion-phb=b1",
+          "propDroppable": "subclass",
+          "filterValues": {
+            "Source": {
+              "TCE": 1,
+              "PHB": 1,
+              "XGE": 1,
+              "SCAG": 1,
+              "BGG": 1,
+              "TDCSR": 0,
+              "VRGR": 1,
+              "HWCS": 0,
+              "PSA": 0,
+              "DMG": 1,
+              "EGW": 0,
+              "FTD": 1,
+              "UATheMysticClass": 0,
+              "DSotDQ": 1,
+              "PSK": 0,
+              "_isActive": true,
+              "_totals": {
+                "yes": 9,
+                "no": 0,
+                "ignored": 6
+              },
+              "_combineBlue": "or",
+              "_combineRed": "or"
+            },
+            "Miscellaneous": {
+              "Reprinted": 2,
+              "Sidekick": 2,
+              "SRD": 0,
+              "Basic Rules": 0,
+              "Legacy": 0,
+              "_isActive": true,
+              "_totals": {
+                "yes": 0,
+                "no": 2,
+                "ignored": 3
+              },
+              "_combineBlue": "or",
+              "_combineRed": "or"
+            },
+            "Other/Text Options": {
+              "isDisplayClassIfSubclassActive": false,
+              "isClassFeatureVariant": true,
+              "_isActive": false
+            }
+          },
+          "isPrimaryClass": true,
+          "isDirectImport": true
+        }
+      },
+      "effects": [],
+      "img": "icons/skills/melee/maneuver-greatsword-yellow.webp",
+      "folder": null,
+      "sort": 0,
+      "_stats": {
+        "systemId": "dnd5e",
+        "systemVersion": "3.1.2",
+        "coreVersion": "13.348",
+        "createdTime": 1718746800719,
+        "modifiedTime": 1718746917214,
+        "lastModifiedBy": "R8msCLOHPun6Bsoc"
+      },
+      "ownership": {
+        "default": 0
+      }
+    },
+    {
+      "_id": "gNokVW5efD0NpNvF",
+      "name": "Second Wind",
+      "type": "feat",
+      "system": {
+        "description": {
+          "value": "<div class=\"rd__b  rd__b--3\"><p>You have a limited well of stamina that you can draw on to protect yourself from harm. On your turn, you can use a bonus action to regain hit points equal to [[/r 1d10]] + your fighter level.</p><div class=\"rd__spc-inline-post\"></div><p>Once you use this feature, you must finish a short or long rest before you can use it again.</p></div>",
+          "chat": ""
+        },
+        "source": {
+          "custom": "",
+          "book": "PHB",
+          "page": "72",
+          "license": "",
+          "revision": 1,
+          "rules": "2014"
+        },
+        "cover": null,
+        "uses": {
+          "max": "1",
+          "recovery": [
+            {
+              "period": "sr",
+              "type": "recoverAll"
+            }
+          ],
+          "spent": 0
+        },
+        "type": {
+          "value": "class",
+          "subtype": ""
+        },
+        "requirements": "Fighter 1",
+        "crewed": false,
+        "properties": [],
+        "activities": {
+          "dnd5eactivity000": {
+            "_id": "dnd5eactivity000",
+            "type": "heal",
+            "activation": {
+              "type": "bonus",
+              "value": 1,
+              "condition": "",
+              "override": false
+            },
+            "consumption": {
+              "targets": [
+                {
+                  "type": "itemUses",
+                  "target": "",
+                  "value": "1",
+                  "scaling": {
+                    "mode": "",
+                    "formula": ""
+                  }
+                }
+              ],
+              "scaling": {
+                "allowed": false,
+                "max": ""
+              },
+              "spellSlot": true
+            },
+            "description": {
+              "chatFlavor": ""
+            },
+            "duration": {
+              "concentration": false,
+              "value": "",
+              "units": "inst",
+              "special": "",
+              "override": false
+            },
+            "effects": [],
+            "range": {
+              "units": "self",
+              "special": "",
+              "override": false
+            },
+            "target": {
+              "template": {
+                "count": "",
+                "contiguous": false,
+                "type": "",
+                "size": "",
+                "width": "",
+                "height": "",
+                "units": "ft"
+              },
+              "affects": {
+                "count": "",
+                "type": "self",
+                "choice": false,
+                "special": ""
+              },
+              "prompt": true,
+              "override": false
+            },
+            "uses": {
+              "spent": 0,
+              "max": "",
+              "recovery": []
+            },
+            "healing": {
+              "number": 1,
+              "denomination": 10,
+              "bonus": "@classes.fighter.levels",
+              "types": [
+                "healing"
+              ],
+              "custom": {
+                "enabled": false,
+                "formula": ""
+              },
+              "scaling": {
+                "mode": "whole",
+                "number": null,
+                "formula": ""
+              }
+            },
+            "sort": 0
+          }
+        },
+        "identifier": "second-wind",
+        "enchant": {},
+        "prerequisites": {
+          "level": null,
+          "items": [],
+          "repeatable": false
+        },
+        "advancement": []
+      },
+      "effects": [],
+      "flags": {
+        "plutonium": {
+          "page": "classFeature",
+          "source": "PHB",
+          "hash": "second%20wind_fighter_phb_1_phb"
+        },
+        "dnd5e": {
+          "advancementOrigin": "undefined.4KgDDMrcRiYdUsWd"
+        }
+      },
+      "img": "icons/magic/life/heart-glowing-red.webp",
+      "folder": null,
+      "sort": 0,
+      "_stats": {
+        "systemId": "dnd5e",
+        "systemVersion": "3.1.2",
+        "coreVersion": "13.348",
+        "createdTime": 1718746805925,
+        "modifiedTime": 1718746869424,
+        "lastModifiedBy": "R8msCLOHPun6Bsoc"
+      },
+      "ownership": {
+        "default": 0
+      }
+    },
+    {
+      "_id": "YteslsOGBwHWPXvD",
+      "name": "Fighting Style: Great Weapon Fighting",
+      "type": "feat",
+      "system": {
+        "description": {
+          "value": "<div><div>\n\t\t\t\t\t\t\n\t\t\t\t\t\t<div class=\"rd__b  rd__b--3\"><p>When you roll a 1 or 2 on a damage die for an attack you make with a melee weapon that you are wielding with two hands, you can reroll the die and must use the new roll, even if the new roll is a 1 or a 2. The weapon must have the two-handed or versatile property for you to gain this benefit.</p><div class=\"rd__spc-inline-post\"></div></div>\n\t\t\t\t\t</div></div>",
+          "chat": ""
+        },
+        "source": {
+          "custom": "",
+          "book": "PHB",
+          "page": "72",
+          "license": "",
+          "rules": "2014",
+          "revision": 1
+        },
+        "cover": null,
+        "uses": {
+          "max": "",
+          "spent": 0,
+          "recovery": []
+        },
+        "type": {
+          "value": "class",
+          "subtype": "fightingStyle"
+        },
+        "requirements": "",
+        "crewed": false,
+        "properties": [],
+        "identifier": "fighting-style-great-weapon-fighting",
+        "activities": {},
+        "advancement": [],
+        "enchant": {},
+        "prerequisites": {
+          "items": [],
+          "repeatable": false
+        }
+      },
+      "img": "https://assets.forge-vtt.com/bazaar/core/icons/skills/melee/strike-sword-steel-yellow.webp",
+      "flags": {
+        "plutonium": {
+          "page": "optionalfeatures.html",
+          "source": "PHB",
+          "hash": "great%20weapon%20fighting_phb"
+        },
+        "dnd5e": {
+          "advancementOrigin": "undefined.4KgDDMrcRiYdUsWd"
+        }
+      },
+      "effects": [],
+      "folder": null,
+      "sort": 0,
+      "_stats": {
+        "systemId": "dnd5e",
+        "systemVersion": "3.1.2",
+        "coreVersion": "13.348",
+        "createdTime": 1718746868646,
+        "modifiedTime": 1718746870613,
+        "lastModifiedBy": "R8msCLOHPun6Bsoc"
+      },
+      "ownership": {
+        "default": 0
+      }
+    },
+    {
+      "_id": "v1aTCEYX0OAsM4ud",
+      "name": "Chain Mail",
+      "type": "equipment",
+      "system": {
+        "description": {
+          "value": "<div class=\"rd__b  rd__b--2\"><p>Made of interlocking metal rings, chain mail includes a layer of quilted fabric worn underneath the mail to prevent chafing and to cushion the impact of blows. The suit includes gauntlets.</p></div>",
+          "chat": ""
+        },
+        "source": {
+          "custom": "",
+          "book": "PHB",
+          "page": "145",
+          "license": "",
+          "rules": "2014",
+          "revision": 1
+        },
+        "quantity": 1,
+        "weight": {
+          "value": 55,
+          "units": "lb"
+        },
+        "price": {
+          "value": 75,
+          "denomination": "gp"
+        },
+        "attunement": "",
+        "equipped": true,
+        "rarity": "",
+        "identified": true,
+        "cover": null,
+        "uses": {
+          "max": "",
+          "spent": 0,
+          "recovery": []
+        },
+        "armor": {
+          "value": 16,
+          "dex": 0,
+          "magicalBonus": null
+        },
+        "hp": {
+          "value": 0,
+          "max": 0,
+          "dt": null,
+          "conditions": ""
+        },
+        "speed": {
+          "value": null,
+          "conditions": ""
+        },
+        "strength": 13,
+        "proficient": null,
+        "type": {
+          "value": "heavy",
+          "baseItem": "chainmail"
+        },
+        "unidentified": {
+          "description": ""
+        },
+        "container": null,
+        "crewed": false,
+        "properties": [
+          "stealthDisadvantage"
+        ],
+        "identifier": "chain-mail",
+        "activities": {},
+        "attuned": false
+      },
+      "img": "icons/commodities/metal/mail-chain-steel.webp",
+      "flags": {
+        "plutonium": {
+          "page": "items.html",
+          "source": "PHB",
+          "hash": "chain%20mail_phb"
+        }
+      },
+      "effects": [],
+      "folder": null,
+      "sort": 0,
+      "_stats": {
+        "systemId": "dnd5e",
+        "systemVersion": "3.1.2",
+        "coreVersion": "13.348",
+        "createdTime": 1718746881847,
+        "modifiedTime": 1718746881847,
+        "lastModifiedBy": "R8msCLOHPun6Bsoc"
+      },
+      "ownership": {
+        "default": 0
+      }
+    },
+    {
+      "_id": "b1t7hhgkdj8wpkjq",
+      "name": "Crossbow Bolt",
+      "type": "consumable",
+      "system": {
+        "description": {
+          "value": "",
+          "chat": ""
+        },
+        "source": {
+          "custom": "",
+          "book": "PHB",
+          "page": "150",
+          "license": "",
+          "revision": 1,
+          "rules": "2014"
+        },
+        "quantity": 20,
+        "weight": {
+          "value": 0.075,
+          "units": "lb"
+        },
+        "price": {
+          "value": 5,
+          "denomination": "cp"
+        },
+        "attunement": "",
+        "equipped": false,
+        "rarity": "",
+        "identified": true,
+        "uses": {
+          "max": "",
+          "recovery": [],
+          "autoDestroy": false,
+          "spent": 0
+        },
+        "damage": {
+          "base": {
+            "number": null,
+            "denomination": null,
+            "bonus": "",
+            "types": [
+              "piercing"
+            ],
+            "custom": {
+              "enabled": false,
+              "formula": ""
+            },
+            "scaling": {
+              "mode": "",
+              "number": null,
+              "formula": ""
+            }
+          },
+          "replace": false
+        },
+        "type": {
+          "value": "ammo",
+          "subtype": "crossbowBolt"
+        },
+        "unidentified": {
+          "description": ""
+        },
+        "container": null,
+        "properties": [],
+        "magicalBonus": null,
+        "activities": {
+          "dnd5eactivity000": {
+            "_id": "dnd5eactivity000",
+            "type": "attack",
+            "activation": {
+              "type": "action",
+              "value": 1,
+              "condition": "",
+              "override": false
+            },
+            "consumption": {
+              "targets": [],
+              "scaling": {
+                "allowed": false,
+                "max": ""
+              },
+              "spellSlot": true
+            },
+            "description": {
+              "chatFlavor": ""
+            },
+            "duration": {
+              "concentration": false,
+              "value": "",
+              "units": "inst",
+              "special": "",
+              "override": false
+            },
+            "effects": [],
+            "range": {
+              "value": "5",
+              "units": "ft",
+              "special": "",
+              "override": false
+            },
+            "target": {
+              "template": {
+                "count": "",
+                "contiguous": false,
+                "type": "",
+                "size": "",
+                "width": "",
+                "height": "",
+                "units": "ft"
+              },
+              "affects": {
+                "count": "0",
+                "type": "",
+                "choice": false,
+                "special": ""
+              },
+              "prompt": true,
+              "override": false
+            },
+            "uses": {
+              "spent": 0,
+              "max": "",
+              "recovery": []
+            },
+            "attack": {
+              "ability": "",
+              "bonus": "",
+              "critical": {
+                "threshold": null
+              },
+              "flat": false,
+              "type": {
+                "value": "ranged",
+                "classification": "weapon"
+              }
+            },
+            "damage": {
+              "critical": {
+                "bonus": ""
+              },
+              "includeBase": true,
+              "parts": []
+            },
+            "sort": 0
+          }
+        },
+        "identifier": "crossbow-bolt",
+        "attuned": false
+      },
+      "img": "icons/weapons/ammunition/arrow-head-war-flight.webp",
+      "flags": {
+        "plutonium": {
+          "page": "items.html",
+          "source": "PHB",
+          "hash": "crossbow%20bolt_phb"
+        },
+        "dnd5e": {}
+      },
+      "effects": [],
+      "folder": null,
+      "sort": 0,
+      "_stats": {
+        "systemId": "dnd5e",
+        "systemVersion": "3.1.2",
+        "coreVersion": "13.348",
+        "createdTime": 1718746882227,
+        "modifiedTime": 1718746882227,
+        "lastModifiedBy": "R8msCLOHPun6Bsoc"
+      },
+      "ownership": {
+        "default": 0
+      }
+    },
+    {
+      "_id": "DgrcYR5Di2fWBOPd",
+      "name": "Backpack",
+      "type": "container",
+      "system": {
+        "description": {
+          "value": "<div class=\"rd__b  rd__b--2\"><p>A backpack can hold one cubic foot or 30 pounds of gear. You can also strap items, such as a bedroll or a coil of rope, to the outside of a backpack.</p></div>",
+          "chat": ""
+        },
+        "source": {
+          "custom": "",
+          "book": "PHB",
+          "page": "153",
+          "license": "",
+          "rules": "2014",
+          "revision": 1
+        },
+        "quantity": 1,
+        "weight": {
+          "value": 5,
+          "units": "lb"
+        },
+        "price": {
+          "value": 2,
+          "denomination": "gp"
+        },
+        "attunement": "",
+        "equipped": true,
+        "rarity": "",
+        "identified": true,
+        "capacity": {
+          "weight": {
+            "value": 30,
+            "units": "lb"
+          },
+          "volume": {
+            "units": "cubicFoot"
+          }
+        },
+        "currency": {
+          "cp": 0,
+          "sp": 0,
+          "ep": 0,
+          "gp": 0,
+          "pp": 0
+        },
+        "unidentified": {
+          "description": ""
+        },
+        "container": null,
+        "properties": [],
+        "identifier": "backpack",
+        "attuned": false
+      },
+      "img": "icons/containers/bags/pack-rounded-leather-brown.webp",
+      "flags": {
+        "plutonium": {
+          "page": "items.html",
+          "source": "PHB",
+          "hash": "backpack_phb"
+        }
+      },
+      "effects": [],
+      "folder": null,
+      "sort": 0,
+      "_stats": {
+        "systemId": "dnd5e",
+        "systemVersion": "3.1.2",
+        "coreVersion": "13.348",
+        "createdTime": 1718746883519,
+        "modifiedTime": 1718746883519,
+        "lastModifiedBy": "R8msCLOHPun6Bsoc"
+      },
+      "ownership": {
+        "default": 0
+      }
+    },
+    {
+      "_id": "3wkWhe7EMfHJIS6c",
+      "name": "Bedroll",
+      "type": "loot",
+      "system": {
+        "description": {
+          "value": "",
+          "chat": ""
+        },
+        "source": {
+          "custom": "",
+          "book": "PHB",
+          "page": "150",
+          "license": "",
+          "rules": "2014",
+          "revision": 1
+        },
+        "quantity": 1,
+        "weight": {
+          "value": 7,
+          "units": "lb"
+        },
+        "price": {
+          "value": 1,
+          "denomination": "gp"
+        },
+        "rarity": "",
+        "identified": true,
+        "type": {
+          "value": "",
+          "subtype": ""
+        },
+        "unidentified": {
+          "description": ""
+        },
+        "container": "DgrcYR5Di2fWBOPd",
+        "properties": [],
+        "identifier": "bedroll"
+      },
+      "img": "icons/sundries/survival/bedroll-pink.webp",
+      "flags": {
+        "plutonium": {
+          "page": "items.html",
+          "source": "PHB",
+          "hash": "bedroll_phb"
+        }
+      },
+      "effects": [],
+      "folder": null,
+      "sort": 0,
+      "_stats": {
+        "systemId": "dnd5e",
+        "systemVersion": "3.1.2",
+        "coreVersion": "13.348",
+        "createdTime": 1718746883874,
+        "modifiedTime": 1718746883874,
+        "lastModifiedBy": "R8msCLOHPun6Bsoc"
+      },
+      "ownership": {
+        "default": 0
+      }
+    },
+    {
+      "_id": "8fR6BQH9SdWtOpwN",
+      "name": "Mess Kit",
+      "type": "loot",
+      "system": {
+        "description": {
+          "value": "<div class=\"rd__b  rd__b--2\"><p>This tin box contains a cup and simple cutlery. The box clamps together, and one side can be used as a cooking pan and the other as a plate or shallow bowl.</p></div>",
+          "chat": ""
+        },
+        "source": {
+          "custom": "",
+          "book": "PHB",
+          "page": "152",
+          "license": "",
+          "rules": "2014",
+          "revision": 1
+        },
+        "quantity": 1,
+        "weight": {
+          "value": 1,
+          "units": "lb"
+        },
+        "price": {
+          "value": 2,
+          "denomination": "sp"
+        },
+        "rarity": "",
+        "identified": true,
+        "type": {
+          "value": "",
+          "subtype": ""
+        },
+        "unidentified": {
+          "description": ""
+        },
+        "container": "DgrcYR5Di2fWBOPd",
+        "properties": [],
+        "identifier": "mess-kit"
+      },
+      "img": "icons/containers/kitchenware/bowl-clay-brown.webp",
+      "flags": {
+        "plutonium": {
+          "page": "items.html",
+          "source": "PHB",
+          "hash": "mess%20kit_phb"
+        }
+      },
+      "effects": [],
+      "folder": null,
+      "sort": 0,
+      "_stats": {
+        "systemId": "dnd5e",
+        "systemVersion": "3.1.2",
+        "coreVersion": "13.348",
+        "createdTime": 1718746884219,
+        "modifiedTime": 1718746884219,
+        "lastModifiedBy": "R8msCLOHPun6Bsoc"
+      },
+      "ownership": {
+        "default": 0
+      }
+    },
+    {
+      "_id": "IdNLjlJrV2F8GpT4",
+      "name": "Tinderbox",
+      "type": "loot",
+      "system": {
+        "description": {
+          "value": "<div class=\"rd__b  rd__b--2\"><p>This small container holds flint, fire steel, and tinder (usually dry cloth soaked in light oil) used to kindle a fire. Using it to light a torch—or anything else with abundant, exposed fuel—takes an action. Lighting any other fire takes 1 minute.</p></div>",
+          "chat": ""
+        },
+        "source": {
+          "custom": "",
+          "book": "PHB",
+          "page": "153",
+          "license": "",
+          "rules": "2014",
+          "revision": 1
+        },
+        "quantity": 1,
+        "weight": {
+          "value": 1,
+          "units": "lb"
+        },
+        "price": {
+          "value": 5,
+          "denomination": "sp"
+        },
+        "rarity": "",
+        "identified": true,
+        "container": "DgrcYR5Di2fWBOPd",
+        "type": {
+          "value": "",
+          "subtype": ""
+        },
+        "unidentified": {
+          "description": ""
+        },
+        "properties": [],
+        "identifier": "tinderbox"
+      },
+      "img": "icons/containers/boxes/crate-worn-brown.webp",
+      "flags": {
+        "plutonium": {
+          "page": "items.html",
+          "source": "PHB",
+          "hash": "tinderbox_phb"
+        }
+      },
+      "effects": [],
+      "folder": null,
+      "sort": 0,
+      "_stats": {
+        "systemId": "dnd5e",
+        "systemVersion": "3.1.2",
+        "coreVersion": "13.348",
+        "createdTime": 1718746884806,
+        "modifiedTime": 1718746884806,
+        "lastModifiedBy": "R8msCLOHPun6Bsoc"
+      },
+      "ownership": {
+        "default": 0
+      }
+    },
+    {
+      "_id": "8a42jJlFOgVIhMgD",
+      "name": "Torch",
+      "type": "consumable",
+      "system": {
+        "description": {
+          "value": "<div class=\"rd__b  rd__b--2\"><p>A torch burns for 1 hour, providing bright light in a 20-foot radius and dim light for an additional 20 feet. If you make a melee attack with a burning torch and hit, it deals 1 fire damage.</p></div>",
+          "chat": ""
+        },
+        "source": {
+          "custom": "",
+          "book": "PHB",
+          "page": "153",
+          "license": "",
+          "revision": 1,
+          "rules": "2014"
+        },
+        "quantity": 10,
+        "weight": {
+          "value": 1,
+          "units": "lb"
+        },
+        "price": {
+          "value": 1,
+          "denomination": "cp"
+        },
+        "attunement": "",
+        "equipped": false,
+        "rarity": "",
+        "identified": true,
+        "uses": {
+          "max": "1",
+          "recovery": [],
+          "autoDestroy": false,
+          "spent": 0
+        },
+        "damage": {
+          "base": {
+            "number": null,
+            "denomination": null,
+            "bonus": "",
+            "types": [
+              "fire"
+            ],
+            "custom": {
+              "enabled": true,
+              "formula": "1"
+            },
+            "scaling": {
+              "mode": "",
+              "number": null,
+              "formula": ""
+            }
+          },
+          "replace": false
+        },
+        "container": "DgrcYR5Di2fWBOPd",
+        "properties": [],
+        "type": {
+          "value": "trinket",
+          "subtype": ""
+        },
+        "unidentified": {
+          "description": ""
+        },
+        "magicalBonus": null,
+        "activities": {
+          "dnd5eactivity000": {
+            "_id": "dnd5eactivity000",
+            "type": "attack",
+            "activation": {
+              "type": "action",
+              "value": 1,
+              "condition": "",
+              "override": false
+            },
+            "consumption": {
+              "targets": [
+                {
+                  "type": "itemUses",
+                  "target": "",
+                  "value": "1",
+                  "scaling": {
+                    "mode": "",
+                    "formula": ""
+                  }
+                }
+              ],
+              "scaling": {
+                "allowed": false,
+                "max": ""
+              },
+              "spellSlot": true
+            },
+            "description": {
+              "chatFlavor": ""
+            },
+            "duration": {
+              "concentration": false,
+              "value": "1",
+              "units": "hour",
+              "special": "",
+              "override": false
+            },
+            "effects": [],
+            "range": {
+              "value": "5",
+              "units": "ft",
+              "special": "",
+              "override": false
+            },
+            "target": {
+              "template": {
+                "count": "",
+                "contiguous": false,
+                "type": "",
+                "size": "",
+                "width": "",
+                "height": "",
+                "units": "ft"
+              },
+              "affects": {
+                "count": "",
+                "type": "",
+                "choice": false,
+                "special": ""
+              },
+              "prompt": true,
+              "override": false
+            },
+            "uses": {
+              "spent": 0,
+              "max": "",
+              "recovery": []
+            },
+            "attack": {
+              "ability": "str",
+              "bonus": "",
+              "critical": {
+                "threshold": null
+              },
+              "flat": false,
+              "type": {
+                "value": "melee",
+                "classification": "weapon"
+              }
+            },
+            "damage": {
+              "critical": {
+                "bonus": ""
+              },
+              "includeBase": true,
+              "parts": []
+            },
+            "sort": 0
+          }
+        },
+        "identifier": "torch",
+        "attuned": false
+      },
+      "img": "icons/sundries/lights/torch-white.webp",
+      "flags": {
+        "plutonium": {
+          "page": "items.html",
+          "source": "PHB",
+          "hash": "torch_phb"
+        },
+        "midi-qol": {
+          "forceCEOff": true
+        },
+        "dnd5e": {}
+      },
+      "effects": [
+        {
+          "name": "Torch",
+          "changes": [
+            {
+              "key": "ATL.light.dim",
+              "mode": 5,
+              "value": "40",
+              "priority": 4
+            },
+            {
+              "key": "ATL.light.bright",
+              "mode": 5,
+              "value": "20",
+              "priority": 4
+            },
+            {
+              "key": "ATL.light.color",
+              "mode": 5,
+              "value": "#f98026",
+              "priority": 4
+            },
+            {
+              "key": "ATL.light.alpha",
+              "mode": 5,
+              "value": "0.4",
+              "priority": 4
+            },
+            {
+              "key": "ATL.light.animation",
+              "mode": 5,
+              "value": "{\"type\": \"torch\",\"speed\": 1,\"intensity\": 1}",
+              "priority": 4
+            }
+          ],
+          "disabled": false,
+          "duration": {
+            "rounds": null,
+            "seconds": 3600,
+            "turns": null,
+            "startTime": 1718668927,
+            "combat": null,
+            "startRound": 0,
+            "startTurn": 0
+          },
+          "origin": "Actor.SwCryaCMLqK2RCrj.Item.8a42jJlFOgVIhMgD",
+          "transfer": true,
+          "flags": {
+            "dfreds-convenient-effects": {
+              "isConvenient": true,
+              "isDynamic": false,
+              "isViewable": true,
+              "nestedEffects": [],
+              "subEffects": []
+            },
+            "plutonium": {
+              "dedupeId": "torch"
+            }
+          },
+          "description": "Adds torch light for 1 hour (requires ATL)",
+          "tint": "#ffffff",
+          "statuses": [
+            "Convenient Effect: Torch"
+          ],
+          "_id": "ryVgIPkRbgzQRlWV",
+          "_stats": {
+            "coreVersion": "13.348",
+            "systemId": null,
+            "systemVersion": null,
+            "createdTime": null,
+            "modifiedTime": null,
+            "lastModifiedBy": null
+          },
+          "img": "icons/sundries/lights/torch-black.webp",
+          "type": "base",
+          "system": {},
+          "sort": 0
+        }
+      ],
+      "folder": null,
+      "sort": 0,
+      "_stats": {
+        "systemId": "dnd5e",
+        "systemVersion": "3.1.2",
+        "coreVersion": "13.348",
+        "createdTime": 1718746884973,
+        "modifiedTime": 1718746886011,
+        "lastModifiedBy": "R8msCLOHPun6Bsoc"
+      },
+      "ownership": {
+        "default": 0
+      }
+    },
+    {
+      "_id": "GDb67JIVLFMsfopH",
+      "name": "Rations (1 day)",
+      "type": "consumable",
+      "system": {
+        "description": {
+          "value": "<div class=\"rd__b  rd__b--2\"><p>Rations consist of dry foods suitable for extended travel, including jerky, dried fruit, hardtack, and nuts.</p></div>",
+          "chat": ""
+        },
+        "source": {
+          "custom": "",
+          "book": "PHB",
+          "page": "153",
+          "license": "",
+          "revision": 1,
+          "rules": "2014"
+        },
+        "quantity": 10,
+        "weight": {
+          "value": 2,
+          "units": "lb"
+        },
+        "price": {
+          "value": 5,
+          "denomination": "sp"
+        },
+        "attunement": "",
+        "equipped": false,
+        "rarity": "",
+        "identified": true,
+        "uses": {
+          "max": "1",
+          "recovery": [],
+          "autoDestroy": true,
+          "spent": 0
+        },
+        "damage": {
+          "base": {
+            "number": null,
+            "denomination": null,
+            "types": [],
+            "custom": {
+              "enabled": false
+            },
+            "scaling": {
+              "number": 1
+            }
+          },
+          "replace": false
+        },
+        "container": "DgrcYR5Di2fWBOPd",
+        "properties": [],
+        "type": {
+          "value": "food",
+          "subtype": ""
+        },
+        "unidentified": {
+          "description": ""
+        },
+        "magicalBonus": null,
+        "activities": {
+          "dnd5eactivity000": {
+            "_id": "dnd5eactivity000",
+            "type": "utility",
+            "activation": {
+              "type": "action",
+              "value": 1,
+              "condition": "",
+              "override": false
+            },
+            "consumption": {
+              "targets": [
+                {
+                  "type": "itemUses",
+                  "target": "",
+                  "value": "1",
+                  "scaling": {
+                    "mode": "",
+                    "formula": ""
+                  }
+                }
+              ],
+              "scaling": {
+                "allowed": false,
+                "max": ""
+              },
+              "spellSlot": true
+            },
+            "description": {
+              "chatFlavor": ""
+            },
+            "duration": {
+              "concentration": false,
+              "value": "",
+              "units": "inst",
+              "special": "",
+              "override": false
+            },
+            "effects": [],
+            "range": {
+              "value": "0",
+              "units": "touch",
+              "special": "",
+              "override": false
+            },
+            "target": {
+              "template": {
+                "count": "",
+                "contiguous": false,
+                "type": "",
+                "size": "",
+                "width": "",
+                "height": "",
+                "units": "ft"
+              },
+              "affects": {
+                "count": "1",
+                "type": "creature",
+                "choice": false,
+                "special": ""
+              },
+              "prompt": true,
+              "override": false
+            },
+            "uses": {
+              "spent": 0,
+              "max": "",
+              "recovery": []
+            },
+            "roll": {
+              "formula": "",
+              "name": "",
+              "prompt": false,
+              "visible": false
+            },
+            "sort": 0
+          }
+        },
+        "identifier": "rations-1-day",
+        "attuned": false
+      },
+      "img": "icons/consumables/grains/bread-loaf-boule-rustic-brown.webp",
+      "flags": {
+        "plutonium": {
+          "page": "items.html",
+          "source": "PHB",
+          "hash": "rations%20(1%20day)_phb"
+        },
+        "dnd5e": {}
+      },
+      "effects": [],
+      "folder": null,
+      "sort": 0,
+      "_stats": {
+        "systemId": "dnd5e",
+        "systemVersion": "3.1.2",
+        "coreVersion": "13.348",
+        "createdTime": 1718746886067,
+        "modifiedTime": 1718746886067,
+        "lastModifiedBy": "R8msCLOHPun6Bsoc"
+      },
+      "ownership": {
+        "default": 0
+      }
+    },
+    {
+      "_id": "h0VIGHZVwBoQ2Rej",
+      "name": "Action Surge",
+      "type": "feat",
+      "system": {
+        "description": {
+          "value": "<div class=\"rd__b  rd__b--3\"><p>Starting at 2nd level, you can push yourself beyond your normal limits for a moment. On your turn, you can take one additional action.</p><div class=\"rd__spc-inline-post\"></div><p>Once you use this feature, you must finish a short or long rest before you can use it again. Starting at 17th level, you can use it twice before a rest, but only once on the same turn.</p></div>",
+          "chat": ""
+        },
+        "source": {
+          "custom": "",
+          "book": "PHB",
+          "page": "72",
+          "license": "",
+          "revision": 1,
+          "rules": "2014"
+        },
+        "cover": null,
+        "uses": {
+          "max": "@scale.fighter.action-surge",
+          "recovery": [
+            {
+              "period": "sr",
+              "type": "recoverAll"
+            }
+          ],
+          "spent": 0
+        },
+        "type": {
+          "value": "class",
+          "subtype": ""
+        },
+        "requirements": "Fighter 2",
+        "crewed": false,
+        "properties": [],
+        "activities": {
+          "dnd5eactivity000": {
+            "_id": "dnd5eactivity000",
+            "type": "utility",
+            "activation": {
+              "type": "special",
+              "value": null,
+              "condition": "",
+              "override": false
+            },
+            "consumption": {
+              "targets": [
+                {
+                  "type": "itemUses",
+                  "target": "",
+                  "value": "1",
+                  "scaling": {
+                    "mode": "",
+                    "formula": ""
+                  }
+                }
+              ],
+              "scaling": {
+                "allowed": false,
+                "max": ""
+              },
+              "spellSlot": true
+            },
+            "description": {
+              "chatFlavor": ""
+            },
+            "duration": {
+              "concentration": false,
+              "value": "",
+              "units": "inst",
+              "special": "",
+              "override": false
+            },
+            "effects": [],
+            "range": {
+              "units": "self",
+              "special": "",
+              "override": false
+            },
+            "target": {
+              "template": {
+                "count": "",
+                "contiguous": false,
+                "type": "",
+                "size": "",
+                "width": "",
+                "height": "",
+                "units": "ft"
+              },
+              "affects": {
+                "count": "",
+                "type": "self",
+                "choice": false,
+                "special": ""
+              },
+              "prompt": true,
+              "override": false
+            },
+            "uses": {
+              "spent": 0,
+              "max": "",
+              "recovery": []
+            },
+            "roll": {
+              "formula": "",
+              "name": "",
+              "prompt": false,
+              "visible": false
+            },
+            "sort": 0
+          }
+        },
+        "identifier": "action-surge",
+        "enchant": {},
+        "prerequisites": {
+          "level": null,
+          "items": [],
+          "repeatable": false
+        },
+        "advancement": []
+      },
+      "effects": [],
+      "flags": {
+        "plutonium": {
+          "page": "classFeature",
+          "source": "PHB",
+          "hash": "action%20surge_fighter_phb_2_phb"
+        },
+        "dnd5e": {
+          "advancementOrigin": "undefined.RWDwGSxp2je02YNH"
+        }
+      },
+      "img": "icons/skills/social/intimidation-impressing.webp",
+      "folder": null,
+      "sort": 0,
+      "_stats": {
+        "systemId": "dnd5e",
+        "systemVersion": "3.1.2",
+        "coreVersion": "13.348",
+        "createdTime": 1718746886486,
+        "modifiedTime": 1718746887965,
+        "lastModifiedBy": "R8msCLOHPun6Bsoc"
+      },
+      "ownership": {
+        "default": 0
+      }
+    },
+    {
+      "_id": "s0FdNXC7BibXwOuv",
+      "name": "Waterskin",
+      "type": "consumable",
+      "system": {
+        "description": {
+          "value": "<div class=\"rd__b  rd__b--2\"><p>A waterskin can hold up to 4 pints of liquid.</p></div>",
+          "chat": ""
+        },
+        "source": {
+          "custom": "",
+          "book": "PHB",
+          "page": "153",
+          "license": "",
+          "revision": 1,
+          "rules": "2014"
+        },
+        "quantity": 1,
+        "weight": {
+          "value": 5,
+          "units": "lb"
+        },
+        "price": {
+          "value": 2,
+          "denomination": "sp"
+        },
+        "attunement": "",
+        "equipped": false,
+        "rarity": "",
+        "identified": true,
+        "uses": {
+          "max": "4",
+          "recovery": [],
+          "autoDestroy": false,
+          "spent": 0
+        },
+        "damage": {
+          "base": {
+            "number": null,
+            "denomination": null,
+            "types": [],
+            "custom": {
+              "enabled": false
+            },
+            "scaling": {
+              "number": 1
+            }
+          },
+          "replace": false
+        },
+        "container": "DgrcYR5Di2fWBOPd",
+        "properties": [],
+        "type": {
+          "value": "food",
+          "subtype": ""
+        },
+        "unidentified": {
+          "description": ""
+        },
+        "magicalBonus": null,
+        "activities": {
+          "dnd5eactivity000": {
+            "_id": "dnd5eactivity000",
+            "type": "utility",
+            "activation": {
+              "type": "action",
+              "value": 1,
+              "condition": "",
+              "override": false
+            },
+            "consumption": {
+              "targets": [
+                {
+                  "type": "itemUses",
+                  "target": "",
+                  "value": "1",
+                  "scaling": {
+                    "mode": "",
+                    "formula": ""
+                  }
+                }
+              ],
+              "scaling": {
+                "allowed": false,
+                "max": ""
+              },
+              "spellSlot": true
+            },
+            "description": {
+              "chatFlavor": ""
+            },
+            "duration": {
+              "concentration": false,
+              "value": "",
+              "units": "inst",
+              "special": "",
+              "override": false
+            },
+            "effects": [],
+            "range": {
+              "value": "0",
+              "units": "touch",
+              "special": "",
+              "override": false
+            },
+            "target": {
+              "template": {
+                "count": "",
+                "contiguous": false,
+                "type": "",
+                "size": "",
+                "width": "",
+                "height": "",
+                "units": "ft"
+              },
+              "affects": {
+                "count": "0",
+                "type": "",
+                "choice": false,
+                "special": ""
+              },
+              "prompt": true,
+              "override": false
+            },
+            "uses": {
+              "spent": 0,
+              "max": "",
+              "recovery": []
+            },
+            "roll": {
+              "formula": "",
+              "name": "",
+              "prompt": false,
+              "visible": false
+            },
+            "sort": 0
+          }
+        },
+        "identifier": "waterskin",
+        "attuned": false
+      },
+      "img": "icons/sundries/survival/wetskin-leather-purple.webp",
+      "flags": {
+        "plutonium": {
+          "page": "items.html",
+          "source": "PHB",
+          "hash": "waterskin_phb"
+        },
+        "dnd5e": {}
+      },
+      "effects": [],
+      "folder": null,
+      "sort": 0,
+      "_stats": {
+        "systemId": "dnd5e",
+        "systemVersion": "3.1.2",
+        "coreVersion": "13.348",
+        "createdTime": 1718746886915,
+        "modifiedTime": 1718746886915,
+        "lastModifiedBy": "R8msCLOHPun6Bsoc"
+      },
+      "ownership": {
+        "default": 0
+      }
+    },
+    {
+      "_id": "9M2cSOrnDwELfw0f",
+      "name": "Hempen Rope (50 feet)",
+      "type": "consumable",
+      "system": {
+        "description": {
+          "value": "<div class=\"rd__b  rd__b--2\"><p>Rope, whether made of hemp or silk, has 2 hit points and can be burst with a DC 17 Strength check.</p></div>",
+          "chat": ""
+        },
+        "source": {
+          "custom": "",
+          "book": "PHB",
+          "page": "153",
+          "license": "",
+          "revision": 1,
+          "rules": "2014"
+        },
+        "quantity": 1,
+        "weight": {
+          "value": 10,
+          "units": "lb"
+        },
+        "price": {
+          "value": 1,
+          "denomination": "gp"
+        },
+        "attunement": "",
+        "equipped": false,
+        "rarity": "",
+        "identified": true,
+        "uses": {
+          "max": "1",
+          "recovery": [],
+          "autoDestroy": false,
+          "spent": 0
+        },
+        "damage": {
+          "base": {
+            "number": null,
+            "denomination": null,
+            "types": [],
+            "custom": {
+              "enabled": false
+            },
+            "scaling": {
+              "number": 1
+            }
+          },
+          "replace": false
+        },
+        "type": {
+          "value": "trinket",
+          "subtype": ""
+        },
+        "unidentified": {
+          "description": ""
+        },
+        "container": "DgrcYR5Di2fWBOPd",
+        "properties": [],
+        "magicalBonus": null,
+        "activities": {
+          "dnd5eactivity000": {
+            "_id": "dnd5eactivity000",
+            "type": "check",
+            "activation": {
+              "type": "action",
+              "value": 1,
+              "condition": "",
+              "override": false
+            },
+            "consumption": {
+              "targets": [
+                {
+                  "type": "itemUses",
+                  "target": "",
+                  "value": "1",
+                  "scaling": {
+                    "mode": "",
+                    "formula": ""
+                  }
+                }
+              ],
+              "scaling": {
+                "allowed": false,
+                "max": ""
+              },
+              "spellSlot": true
+            },
+            "description": {
+              "chatFlavor": ""
+            },
+            "duration": {
+              "concentration": false,
+              "value": "",
+              "units": "inst",
+              "special": "",
+              "override": false
+            },
+            "effects": [],
+            "range": {
+              "value": "0",
+              "units": "ft",
+              "special": "",
+              "override": false
+            },
+            "target": {
+              "template": {
+                "count": "",
+                "contiguous": false,
+                "type": "",
+                "size": "",
+                "width": "",
+                "height": "",
+                "units": "ft"
+              },
+              "affects": {
+                "count": "0",
+                "type": "",
+                "choice": false,
+                "special": ""
+              },
+              "prompt": true,
+              "override": false
+            },
+            "uses": {
+              "spent": 0,
+              "max": "",
+              "recovery": []
+            },
+            "check": {
+              "ability": "",
+              "associated": [],
+              "dc": {}
+            },
+            "sort": 0
+          },
+          "dnd5eactivity100": {
+            "_id": "dnd5eactivity100",
+            "type": "save",
+            "activation": {
+              "type": "action",
+              "value": 1,
+              "condition": "",
+              "override": false
+            },
+            "consumption": {
+              "targets": [
+                {
+                  "type": "itemUses",
+                  "target": "",
+                  "value": "1",
+                  "scaling": {
+                    "mode": "",
+                    "formula": ""
+                  }
+                }
+              ],
+              "scaling": {
+                "allowed": false,
+                "max": ""
+              },
+              "spellSlot": true
+            },
+            "description": {
+              "chatFlavor": ""
+            },
+            "duration": {
+              "concentration": false,
+              "value": "",
+              "units": "inst",
+              "special": "",
+              "override": false
+            },
+            "effects": [],
+            "range": {
+              "value": "0",
+              "units": "ft",
+              "special": "",
+              "override": false
+            },
+            "target": {
+              "template": {
+                "count": "",
+                "contiguous": false,
+                "type": "",
+                "size": "",
+                "width": "",
+                "height": "",
+                "units": "ft"
+              },
+              "affects": {
+                "count": "0",
+                "type": "",
+                "choice": false,
+                "special": ""
+              },
+              "prompt": true,
+              "override": false
+            },
+            "uses": {
+              "spent": 0,
+              "max": "",
+              "recovery": []
+            },
+            "damage": {
+              "onSave": "half",
+              "parts": []
+            },
+            "save": {
+              "ability": [
+                "str"
+              ],
+              "dc": {
+                "calculation": "",
+                "formula": "17"
+              }
+            },
+            "sort": 0
+          }
+        },
+        "identifier": "hempen-rope-50-feet",
+        "attuned": false
+      },
+      "img": "icons/sundries/survival/rope-coiled-wrapped-brown.webp",
+      "flags": {
+        "plutonium": {
+          "page": "items.html",
+          "source": "PHB",
+          "hash": "hempen%20rope%20(50%20feet)_phb"
+        },
+        "dnd5e": {}
+      },
+      "effects": [],
+      "folder": null,
+      "sort": 0,
+      "_stats": {
+        "systemId": "dnd5e",
+        "systemVersion": "3.1.2",
+        "coreVersion": "13.348",
+        "createdTime": 1718746887633,
+        "modifiedTime": 1718746887633,
+        "lastModifiedBy": "R8msCLOHPun6Bsoc"
+      },
+      "ownership": {
+        "default": 0
+      }
+    },
+    {
+      "_id": "1EVjmArqlLoEvCYi",
+      "name": "Greataxe",
+      "type": "weapon",
+      "system": {
+        "description": {
+          "value": "<div class=\"rd__b  rd__b--2\"></div>",
+          "chat": ""
+        },
+        "source": {
+          "custom": "",
+          "book": "PHB",
+          "page": "149",
+          "license": "",
+          "revision": 1,
+          "rules": "2014"
+        },
+        "quantity": 1,
+        "weight": {
+          "value": 7,
+          "units": "lb"
+        },
+        "price": {
+          "value": 30,
+          "denomination": "gp"
+        },
+        "attunement": "",
+        "equipped": true,
+        "rarity": "",
+        "identified": true,
+        "cover": null,
+        "range": {
+          "value": null,
+          "long": 0,
+          "units": "ft",
+          "reach": null
+        },
+        "uses": {
+          "max": "",
+          "recovery": [],
+          "spent": 0
+        },
+        "damage": {
+          "versatile": {
+            "number": null,
+            "denomination": null,
+            "bonus": "",
+            "types": [],
+            "custom": {
+              "enabled": false,
+              "formula": ""
+            },
+            "scaling": {
+              "mode": "",
+              "number": null,
+              "formula": ""
+            }
+          },
+          "base": {
+            "number": 1,
+            "denomination": 12,
+            "bonus": "",
+            "types": [
+              "slashing"
+            ],
+            "custom": {
+              "enabled": false,
+              "formula": ""
+            },
+            "scaling": {
+              "mode": "",
+              "number": null,
+              "formula": ""
+            }
+          }
+        },
+        "armor": {
+          "value": null
+        },
+        "hp": {
+          "value": 0,
+          "max": 0,
+          "dt": null,
+          "conditions": ""
+        },
+        "properties": [
+          "hvy",
+          "two"
+        ],
+        "proficient": null,
+        "type": {
+          "value": "martialM",
+          "baseItem": "greataxe"
+        },
+        "unidentified": {
+          "description": ""
+        },
+        "container": null,
+        "crewed": false,
+        "magicalBonus": null,
+        "activities": {
+          "dnd5eactivity000": {
+            "_id": "dnd5eactivity000",
+            "type": "attack",
+            "activation": {
+              "type": "action",
+              "value": 1,
+              "condition": "",
+              "override": false
+            },
+            "consumption": {
+              "targets": [],
+              "scaling": {
+                "allowed": false,
+                "max": ""
+              },
+              "spellSlot": true
+            },
+            "description": {
+              "chatFlavor": ""
+            },
+            "duration": {
+              "concentration": false,
+              "value": "",
+              "units": "inst",
+              "special": "",
+              "override": false
+            },
+            "effects": [],
+            "range": {
+              "units": "ft",
+              "special": "",
+              "override": false
+            },
+            "target": {
+              "template": {
+                "count": "",
+                "contiguous": false,
+                "type": "",
+                "size": "",
+                "width": "",
+                "height": "",
+                "units": "ft"
+              },
+              "affects": {
+                "count": "0",
+                "type": "",
+                "choice": false,
+                "special": ""
+              },
+              "prompt": true,
+              "override": false
+            },
+            "uses": {
+              "spent": 0,
+              "max": "",
+              "recovery": []
+            },
+            "attack": {
+              "ability": "",
+              "bonus": "",
+              "critical": {
+                "threshold": null
+              },
+              "flat": false,
+              "type": {
+                "value": "melee",
+                "classification": "weapon"
+              }
+            },
+            "damage": {
+              "critical": {
+                "bonus": ""
+              },
+              "includeBase": true,
+              "parts": []
+            },
+            "sort": 0
+          }
+        },
+        "identifier": "greataxe",
+        "attuned": false,
+        "ammunition": {}
+      },
+      "img": "icons/weapons/axes/axe-double.webp",
+      "flags": {
+        "plutonium": {
+          "page": "items.html",
+          "source": "PHB",
+          "hash": "greataxe_phb"
+        },
+        "rsr5e": {
+          "quickDamage": {
+            "context": {
+              "0": ""
+            },
+            "value": {
+              "0": true
+            }
+          },
+          "quickOther": {
+            "context": ""
+          },
+          "quickFooter": {
+            "value": true
+          },
+          "quickAttack": {
+            "value": true
+          }
+        },
+        "dnd5e": {
+          "last": {
+            "dnd5eactivity000": {
+              "attackMode": "twoHanded"
+            }
+          }
+        }
+      },
+      "effects": [],
+      "folder": null,
+      "sort": 0,
+      "_stats": {
+        "systemId": "dnd5e",
+        "systemVersion": "5.1.8",
+        "coreVersion": "13.348",
+        "createdTime": 1718746888352,
+        "modifiedTime": 1760932719669,
+        "lastModifiedBy": "R8msCLOHPun6Bsoc"
+      },
+      "ownership": {
+        "default": 0
+      }
+    },
+    {
+      "_id": "FrelAM7dXVkJDuAT",
+      "name": "Shield",
+      "type": "equipment",
+      "system": {
+        "description": {
+          "value": "<div class=\"rd__b  rd__b--2\"><p>A shield is made from wood or metal and is carried in one hand. Wielding a shield increases your Armor Class by 2. You can benefit from only one shield at a time.</p></div>",
+          "chat": ""
+        },
+        "source": {
+          "custom": "",
+          "book": "PHB",
+          "page": "144",
+          "license": "",
+          "rules": "2014",
+          "revision": 1
+        },
+        "quantity": 1,
+        "weight": {
+          "value": 6,
+          "units": "lb"
+        },
+        "price": {
+          "value": 10,
+          "denomination": "gp"
+        },
+        "attunement": "",
+        "equipped": true,
+        "rarity": "",
+        "identified": true,
+        "cover": null,
+        "crewed": false,
+        "uses": {
+          "max": "",
+          "spent": 0,
+          "recovery": []
+        },
+        "armor": {
+          "value": 2,
+          "dex": null,
+          "magicalBonus": null
+        },
+        "hp": {
+          "value": 0,
+          "max": 0,
+          "dt": null,
+          "conditions": ""
+        },
+        "speed": {
+          "value": null,
+          "conditions": ""
+        },
+        "strength": null,
+        "proficient": null,
+        "type": {
+          "value": "shield",
+          "baseItem": "shield"
+        },
+        "unidentified": {
+          "description": ""
+        },
+        "container": null,
+        "properties": [],
+        "identifier": "shield",
+        "activities": {},
+        "attuned": false
+      },
+      "img": "icons/equipment/shield/oval-wooden-boss-steel.webp",
+      "flags": {
+        "plutonium": {
+          "page": "items.html",
+          "source": "PHB",
+          "hash": "shield_phb"
+        }
+      },
+      "effects": [],
+      "folder": null,
+      "sort": 0,
+      "_stats": {
+        "systemId": "dnd5e",
+        "systemVersion": "3.1.2",
+        "coreVersion": "13.348",
+        "createdTime": 1718746889072,
+        "modifiedTime": 1718746889072,
+        "lastModifiedBy": "R8msCLOHPun6Bsoc"
+      },
+      "ownership": {
+        "default": 0
+      }
+    },
+    {
+      "_id": "0yCdHpA3FHnBlNmM",
+      "name": "Light Crossbow",
+      "type": "weapon",
+      "system": {
+        "description": {
+          "value": "<div class=\"rd__b  rd__b--2\"></div>",
+          "chat": ""
+        },
+        "source": {
+          "custom": "",
+          "book": "PHB",
+          "page": "149",
+          "license": "",
+          "revision": 1,
+          "rules": "2014"
+        },
+        "quantity": 1,
+        "weight": {
+          "value": 5,
+          "units": "lb"
+        },
+        "price": {
+          "value": 25,
+          "denomination": "gp"
+        },
+        "attunement": "",
+        "equipped": true,
+        "rarity": "",
+        "identified": true,
+        "cover": null,
+        "range": {
+          "value": 80,
+          "long": 320,
+          "units": "ft",
+          "reach": null
+        },
+        "uses": {
+          "max": "",
+          "recovery": [],
+          "spent": 0
+        },
+        "damage": {
+          "versatile": {
+            "number": null,
+            "denomination": null,
+            "bonus": "",
+            "types": [],
+            "custom": {
+              "enabled": false,
+              "formula": ""
+            },
+            "scaling": {
+              "mode": "",
+              "number": null,
+              "formula": ""
+            }
+          },
+          "base": {
+            "number": 1,
+            "denomination": 8,
+            "bonus": "",
+            "types": [
+              "piercing"
+            ],
+            "custom": {
+              "enabled": false,
+              "formula": ""
+            },
+            "scaling": {
+              "mode": "",
+              "number": null,
+              "formula": ""
+            }
+          }
+        },
+        "armor": {
+          "value": null
+        },
+        "hp": {
+          "value": 0,
+          "max": 0,
+          "dt": null,
+          "conditions": ""
+        },
+        "properties": [
+          "amm",
+          "lod",
+          "two"
+        ],
+        "proficient": null,
+        "type": {
+          "value": "simpleR",
+          "baseItem": "lightcrossbow"
+        },
+        "unidentified": {
+          "description": ""
+        },
+        "container": null,
+        "crewed": false,
+        "magicalBonus": null,
+        "activities": {
+          "dnd5eactivity000": {
+            "_id": "dnd5eactivity000",
+            "type": "attack",
+            "activation": {
+              "type": "action",
+              "value": 1,
+              "condition": "",
+              "override": false
+            },
+            "consumption": {
+              "targets": [],
+              "scaling": {
+                "allowed": false,
+                "max": ""
+              },
+              "spellSlot": true
+            },
+            "description": {
+              "chatFlavor": ""
+            },
+            "duration": {
+              "concentration": false,
+              "value": "",
+              "units": "inst",
+              "special": "",
+              "override": false
+            },
+            "effects": [],
+            "range": {
+              "value": "80",
+              "units": "ft",
+              "special": "",
+              "override": false
+            },
+            "target": {
+              "template": {
+                "count": "",
+                "contiguous": false,
+                "type": "",
+                "size": "",
+                "width": "",
+                "height": "",
+                "units": "ft"
+              },
+              "affects": {
+                "count": "0",
+                "type": "",
+                "choice": false,
+                "special": ""
+              },
+              "prompt": true,
+              "override": false
+            },
+            "uses": {
+              "spent": 0,
+              "max": "",
+              "recovery": []
+            },
+            "attack": {
+              "ability": "",
+              "bonus": "",
+              "critical": {
+                "threshold": null
+              },
+              "flat": false,
+              "type": {
+                "value": "ranged",
+                "classification": "weapon"
+              }
+            },
+            "damage": {
+              "critical": {
+                "bonus": ""
+              },
+              "includeBase": true,
+              "parts": []
+            },
+            "sort": 0
+          }
+        },
+        "identifier": "light-crossbow",
+        "attuned": false,
+        "ammunition": {}
+      },
+      "img": "icons/weapons/crossbows/crossbow-simple-brown.webp",
+      "flags": {
+        "plutonium": {
+          "page": "items.html",
+          "source": "PHB",
+          "hash": "light%20crossbow_phb"
+        },
+        "rsr5e": {
+          "quickDamage": {
+            "context": {
+              "0": ""
+            },
+            "value": {
+              "0": true
+            }
+          },
+          "quickOther": {
+            "context": ""
+          },
+          "quickFooter": {
+            "value": true
+          },
+          "quickAttack": {
+            "value": true
+          }
+        },
+        "dnd5e": {}
+      },
+      "effects": [
+        {
+          "name": "Light Crossbow",
+          "origin": "Actor.SwCryaCMLqK2RCrj.Item.0yCdHpA3FHnBlNmM",
+          "duration": {
+            "rounds": 1,
+            "startTime": null,
+            "seconds": null,
+            "combat": null,
+            "turns": null,
+            "startRound": null,
+            "startTurn": null
+          },
+          "disabled": false,
+          "_id": "NinbH5B76RhHU44s",
+          "changes": [
+            {
+              "key": "system.attributes.init.bonus",
+              "mode": 2,
+              "value": "",
+              "priority": 20
+            }
+          ],
+          "description": "",
+          "transfer": true,
+          "statuses": [],
+          "flags": {
+            "times-up": {},
+            "dae": {
+              "selfTarget": false,
+              "selfTargetAlways": false,
+              "dontApply": false,
+              "stackable": "noneName",
+              "showIcon": false,
+              "durationExpression": "",
+              "macroRepeat": "none",
+              "specialDuration": []
+            },
+            "ActiveAuras": {
+              "isAura": false,
+              "aura": "None",
+              "nameOverride": "",
+              "radius": "",
+              "alignment": "",
+              "type": "",
+              "customCheck": "",
+              "ignoreSelf": false,
+              "height": false,
+              "hidden": false,
+              "displayTemp": false,
+              "hostile": false,
+              "onlyOnce": false,
+              "wallsBlock": "system"
+            }
+          },
+          "tint": "#ffffff",
+          "_stats": {
+            "coreVersion": "13.348",
+            "systemId": null,
+            "systemVersion": null,
+            "createdTime": null,
+            "modifiedTime": null,
+            "lastModifiedBy": null
+          },
+          "img": "icons/weapons/crossbows/crossbow-simple-brown.webp",
+          "type": "base",
+          "system": {},
+          "sort": 0
+        }
+      ],
+      "folder": null,
+      "sort": 0,
+      "_stats": {
+        "systemId": "dnd5e",
+        "systemVersion": "3.1.2",
+        "coreVersion": "13.348",
+        "createdTime": 1718746889857,
+        "modifiedTime": 1719976623207,
+        "lastModifiedBy": "R8msCLOHPun6Bsoc"
+      },
+      "ownership": {
+        "default": 0
+      }
+    },
+    {
+      "_id": "DTRvcxfyb9EMJdGp",
+      "name": "Improved Critical",
+      "type": "feat",
+      "system": {
+        "description": {
+          "value": "<div class=\"rd__b  rd__b--3\"><p>Beginning when you choose this archetype at 3rd level, your weapon attacks score a critical hit on a roll of 19 or 20.</p><div class=\"rd__spc-inline-post\"></div></div>",
+          "chat": ""
+        },
+        "source": {
+          "custom": "",
+          "book": "PHB",
+          "page": "72",
+          "license": "",
+          "rules": "2014",
+          "revision": 1
+        },
+        "cover": null,
+        "uses": {
+          "max": "",
+          "spent": 0,
+          "recovery": []
+        },
+        "type": {
+          "value": "class",
+          "subtype": ""
+        },
+        "requirements": "Champion 3",
+        "crewed": false,
+        "properties": [],
+        "identifier": "improved-critical",
+        "activities": {},
+        "advancement": [],
+        "enchant": {},
+        "prerequisites": {
+          "items": [],
+          "repeatable": false
+        }
+      },
+      "effects": [
+        {
+          "name": "Improved Critical",
+          "changes": [
+            {
+              "key": "flags.dnd5e.weaponCriticalThreshold",
+              "mode": 5,
+              "value": "19",
+              "priority": 4
+            }
+          ],
+          "disabled": false,
+          "duration": {
+            "startTime": 1718668927,
+            "seconds": null,
+            "rounds": null,
+            "turns": null,
+            "startRound": 0,
+            "startTurn": 0,
+            "combat": null
+          },
+          "origin": "Actor.SwCryaCMLqK2RCrj.Item.DTRvcxfyb9EMJdGp",
+          "transfer": true,
+          "flags": {
+            "dae": {
+              "selfTarget": null,
+              "selfTargetAlways": null
+            },
+            "plutonium": {
+              "dedupeId": "improved-critical"
+            }
+          },
+          "_id": "HbLrHjnFpAmX8RfO",
+          "description": "",
+          "statuses": [],
+          "_stats": {
+            "coreVersion": "13.348",
+            "systemId": null,
+            "systemVersion": null,
+            "createdTime": null,
+            "modifiedTime": null,
+            "lastModifiedBy": null
+          },
+          "img": "icons/skills/melee/blade-tip-chipped-blood-red.webp",
+          "type": "base",
+          "system": {},
+          "tint": "#ffffff",
+          "sort": 0
+        }
+      ],
+      "flags": {
+        "plutonium": {
+          "page": "subclassFeature",
+          "source": "PHB",
+          "hash": "improved%20critical_fighter_phb_champion_phb_3_phb"
+        },
+        "dnd5e": {
+          "advancementOrigin": "undefined.KgdZZCMNtcaepoeX"
+        }
+      },
+      "img": "icons/skills/melee/blade-tip-chipped-blood-red.webp",
+      "folder": null,
+      "sort": 0,
+      "_stats": {
+        "systemId": "dnd5e",
+        "systemVersion": "3.1.2",
+        "coreVersion": "13.348",
+        "createdTime": 1718746916600,
+        "modifiedTime": 1718746917896,
+        "lastModifiedBy": "R8msCLOHPun6Bsoc"
+      },
+      "ownership": {
+        "default": 0
+      }
+    },
+    {
+      "_id": "KtBjxfZ8VqyX5iDu",
+      "name": "Martial Versatility",
+      "type": "feat",
+      "system": {
+        "source": {
+          "custom": "",
+          "book": "TCE",
+          "page": "41",
+          "license": "",
+          "revision": 1,
+          "rules": "2014"
+        },
+        "description": {
+          "value": "<div class=\"rd__b  rd__b--1\"><p><i>4th-level fighter @variantrule[optional class features|tce|optional feature]</i></p><p>Whenever you reach a level in this class that grants the Ability Score Improvement feature, you can do one of the following, as you shift the focus of your martial practice:</p><ul class=\"rd__list\"><li class=\"rd__li \">Replace a <a href=\"https://5etools-mirror-2.github.io/optionalfeatures.html#blankhash,flstfeature%20type:fs%3af=1\">fighting style</a> you know with another fighting style available to fighters.</li><li class=\"rd__li \">If you know any <a href=\"https://5etools-mirror-2.github.io/optionalfeatures.html#blankhash,flstfeature%20type:mv%3ab=1\">maneuvers</a> from the @class[fighter|phb|Battle Master|Battle Master|phb|2-0] archetype, you can replace one maneuver you know with a different maneuver.</li></ul></div>",
+          "chat": ""
+        },
+        "requirements": "Fighter 4",
+        "uses": {
+          "max": "",
+          "recovery": [],
+          "spent": 0
+        },
+        "type": {
+          "value": "class",
+          "subtype": ""
+        },
+        "properties": [],
+        "cover": null,
+        "crewed": false,
+        "activities": {
+          "dnd5eactivity000": {
+            "_id": "dnd5eactivity000",
+            "type": "utility",
+            "activation": {
+              "type": "",
+              "value": null,
+              "condition": "",
+              "override": false
+            },
+            "consumption": {
+              "targets": [],
+              "scaling": {
+                "allowed": false,
+                "max": ""
+              },
+              "spellSlot": true
+            },
+            "description": {
+              "chatFlavor": ""
+            },
+            "duration": {
+              "concentration": false,
+              "value": "",
+              "units": "inst",
+              "special": "",
+              "override": false
+            },
+            "effects": [],
+            "range": {
+              "units": "self",
+              "special": "",
+              "override": false
+            },
+            "target": {
+              "template": {
+                "count": "",
+                "contiguous": false,
+                "type": "",
+                "size": "",
+                "width": "",
+                "height": "",
+                "units": "ft"
+              },
+              "affects": {
+                "count": "",
+                "type": "",
+                "choice": false,
+                "special": ""
+              },
+              "prompt": true,
+              "override": false
+            },
+            "uses": {
+              "spent": 0,
+              "max": "",
+              "recovery": []
+            },
+            "roll": {
+              "formula": "",
+              "name": "",
+              "prompt": false,
+              "visible": false
+            },
+            "sort": 0
+          }
+        },
+        "identifier": "martial-versatility",
+        "enchant": {},
+        "prerequisites": {
+          "level": null,
+          "items": [],
+          "repeatable": false
+        },
+        "advancement": []
+      },
+      "img": "icons/magic/fire/dagger-rune-enchant-flame-strong-blue.webp",
+      "flags": {
+        "plutonium": {
+          "page": "classFeature",
+          "source": "TCE",
+          "hash": "martial%20versatility_fighter_phb_4_tce"
+        },
+        "dnd5e": {
+          "advancementOrigin": "undefined.m5Rj8afoVuO7RW35"
+        }
+      },
+      "effects": [],
+      "folder": null,
+      "sort": 0,
+      "_stats": {
+        "systemId": "dnd5e",
+        "systemVersion": "3.1.2",
+        "coreVersion": "13.348",
+        "createdTime": 1718746972429,
+        "modifiedTime": 1718746973488,
+        "lastModifiedBy": "R8msCLOHPun6Bsoc"
+      },
+      "ownership": {
+        "default": 0
+      }
+    },
+    {
+      "_id": "wk8pl7r3nT1VkzmA",
+      "name": "Extra Attack",
+      "type": "feat",
+      "system": {
+        "description": {
+          "value": "<div class=\"rd__b  rd__b--3\"><p>Beginning at 5th level, you can attack twice, instead of once, whenever you take the @action[Attack] action on your turn.</p><div class=\"rd__spc-inline-post\"></div><p>The number of attacks increases to three when you reach 11th level in this class and to four when you reach 20th level in this class.</p></div>",
+          "chat": ""
+        },
+        "source": {
+          "custom": "",
+          "book": "PHB",
+          "page": "72",
+          "license": "",
+          "rules": "2014",
+          "revision": 1
+        },
+        "cover": null,
+        "uses": {
+          "max": "",
+          "spent": 0,
+          "recovery": []
+        },
+        "type": {
+          "value": "class",
+          "subtype": ""
+        },
+        "requirements": "Fighter 5",
+        "crewed": false,
+        "properties": [],
+        "identifier": "extra-attack",
+        "activities": {},
+        "advancement": [],
+        "enchant": {},
+        "prerequisites": {
+          "items": [],
+          "repeatable": false
+        }
+      },
+      "effects": [],
+      "flags": {
+        "plutonium": {
+          "page": "classFeature",
+          "source": "PHB",
+          "hash": "extra%20attack_fighter_phb_5_phb"
+        },
+        "dnd5e": {
+          "advancementOrigin": "undefined.q8M9GZNKyHsfzTdd"
+        }
+      },
+      "img": "icons/magic/fire/dagger-rune-enchant-flame-orange.webp",
+      "folder": null,
+      "sort": 0,
+      "_stats": {
+        "systemId": "dnd5e",
+        "systemVersion": "3.1.2",
+        "coreVersion": "13.348",
+        "createdTime": 1718747061837,
+        "modifiedTime": 1718747062822,
+        "lastModifiedBy": "R8msCLOHPun6Bsoc"
+      },
+      "ownership": {
+        "default": 0
+      }
+    },
+    {
+      "_id": "gOr0UYUDbE90P8Zh",
+      "name": "Slasher",
+      "type": "feat",
+      "system": {
+        "source": {
+          "custom": "",
+          "book": "TCE",
+          "page": "81",
+          "license": "",
+          "revision": 1,
+          "rules": "2014"
+        },
+        "description": {
+          "value": "<div><hr /><div>\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t<div class=\"rd__b  rd__b--3\"><p>You've learned where to cut to have the greatest results, granting you the following benefits:</p><div class=\"rd__spc-inline-post\"></div><ul class=\"rd__list\"><li class=\"rd__li \">Increase your Strength or Dexterity by 1, to a maximum of 20.</li><li class=\"rd__li \">Once per turn when you hit a creature with an attack that deals slashing damage, you can reduce the speed of the target by 10 feet until the start of your next turn.</li><li class=\"rd__li \">When you score a critical hit that deals slashing damage to a creature, you grievously wound it. Until the start of your next turn, the target has disadvantage on all attack rolls.</li></ul></div>\n\t\t\t</div></div>",
+          "chat": ""
+        },
+        "requirements": "",
+        "uses": {
+          "max": "",
+          "recovery": [],
+          "spent": 0
+        },
+        "type": {
+          "value": "feat",
+          "subtype": ""
+        },
+        "properties": [],
+        "cover": null,
+        "crewed": false,
+        "activities": {
+          "dnd5eactivity000": {
+            "_id": "dnd5eactivity000",
+            "type": "utility",
+            "activation": {
+              "type": "",
+              "value": null,
+              "condition": "",
+              "override": false
+            },
+            "consumption": {
+              "targets": [],
+              "scaling": {
+                "allowed": false,
+                "max": ""
+              },
+              "spellSlot": true
+            },
+            "description": {
+              "chatFlavor": ""
+            },
+            "duration": {
+              "concentration": false,
+              "value": "",
+              "units": "inst",
+              "special": "",
+              "override": false
+            },
+            "effects": [],
+            "range": {
+              "units": "self",
+              "special": "",
+              "override": false
+            },
+            "target": {
+              "template": {
+                "count": "",
+                "contiguous": false,
+                "type": "",
+                "size": "",
+                "width": "",
+                "height": "",
+                "units": "ft"
+              },
+              "affects": {
+                "count": "",
+                "type": "",
+                "choice": false,
+                "special": ""
+              },
+              "prompt": true,
+              "override": false
+            },
+            "uses": {
+              "spent": 0,
+              "max": "",
+              "recovery": []
+            },
+            "roll": {
+              "formula": "",
+              "name": "",
+              "prompt": false,
+              "visible": false
+            },
+            "sort": 0
+          }
+        },
+        "identifier": "slasher",
+        "enchant": {},
+        "prerequisites": {
+          "level": null,
+          "items": [],
+          "repeatable": false
+        },
+        "advancement": []
+      },
+      "img": "icons/skills/melee/blade-tips-triple-bent-white.webp",
+      "flags": {
+        "plutonium": {
+          "page": "feats.html",
+          "source": "TCE",
+          "hash": "slasher_tce"
+        },
+        "dnd5e": {}
+      },
+      "effects": [],
+      "folder": null,
+      "sort": 0,
+      "_stats": {
+        "systemId": "dnd5e",
+        "systemVersion": "3.1.2",
+        "coreVersion": "13.348",
+        "createdTime": 1718747218719,
+        "modifiedTime": 1718747218719,
+        "lastModifiedBy": "R8msCLOHPun6Bsoc"
+      },
+      "ownership": {
+        "default": 0
+      }
+    }
+  ],
+  "effects": [],
+  "folder": null,
+  "flags": {
+    "dnd5e": {
+      "showTokenPortrait": true
+    }
+  },
+  "_stats": {
+    "systemId": "dnd5e",
+    "systemVersion": "5.1.8",
+    "coreVersion": "13.348",
+    "createdTime": 1718746889857,
+    "modifiedTime": 1760932811143,
+    "lastModifiedBy": "R8msCLOHPun6Bsoc",
+    "exportSource": {
+      "worldId": "cos",
+      "uuid": "Actor.SwCryaCMLqK2RCrj",
+      "coreVersion": "13.348",
+      "systemId": "dnd5e",
+      "systemVersion": "5.1.8"
+    }
+  },
+  "ownership": {
+    "default": 0
+  }
+}
