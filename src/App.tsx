@@ -1,24 +1,29 @@
 import { useState } from 'react'
 import StatBlockParser from '../parser-versions/dnd-parser-v20-stable'
 import JSONValidator from '../validaton-scripts/json-validator'
+import ClassImporter from '../parser-versions/class-importer'
+
+type Tab = 'parser' | 'class' | 'validator'
 
 export default function App() {
-  const [tab, setTab] = useState<'parser' | 'validator'>('parser')
+  const [tab, setTab] = useState<Tab>('parser')
+  const btn = (t: Tab, label: string, active: string, inactive = '#1e293b') => (
+    <button onClick={() => setTab(t)}
+      style={{ padding: '6px 18px', borderRadius: 6, border: 'none', cursor: 'pointer',
+        background: tab === t ? active : inactive, color: '#fff', fontWeight: 600 }}>
+      {label}
+    </button>
+  )
   return (
     <>
       <div style={{ display: 'flex', gap: 8, padding: '8px 24px', background: '#0f172a', borderBottom: '1px solid #334155' }}>
-        <button onClick={() => setTab('parser')}
-          style={{ padding: '6px 18px', borderRadius: 6, border: 'none', cursor: 'pointer',
-            background: tab === 'parser' ? '#7c3aed' : '#1e293b', color: '#fff', fontWeight: 600 }}>
-          Parser
-        </button>
-        <button onClick={() => setTab('validator')}
-          style={{ padding: '6px 18px', borderRadius: 6, border: 'none', cursor: 'pointer',
-            background: tab === 'validator' ? '#4f46e5' : '#1e293b', color: '#fff', fontWeight: 600 }}>
-          JSON Validator
-        </button>
+        {btn('parser',    'Stat Block Parser', '#7c3aed')}
+        {btn('class',     'Class Importer',    '#4338ca')}
+        {btn('validator', 'JSON Validator',    '#4f46e5')}
       </div>
-      {tab === 'parser' ? <StatBlockParser /> : <JSONValidator />}
+      {tab === 'parser'    && <StatBlockParser />}
+      {tab === 'class'     && <ClassImporter />}
+      {tab === 'validator' && <JSONValidator />}
     </>
   )
 }
