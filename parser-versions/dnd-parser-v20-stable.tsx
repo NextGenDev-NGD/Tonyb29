@@ -343,7 +343,9 @@ const ACTION_NAME_RX    = /^([A-Z][A-Za-z\-']*(?:\s+[A-Za-z\-']+){0,3})(?:\s*\((
 const SENTENCE_START_RX = /^(?:A|An|The|On|Each|If|When|In|At|Once|As|While|After|Before|During|With|By|For|Any|This|That|It|Its|They|Their|He|She)\b/i;
 // Prevents field labels like "Skills:", "Saves:", "Languages:" from being
 // matched as trait/action names when colon separator is allowed.
-const FIELD_LABEL_RX    = /^(?:Skills?|Saves?|Saving\s+Throws?|Senses?|Languages?|Challenge|Initiative|CR|Damage|Condition|Immunities?|Resistances?|Vulnerabilities?|Speed|AC|HP|Armor\s+Class|Hit\s+Points|Proficiency\s+Bonus|PB)\b/i;
+// Cantrips? and Prepared added so spell list sub-headers inside a Spellcasting
+// trait are appended to the trait description rather than parsed as new entries.
+const FIELD_LABEL_RX    = /^(?:Skills?|Saves?|Saving\s+Throws?|Senses?|Languages?|Challenge|Initiative|CR|Damage|Condition|Immunities?|Resistances?|Vulnerabilities?|Speed|AC|HP|Armor\s+Class|Hit\s+Points|Proficiency\s+Bonus|PB|Cantrips?|Prepared)\b/i;
 
 // ─── Action Parser ─────────────────────────────────────────────────────────────
 const parseActions = (text) => {
@@ -582,7 +584,11 @@ const extractSpellLists = (desc) => {
     const h    = freqHeaders[i];
     const stop = i + 1 < freqHeaders.length ? freqHeaders[i + 1].pos : desc.length;
     const names = cleanNames(desc.slice(h.end, stop));
-    const key  = /at\s+will/i.test(h.text) ? 'atwill' : h.text.match(/(\d+)/)?.[1] || '1';
+    // 'prepared' key for "Prepared (typical/typical):" headers — no digits in text
+    // so the digit fallback would wrongly give '1' (treated as 1/Day innate).
+    const key  = /at\s+will/i.test(h.text) ? 'atwill'
+               : /prepared/i.test(h.text)  ? 'prepared'
+               : h.text.match(/(\d+)/)?.[1] || '1';
     if (names.length) freqSpells[key] = names;
   }
   return { spells: {}, slots: {}, freqSpells, isSlotBased: false };
