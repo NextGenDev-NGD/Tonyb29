@@ -1,0 +1,65 @@
+{
+  "folder": "4NWi3wahfWlOeTrG",
+  "name": "Wireless Power",
+  "type": "feat",
+  "img": "icons/commodities/tech/antenna-powered-purple.webp",
+  "system": {
+    "description": {
+      "value": "<p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">At 3rd level when you choose this technomantic vision, you gain the ability to transmit power wirelessly to your creations. You no longer need to load a power charge into an invention to power it, so long as your holding device contains power charges and is within wireless range of the invention you desire to power, it will function normally.</span></p><p></p><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\"><strong style=\"box-sizing:inherit;border:0px;margin:0px;padding:0px;vertical-align:initial\">Wireless Range =</strong> Intelligence modifier x 10-feet.</span></p><h4><span style=\"font-family:rubik, helvetica, arial, sans-serif\">As a bonus action, you can select an invention within wireless range of your holding device, and give it power. Additionally as a bonus action, you can stop powering an invention and select a new invention within wireless range to receive power.</span></h4><h4><span style=\"font-family:rubik, helvetica, arial, sans-serif\">You can only power a number of inventions equal to the amount of power charges you have remaining in your holding device.</span></h4>",
+      "chat": ""
+    },
+    "source": {
+      "custom": "",
+      "rules": "2014",
+      "revision": 1
+    },
+    "cover": null,
+    "crewed": false,
+    "uses": {
+      "max": "",
+      "spent": 0,
+      "recovery": []
+    },
+    "type": {
+      "value": "",
+      "subtype": ""
+    },
+    "prerequisites": {
+      "level": null,
+      "items": [],
+      "repeatable": false
+    },
+    "properties": [],
+    "requirements": "",
+    "identifier": "wireless-power",
+    "activities": {},
+    "advancement": [],
+    "enchant": {}
+  },
+  "effects": [],
+  "flags": {
+    "rsr5e": {
+      "quickFooter": {
+        "value": true
+      }
+    }
+  },
+  "_stats": {
+    "coreVersion": "13.348",
+    "systemId": "dnd5e",
+    "systemVersion": "5.1.8",
+    "createdTime": 1736053775908,
+    "modifiedTime": 1758412849201,
+    "lastModifiedBy": "4OXDglwbAF8vWcgq",
+    "exportSource": {
+      "worldId": "echoes-of-the-aether",
+      "uuid": "Item.QtZ8tJHW8pB9BkQN",
+      "coreVersion": "13.348",
+      "systemId": "dnd5e",
+      "systemVersion": "5.1.8"
+    }
+  },
+  "ownership": {
+    "default": 0
+  }
+}
