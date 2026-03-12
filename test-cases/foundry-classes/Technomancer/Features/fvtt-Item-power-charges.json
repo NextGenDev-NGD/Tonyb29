@@ -1,0 +1,291 @@
+{
+  "name": "Power Charges",
+  "type": "feat",
+  "img": "https://assets.forge-vtt.com/61f2a5696d2989789bb26a27/wondarkvr_clockwork_fanatasy_setting_a_power_charge_fueled_by_a_221c08aa-1ca8-4b5b-92bf-95feee51971c.png",
+  "system": {
+    "description": {
+      "value": "<h4><span class=\"mw-headline\" id=\"Power_Charges\" style=\"box-sizing:inherit;border:0px;margin:0px;padding:0px;vertical-align:initial\"><span style=\"font-family:var(--theme-page-headings-font),rubik,helvetica,arial,sans-serif\"><strong>Power Charges</strong></span></span></h4><h4><span style=\"font-family:rubik, helvetica, arial, sans-serif\">You have learned how to harness energy into a small hand held charge. Beginning at 1st level you have 3 power charges, as an action on your turn you can expend one charge and throw it at a target within 30 feet of you. Roll a d6, on a 2 or higher the charge explodes and anyone within 5 feet of the charge must make a Dexterity saving throw, taking damage equal to an amount shown on the Charge Potency column of the technomancer table on a failure and half as much on a success.</span></h4><h4><span style=\"font-family:rubik, helvetica, arial, sans-serif\"><strong style=\"box-sizing:inherit;border:0px;margin:0px;padding:0px;vertical-align:initial\">Power Charge save DC</strong> = 8 + your Intelligence modifier + your proficiency bonus.</span></h4><h4><span style=\"font-family:rubik, helvetica, arial, sans-serif\">If the charge doesn't explode, reroll the d6 at the beginning of your next turn and every turn thereafter. Alternatively, you can use a bonus action to collect the charge and stabilize it, adding it back to your holding device.</span></h4><h4><span style=\"font-family:rubik, helvetica, arial, sans-serif\">The number of charges and damage of your power charges increases as you gain levels in this class, as shown in the Power Charges and Charge Potency column of the technomancer table. You regain all expended power charges after finishing a long rest.</span></h4><h4><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Your power charges are stored in a holding device you have created to keep them safe and stable. This holding device can hold an amount of power charges equal to the amount shown on the Power Charge column of the technomancer table. It also contains any tools needed to create additional charges. If your holding device is lost or destroyed, you can spend 1 day and 100 gp creating a new one.</span></h4><h4><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Any Power Charges removed from the holding device degrade rapidly and lose power after 8 hours, returning them to the holding device stabilizes them and keeps them from losing power.</span></h4>",
+      "chat": ""
+    },
+    "source": {
+      "custom": "",
+      "revision": 1,
+      "rules": "2014"
+    },
+    "cover": null,
+    "crewed": false,
+    "uses": {
+      "max": "@scale.Technomancer.power-charges",
+      "recovery": [
+        {
+          "period": "lr",
+          "type": "recoverAll"
+        }
+      ],
+      "spent": 0
+    },
+    "type": {
+      "value": "class",
+      "subtype": ""
+    },
+    "prerequisites": {
+      "level": 1,
+      "items": [],
+      "repeatable": false
+    },
+    "properties": [],
+    "requirements": "",
+    "activities": {
+      "dnd5eactivity000": {
+        "_id": "dnd5eactivity000",
+        "type": "attack",
+        "activation": {
+          "type": "",
+          "value": null,
+          "condition": "",
+          "override": false
+        },
+        "consumption": {
+          "targets": [
+            {
+              "type": "itemUses",
+              "target": "",
+              "value": "1",
+              "scaling": {
+                "mode": "",
+                "formula": ""
+              }
+            }
+          ],
+          "scaling": {
+            "allowed": false,
+            "max": ""
+          },
+          "spellSlot": true
+        },
+        "description": {
+          "chatFlavor": ""
+        },
+        "duration": {
+          "concentration": false,
+          "value": "",
+          "units": "inst",
+          "special": "",
+          "override": false
+        },
+        "effects": [],
+        "range": {
+          "units": "self",
+          "special": "",
+          "override": false
+        },
+        "target": {
+          "template": {
+            "count": "",
+            "contiguous": false,
+            "type": "",
+            "size": "",
+            "width": "",
+            "height": "",
+            "units": "ft"
+          },
+          "affects": {
+            "count": "",
+            "type": "",
+            "choice": false,
+            "special": ""
+          },
+          "prompt": true,
+          "override": false
+        },
+        "uses": {
+          "spent": 0,
+          "max": "",
+          "recovery": []
+        },
+        "attack": {
+          "ability": "",
+          "bonus": "",
+          "critical": {
+            "threshold": null
+          },
+          "flat": false,
+          "type": {
+            "value": "melee",
+            "classification": "weapon"
+          }
+        },
+        "damage": {
+          "critical": {
+            "bonus": ""
+          },
+          "includeBase": true,
+          "parts": [
+            {
+              "number": null,
+              "denomination": null,
+              "bonus": "",
+              "types": [],
+              "custom": {
+                "enabled": true,
+                "formula": "@scale.Technomancer.charge-potency"
+              },
+              "scaling": {
+                "mode": "whole",
+                "number": null,
+                "formula": ""
+              }
+            }
+          ]
+        },
+        "sort": 0
+      },
+      "dnd5eactivity100": {
+        "_id": "dnd5eactivity100",
+        "type": "save",
+        "activation": {
+          "type": "",
+          "value": null,
+          "condition": "",
+          "override": false
+        },
+        "consumption": {
+          "targets": [
+            {
+              "type": "itemUses",
+              "target": "",
+              "value": "1",
+              "scaling": {
+                "mode": "",
+                "formula": ""
+              }
+            }
+          ],
+          "scaling": {
+            "allowed": false,
+            "max": ""
+          },
+          "spellSlot": true
+        },
+        "description": {
+          "chatFlavor": ""
+        },
+        "duration": {
+          "concentration": false,
+          "value": "",
+          "units": "inst",
+          "special": "",
+          "override": false
+        },
+        "effects": [],
+        "range": {
+          "units": "self",
+          "special": "",
+          "override": false
+        },
+        "target": {
+          "template": {
+            "count": "",
+            "contiguous": false,
+            "type": "",
+            "size": "",
+            "width": "",
+            "height": "",
+            "units": "ft"
+          },
+          "affects": {
+            "count": "",
+            "type": "",
+            "choice": false,
+            "special": ""
+          },
+          "prompt": true,
+          "override": false
+        },
+        "uses": {
+          "spent": 0,
+          "max": "",
+          "recovery": []
+        },
+        "damage": {
+          "onSave": "half",
+          "parts": [
+            {
+              "number": null,
+              "denomination": null,
+              "bonus": "",
+              "types": [],
+              "custom": {
+                "enabled": true,
+                "formula": "@scale.Technomancer.charge-potency"
+              },
+              "scaling": {
+                "mode": "whole",
+                "number": null,
+                "formula": ""
+              }
+            }
+          ]
+        },
+        "save": {
+          "ability": [
+            "dex"
+          ],
+          "dc": {
+            "calculation": "int",
+            "formula": ""
+          }
+        },
+        "sort": 0
+      }
+    },
+    "advancement": [],
+    "identifier": "power-charges",
+    "enchant": {}
+  },
+  "effects": [],
+  "folder": "GPeoQwlpNmDsHmhS",
+  "flags": {
+    "rsr5e": {
+      "quickFooter": {
+        "value": true
+      },
+      "quickOther": {
+        "context": ""
+      },
+      "quickAttack": {
+        "value": true
+      },
+      "quickDamage": {
+        "context": {
+          "0": ""
+        },
+        "value": {
+          "0": true
+        }
+      },
+      "quickSave": {
+        "value": true
+      }
+    },
+    "dnd5e": {}
+  },
+  "_stats": {
+    "coreVersion": "13.348",
+    "systemId": "dnd5e",
+    "systemVersion": "5.1.8",
+    "createdTime": 1736049718606,
+    "modifiedTime": 1758412774167,
+    "lastModifiedBy": "4OXDglwbAF8vWcgq",
+    "exportSource": {
+      "worldId": "echoes-of-the-aether",
+      "uuid": "Item.RVawoMLHl1sQ0WEP",
+      "coreVersion": "13.348",
+      "systemId": "dnd5e",
+      "systemVersion": "5.1.8"
+    }
+  },
+  "ownership": {
+    "default": 0
+  }
+}
