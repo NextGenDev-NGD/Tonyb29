@@ -1,0 +1,45 @@
+{
+  "folder": "U200aKSQseCAPv59",
+  "name": "War Tinker",
+  "type": "subclass",
+  "img": "systems/dnd5e/icons/svg/items/subclass.svg",
+  "system": {
+    "description": {
+      "value": "<p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Traditional war and battle has grown mundane to you, your creativity is spent coming up with new and exciting ways to change the battlefield, and ultimately gain any possible advantage over your foes with the aid of your technology. You desire nothing but complete combat superiority, and believe your power source and inventions to be the thing that will give you that.</span></p><h3 style=\"box-sizing:inherit;border:0px;margin:24px 0px 12px;padding:0px;vertical-align:initial;font-family:var(--theme-page-headings-font),rubik,helvetica,arial,sans-serif;line-height:1.25;overflow-wrap:break-word;font-size:18px;font-weight:500;overflow:initial;color:rgb(58, 58, 58);font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;letter-spacing:normal;orphans:2;text-align:start;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;background-color:rgb(223, 219, 195);text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial\"><span class=\"mw-headline\" id=\"Ready_for_Battle\" style=\"box-sizing:inherit;border:0px;margin:0px;padding:0px;vertical-align:initial\"><span style=\"font-family:var(--theme-page-headings-font),rubik,helvetica,arial,sans-serif\"><em style=\"box-sizing:inherit;border:0px;margin:0px;padding:0px;vertical-align:initial\"><strong>Ready for Battle</strong></em></span></span></h3><p style=\"box-sizing:inherit;border:0px;margin:0px 0px 24px;padding:0px;vertical-align:initial;overflow-wrap:break-word;font-size:14px;font-weight:400;line-height:1.75;color:rgb(58, 58, 58);font-family:rubik, helvetica, arial, sans-serif;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;letter-spacing:normal;orphans:2;text-indent:0px;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;background-color:rgb(223, 219, 195);text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial;text-align:start\"><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Beginning at 3rd level when you choose this technomantic vision, you gain proficiency in medium armor, heavy armor, and martial weapons.</span></p>",
+      "chat": ""
+    },
+    "source": {
+      "custom": "",
+      "rules": "2014",
+      "revision": 1
+    },
+    "identifier": "new-item",
+    "classIdentifier": "",
+    "advancement": [],
+    "spellcasting": {
+      "progression": "none",
+      "ability": "",
+      "preparation": {}
+    }
+  },
+  "effects": [],
+  "flags": {},
+  "_stats": {
+    "coreVersion": "13.348",
+    "systemId": "dnd5e",
+    "systemVersion": "5.1.8",
+    "createdTime": 1736056119389,
+    "modifiedTime": 1758412844988,
+    "lastModifiedBy": "4OXDglwbAF8vWcgq",
+    "exportSource": {
+      "worldId": "echoes-of-the-aether",
+      "uuid": "Item.ztavWLkwk8fSj1XZ",
+      "coreVersion": "13.348",
+      "systemId": "dnd5e",
+      "systemVersion": "5.1.8"
+    }
+  },
+  "ownership": {
+    "default": 0
+  }
+}
