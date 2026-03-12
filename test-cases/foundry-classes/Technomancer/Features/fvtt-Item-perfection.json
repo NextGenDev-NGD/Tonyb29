@@ -1,0 +1,65 @@
+{
+  "folder": "GPeoQwlpNmDsHmhS",
+  "name": "Perfection",
+  "type": "feat",
+  "img": "icons/commodities/tech/tube-chamber-lightning.webp",
+  "system": {
+    "description": {
+      "value": "<p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">At 20th level, you've mastered your craft and have perfected your energy source. Your power charges now degrade and lose power after 7 days. When using the power surge feature, there's no longer a chance of the power charge detonating. Instead, if you roll a 1, you fail to gain the additional 2d6 to your charge potency.</span></p><h4><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Additionally, you have advantage on any ability check made using tools.</span></h4>",
+      "chat": ""
+    },
+    "source": {
+      "custom": "",
+      "rules": "2014",
+      "revision": 1
+    },
+    "cover": null,
+    "crewed": false,
+    "uses": {
+      "max": "",
+      "spent": 0,
+      "recovery": []
+    },
+    "type": {
+      "value": "class",
+      "subtype": ""
+    },
+    "prerequisites": {
+      "level": null,
+      "items": [],
+      "repeatable": false
+    },
+    "properties": [],
+    "requirements": "",
+    "identifier": "perfection",
+    "activities": {},
+    "advancement": [],
+    "enchant": {}
+  },
+  "effects": [],
+  "flags": {
+    "rsr5e": {
+      "quickFooter": {
+        "value": true
+      }
+    }
+  },
+  "_stats": {
+    "coreVersion": "13.348",
+    "systemId": "dnd5e",
+    "systemVersion": "5.1.8",
+    "createdTime": 1736053525186,
+    "modifiedTime": 1758412762632,
+    "lastModifiedBy": "4OXDglwbAF8vWcgq",
+    "exportSource": {
+      "worldId": "echoes-of-the-aether",
+      "uuid": "Item.kDTXL9Ndy702tzfn",
+      "coreVersion": "13.348",
+      "systemId": "dnd5e",
+      "systemVersion": "5.1.8"
+    }
+  },
+  "ownership": {
+    "default": 0
+  }
+}

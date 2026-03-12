@@ -1,0 +1,65 @@
+{
+  "folder": "GPeoQwlpNmDsHmhS",
+  "name": "Fail Safe",
+  "type": "feat",
+  "img": "icons/weapons/misc/whip-red-yellow.webp",
+  "system": {
+    "description": {
+      "value": "<p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">At 9th level, you have developed a fail safe for your power charges and can ensure their efficiency. When you roll your charge potency dice, you can reroll a number of dice equal to your Intelligence modifier. If you do so, you must use the new rolls and you can't use this feature again until you finish a short or long rest.</span></p><h4><span style=\"font-family:rubik, helvetica, arial, sans-serif\">You can use this feature twice between rests starting at 13th level and three times between rests starting at 18th level.</span></h4>",
+      "chat": ""
+    },
+    "source": {
+      "custom": "",
+      "rules": "2014",
+      "revision": 1
+    },
+    "cover": null,
+    "crewed": false,
+    "uses": {
+      "max": "",
+      "spent": 0,
+      "recovery": []
+    },
+    "type": {
+      "value": "class",
+      "subtype": ""
+    },
+    "prerequisites": {
+      "level": null,
+      "items": [],
+      "repeatable": false
+    },
+    "properties": [],
+    "requirements": "",
+    "identifier": "fail-safe",
+    "activities": {},
+    "advancement": [],
+    "enchant": {}
+  },
+  "effects": [],
+  "flags": {
+    "rsr5e": {
+      "quickFooter": {
+        "value": true
+      }
+    }
+  },
+  "_stats": {
+    "coreVersion": "13.348",
+    "systemId": "dnd5e",
+    "systemVersion": "5.1.8",
+    "createdTime": 1736053272410,
+    "modifiedTime": 1758412687821,
+    "lastModifiedBy": "4OXDglwbAF8vWcgq",
+    "exportSource": {
+      "worldId": "echoes-of-the-aether",
+      "uuid": "Item.w1D1aaOjt3usdEf3",
+      "coreVersion": "13.348",
+      "systemId": "dnd5e",
+      "systemVersion": "5.1.8"
+    }
+  },
+  "ownership": {
+    "default": 0
+  }
+}

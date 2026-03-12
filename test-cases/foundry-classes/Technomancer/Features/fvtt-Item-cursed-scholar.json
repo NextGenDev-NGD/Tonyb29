@@ -1,0 +1,68 @@
+{
+  "name": "Cursed Scholar",
+  "type": "background",
+  "img": "https://assets.forge-vtt.com/61f2a5696d2989789bb26a27/wondarkvr_A_young_man_with_red_hair_works_in_a_dimly_lit_castle_3d61d46b-89de-480a-8799-a4f2fed12519.png",
+  "system": {
+    "description": {
+      "value": "<p>Your family of powerful wizards always expected greatness from you, but magic never came easily. Despite years of study and immersion in the arcane arts, you were never able to manifest any of the spells or abilities that seemed so natural to your kin. As your peers and relatives continued to perfect their craft, your failures became an embarrassment to the family. In time, they began to distance themselves, believing you would never meet their standards.</p><p>Raised in solitude, with only a ghostly servant to provide companionship, you spent your time buried in books, unraveling the mysteries of magic even though you couldn’t cast a single spell. A thirst for knowledge filled your days, but it was the tinkering with mechanical devices and constructs that gave you true purpose. While others relied on magic, you turned to craftsmanship, building intricate automatons and gadgets to compensate for your lack of magical prowess.</p><p>The ghostly servant, a remnant of your family’s past, offered both guidance and occasional cryptic warnings. Although you never learned to cast spells, the ethereal presence fostered your creative genius, urging you to innovate in ways the wizards of your family never considered. Your mechanical creations became your way of proving your worth—not through magic, but through ingenuity.</p><hr /><p><span class=\"bold rd__list-item-name\">Ability Scores:</span> Intelligence, Wisdom, Constitution</p><ul class=\"rd__list rd__list-hang-notitle\"><li class=\"rd__li \"><p class=\"rd__p-list-item\" data-roll-name-ancestor=\"Skill Proficiencies:\"><span class=\"bold rd__list-item-name\">Skill Proficiencies:</span> &amp;Reference[skill=Arcana], &amp;Reference[skill=Investigation]</p></li><li class=\"rd__li \"><p class=\"rd__p-list-item\" data-roll-name-ancestor=\"Tool Proficiency:\"><span class=\"bold rd__list-item-name\">Tool Proficiency:</span> @item[Tinker's Tools|XPHB]</p></li><li class=\"rd__li \"><p class=\"rd__p-list-item\" data-roll-name-ancestor=\"Equipment:\"><span class=\"bold rd__list-item-name\">Equipment:</span> Choose A or B: (A) @item[Calligrapher's Supplies|XPHB], @item[Book|XPHB|Book (prayers)], @item[Holy Symbol|XPHB], @item[Parchment|XPHB] (10 sheets), @item[Robe|XPHB], 8 GP; or (B) 50 GP</p></li></ul>",
+      "chat": ""
+    },
+    "source": {
+      "custom": "Echoes of the Aether",
+      "rules": "2014",
+      "revision": 1
+    },
+    "startingEquipment": [
+      {
+        "type": "tool",
+        "count": null,
+        "key": "art",
+        "requiresProficiency": false,
+        "_id": "lmGMWFyLjeexe3iV",
+        "group": "",
+        "sort": 100000
+      },
+      {
+        "type": "armor",
+        "count": null,
+        "key": "light",
+        "requiresProficiency": false,
+        "_id": "Shdn2HknNpIFrHko",
+        "group": "",
+        "sort": 200000
+      },
+      {
+        "type": "weapon",
+        "count": null,
+        "key": "simpleR",
+        "requiresProficiency": false,
+        "_id": "OwMn3RKalMHC7zap",
+        "group": "",
+        "sort": 300000
+      }
+    ],
+    "identifier": "cursed-scholar",
+    "advancement": []
+  },
+  "effects": [],
+  "folder": "GPeoQwlpNmDsHmhS",
+  "flags": {},
+  "_stats": {
+    "coreVersion": "13.348",
+    "systemId": "dnd5e",
+    "systemVersion": "5.1.8",
+    "createdTime": 1740280299101,
+    "modifiedTime": 1758412605804,
+    "lastModifiedBy": "4OXDglwbAF8vWcgq",
+    "exportSource": {
+      "worldId": "echoes-of-the-aether",
+      "uuid": "Item.RrOF99UDGyRkdyvu",
+      "coreVersion": "13.348",
+      "systemId": "dnd5e",
+      "systemVersion": "5.1.8"
+    }
+  },
+  "ownership": {
+    "default": 0
+  }
+}

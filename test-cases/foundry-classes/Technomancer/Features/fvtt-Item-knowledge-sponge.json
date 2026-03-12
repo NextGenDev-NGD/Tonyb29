@@ -1,0 +1,65 @@
+{
+  "folder": "GPeoQwlpNmDsHmhS",
+  "name": "Knowledge Sponge",
+  "type": "feat",
+  "img": "icons/commodities/biological/organ-brain-pink.webp",
+  "system": {
+    "description": {
+      "value": "<p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">At 2nd level, you have an uncanny knack for analyzing and retaining information. During a short rest, you can spend time learning the basics of one skill you are not proficient in. To do this you must have an ally willing to teach you within 10 feet who is proficient in the skill and you share a language with. Until you finish a long rest, you can add your proficiency bonus to a number of ability checks you make using that skill equal to your Intelligence modifier.</span></p>",
+      "chat": ""
+    },
+    "source": {
+      "custom": "",
+      "rules": "2014",
+      "revision": 1
+    },
+    "cover": null,
+    "crewed": false,
+    "uses": {
+      "max": "",
+      "spent": 0,
+      "recovery": []
+    },
+    "type": {
+      "value": "class",
+      "subtype": ""
+    },
+    "prerequisites": {
+      "level": null,
+      "items": [],
+      "repeatable": false
+    },
+    "properties": [],
+    "requirements": "",
+    "identifier": "knowledge-sponge",
+    "activities": {},
+    "advancement": [],
+    "enchant": {}
+  },
+  "effects": [],
+  "flags": {
+    "rsr5e": {
+      "quickFooter": {
+        "value": true
+      }
+    }
+  },
+  "_stats": {
+    "coreVersion": "13.348",
+    "systemId": "dnd5e",
+    "systemVersion": "5.1.8",
+    "createdTime": 1736052751579,
+    "modifiedTime": 1758412730135,
+    "lastModifiedBy": "4OXDglwbAF8vWcgq",
+    "exportSource": {
+      "worldId": "echoes-of-the-aether",
+      "uuid": "Item.nZfMNgHcLPTC7MRO",
+      "coreVersion": "13.348",
+      "systemId": "dnd5e",
+      "systemVersion": "5.1.8"
+    }
+  },
+  "ownership": {
+    "default": 0
+  }
+}

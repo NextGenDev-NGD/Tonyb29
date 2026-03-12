@@ -1,0 +1,178 @@
+{
+  "name": "Magiteknical Energy",
+  "type": "feat",
+  "img": "icons/magic/lightning/bolt-strike-purple.webp",
+  "system": {
+    "description": {
+      "value": "<p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">The energy source you've discovered could take many forms. Perhaps you've discovered a way to harness the power of steam, or maybe you stumbled upon a strange aberrant power source from the Far Realms. Discuss with your Dungeon Master what energy source is fueling your power charges. At 1st level, you can choose what kind of energy fuels your power charges (except for psychic damage, which is not permissible). This determines what type of damage your power charges will do and a number of other things within the technomancer class.</span></p><table class=\"article-table\" style=\"box-sizing:inherit;background:rgba(var(--theme-page-dynamic-color-1--rgb),.02);border:0 var(--theme-border-color);border-collapse:collapse;margin:1em 1em 1em 0px;color:rgb(58, 58, 58);font-family:rubik, helvetica, arial, sans-serif;font-size:14px;font-style:normal;font-variant-ligatures:normal;font-variant-caps:normal;font-weight:400;letter-spacing:normal;orphans:2;text-align:start;text-transform:none;widows:2;word-spacing:0px;-webkit-text-stroke-width:0px;white-space:normal;text-decoration-thickness:initial;text-decoration-style:initial;text-decoration-color:initial\"><tbody><tr style=\"box-sizing:inherit\"><th style=\"box-sizing:inherit;border-bottom:1px solid var(--theme-border-color);padding:6px 12px;background:rgba(var(--theme-page-dynamic-color-1--rgb),.05);text-align:left\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Energy Example</span></p></th><th style=\"box-sizing:inherit;border-bottom:1px solid var(--theme-border-color);padding:6px 12px;background:rgba(var(--theme-page-dynamic-color-1--rgb),.05);text-align:left\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Damage Type</span></p></th></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-bottom:1px solid var(--theme-border-color);padding:6px 12px\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Combustion/ Steam</span></p></td><td style=\"box-sizing:inherit;border-bottom:1px solid var(--theme-border-color);padding:6px 12px\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Fire damage</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-bottom:1px solid var(--theme-border-color);padding:6px 12px\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Alien Technology/ Gravity</span></p></td><td style=\"box-sizing:inherit;border-bottom:1px solid var(--theme-border-color);padding:6px 12px\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Force damage</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-bottom:1px solid var(--theme-border-color);padding:6px 12px\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Ancient Battery</span></p></td><td style=\"box-sizing:inherit;border-bottom:1px solid var(--theme-border-color);padding:6px 12px\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Acid damage</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-bottom:1px solid var(--theme-border-color);padding:6px 12px\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Electricity</span></p></td><td style=\"box-sizing:inherit;border-bottom:1px solid var(--theme-border-color);padding:6px 12px\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Lightning damage</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-bottom:1px solid var(--theme-border-color);padding:6px 12px\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Dark Matter</span></p></td><td style=\"box-sizing:inherit;border-bottom:1px solid var(--theme-border-color);padding:6px 12px\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Necrotic damage</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-bottom:1px solid var(--theme-border-color);padding:6px 12px\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Ultrasonic Sound</span></p></td><td style=\"box-sizing:inherit;border-bottom:1px solid var(--theme-border-color);padding:6px 12px\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Thunder damage</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-bottom:1px solid var(--theme-border-color);padding:6px 12px\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Solar Power/ Divine Energy</span></p></td><td style=\"box-sizing:inherit;border-bottom:1px solid var(--theme-border-color);padding:6px 12px\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Radiant damage</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-bottom:1px solid var(--theme-border-color);padding:6px 12px\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">The Void</span></p></td><td style=\"box-sizing:inherit;border-bottom:1px solid var(--theme-border-color);padding:6px 12px\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Cold damage</span></p></td></tr></tbody></table>",
+      "chat": "<p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">At 1st level, you can choose what kind of energy fuels your power charges (except for psychic damage, which is not permissible). This determines what type of damage your power charges will do and a number of other things within the technomancer class.</span></p>"
+    },
+    "source": {
+      "custom": "",
+      "revision": 1,
+      "rules": "2014"
+    },
+    "cover": null,
+    "crewed": false,
+    "uses": {
+      "max": "",
+      "spent": 0,
+      "recovery": []
+    },
+    "type": {
+      "value": "class",
+      "subtype": ""
+    },
+    "prerequisites": {
+      "level": 1,
+      "items": [],
+      "repeatable": false
+    },
+    "properties": [],
+    "requirements": "",
+    "activities": {
+      "dnd5eactivity000": {
+        "_id": "dnd5eactivity000",
+        "type": "utility",
+        "activation": {
+          "type": "",
+          "value": null,
+          "condition": "",
+          "override": false
+        },
+        "consumption": {
+          "targets": [
+            {
+              "type": "itemUses",
+              "target": "Item.RVawoMLHl1sQ0WEP",
+              "value": "1",
+              "scaling": {
+                "mode": "",
+                "formula": ""
+              }
+            }
+          ],
+          "scaling": {
+            "allowed": false,
+            "max": ""
+          },
+          "spellSlot": true
+        },
+        "description": {
+          "chatFlavor": ""
+        },
+        "duration": {
+          "concentration": false,
+          "value": "",
+          "units": "inst",
+          "special": "",
+          "override": false
+        },
+        "effects": [],
+        "range": {
+          "units": "self",
+          "special": "",
+          "override": false
+        },
+        "target": {
+          "template": {
+            "count": "",
+            "contiguous": false,
+            "type": "",
+            "size": "",
+            "width": "",
+            "height": "",
+            "units": "ft"
+          },
+          "affects": {
+            "count": "",
+            "type": "",
+            "choice": false,
+            "special": ""
+          },
+          "prompt": true,
+          "override": false
+        },
+        "uses": {
+          "spent": 0,
+          "max": "",
+          "recovery": []
+        },
+        "roll": {
+          "formula": "",
+          "name": "",
+          "prompt": false,
+          "visible": false
+        },
+        "sort": 0
+      }
+    },
+    "advancement": [],
+    "identifier": "magiteknical-energy",
+    "enchant": {}
+  },
+  "effects": [
+    {
+      "name": "Magiteknical Energy",
+      "origin": "Item.28vSlSps1jeDsPNW",
+      "duration": {
+        "rounds": null,
+        "startTime": null,
+        "seconds": null,
+        "combat": null,
+        "turns": null,
+        "startRound": null,
+        "startTurn": null
+      },
+      "disabled": false,
+      "flags": {
+        "dnd5e": {}
+      },
+      "img": "systems/dnd5e/icons/svg/items/feature.svg",
+      "_id": "0RGXA6d4DAuo2Zl5",
+      "type": "base",
+      "system": {},
+      "changes": [],
+      "description": "",
+      "tint": "#ffffff",
+      "transfer": true,
+      "statuses": [],
+      "sort": 0,
+      "_stats": {
+        "coreVersion": "13.348",
+        "systemId": "dnd5e",
+        "systemVersion": "3.3.1",
+        "createdTime": 1736050388264,
+        "modifiedTime": 1736057185595,
+        "lastModifiedBy": "4OXDglwbAF8vWcgq"
+      }
+    }
+  ],
+  "folder": "GPeoQwlpNmDsHmhS",
+  "flags": {
+    "rsr5e": {
+      "quickFooter": {
+        "value": true
+      }
+    },
+    "dnd5e": {}
+  },
+  "_stats": {
+    "coreVersion": "13.348",
+    "systemId": "dnd5e",
+    "systemVersion": "5.1.8",
+    "createdTime": 1736049697583,
+    "modifiedTime": 1758412739301,
+    "lastModifiedBy": "4OXDglwbAF8vWcgq",
+    "exportSource": {
+      "worldId": "echoes-of-the-aether",
+      "uuid": "Item.28vSlSps1jeDsPNW",
+      "coreVersion": "13.348",
+      "systemId": "dnd5e",
+      "systemVersion": "5.1.8"
+    }
+  },
+  "ownership": {
+    "default": 0
+  }
+}

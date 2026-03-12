@@ -1,0 +1,65 @@
+{
+  "folder": "GPeoQwlpNmDsHmhS",
+  "name": "Energy Absorption",
+  "type": "feat",
+  "img": "icons/magic/lightning/bolt-strike-creature-pink.webp",
+  "system": {
+    "description": {
+      "value": "<p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Starting at 15th level, your body has become so used to taking blasts of energy from your failed experiments that your natural structure has begun to shift and adapt to that element. Once per long rest, when you would take damage from the damage type of your magiteknical energy feature you can choose to take no damage instead.</span></p>",
+      "chat": ""
+    },
+    "source": {
+      "custom": "",
+      "rules": "2014",
+      "revision": 1
+    },
+    "cover": null,
+    "crewed": false,
+    "uses": {
+      "max": "",
+      "spent": 0,
+      "recovery": []
+    },
+    "type": {
+      "value": "class",
+      "subtype": ""
+    },
+    "prerequisites": {
+      "level": null,
+      "items": [],
+      "repeatable": false
+    },
+    "properties": [],
+    "requirements": "",
+    "identifier": "energy-absorption",
+    "activities": {},
+    "advancement": [],
+    "enchant": {}
+  },
+  "effects": [],
+  "flags": {
+    "rsr5e": {
+      "quickFooter": {
+        "value": true
+      }
+    }
+  },
+  "_stats": {
+    "coreVersion": "13.348",
+    "systemId": "dnd5e",
+    "systemVersion": "5.1.8",
+    "createdTime": 1736053454099,
+    "modifiedTime": 1758412623890,
+    "lastModifiedBy": "4OXDglwbAF8vWcgq",
+    "exportSource": {
+      "worldId": "echoes-of-the-aether",
+      "uuid": "Item.7wJ1oujqKcfrWYbZ",
+      "coreVersion": "13.348",
+      "systemId": "dnd5e",
+      "systemVersion": "5.1.8"
+    }
+  },
+  "ownership": {
+    "default": 0
+  }
+}

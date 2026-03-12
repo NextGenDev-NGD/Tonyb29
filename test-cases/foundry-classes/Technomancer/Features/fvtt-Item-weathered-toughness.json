@@ -1,0 +1,65 @@
+{
+  "folder": "GPeoQwlpNmDsHmhS",
+  "name": "Weathered Toughness",
+  "type": "feat",
+  "img": "icons/commodities/biological/hand-clawed-blue.webp",
+  "system": {
+    "description": {
+      "value": "<p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">At 10th level, your skin is weathered from trial and error with your many experiments. You gain resistance to the damage type chosen by your uncovered energy feature.</span></p><p>(Your chosen Energy/Elemental Damage Type)</p>",
+      "chat": ""
+    },
+    "source": {
+      "custom": "",
+      "rules": "2014",
+      "revision": 1
+    },
+    "cover": null,
+    "crewed": false,
+    "uses": {
+      "max": "",
+      "spent": 0,
+      "recovery": []
+    },
+    "type": {
+      "value": "class",
+      "subtype": ""
+    },
+    "prerequisites": {
+      "level": null,
+      "items": [],
+      "repeatable": false
+    },
+    "properties": [],
+    "requirements": "",
+    "identifier": "weathered-toughness",
+    "activities": {},
+    "advancement": [],
+    "enchant": {}
+  },
+  "effects": [],
+  "flags": {
+    "rsr5e": {
+      "quickFooter": {
+        "value": true
+      }
+    }
+  },
+  "_stats": {
+    "coreVersion": "13.348",
+    "systemId": "dnd5e",
+    "systemVersion": "5.1.8",
+    "createdTime": 1736053299739,
+    "modifiedTime": 1758412847013,
+    "lastModifiedBy": "4OXDglwbAF8vWcgq",
+    "exportSource": {
+      "worldId": "echoes-of-the-aether",
+      "uuid": "Item.2Fc0RbPoFZyVgOug",
+      "coreVersion": "13.348",
+      "systemId": "dnd5e",
+      "systemVersion": "5.1.8"
+    }
+  },
+  "ownership": {
+    "default": 0
+  }
+}

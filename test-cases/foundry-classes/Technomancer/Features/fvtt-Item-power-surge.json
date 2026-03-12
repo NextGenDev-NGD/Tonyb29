@@ -1,0 +1,65 @@
+{
+  "folder": "GPeoQwlpNmDsHmhS",
+  "name": "Power Surge",
+  "type": "feat",
+  "img": "icons/magic/fire/explosion-mushroom-nuke-orange.webp",
+  "system": {
+    "description": {
+      "value": "<p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">At 5th level, you have learned to dangerously push the limits of your power charges and temporarily increase the potency. Once per turn you can increase the charge potency of one power charge by 2d6. This lasts until the end of your turn. When you do so, roll a d6, on a 1 the charge detonates immediately. Anyone within 5 feet of you must make a Dexterity saving throw or take damage equal to half your charge potency plus the additional 2d6 on a failure. You automatically take damage equal to your charge potency plus the additional 2d6.</span></p><h4><span style=\"font-family:rubik, helvetica, arial, sans-serif\">When you reach 14th level, you can increase your charge potency by 3d6 when you use this feature.</span></h4>",
+      "chat": ""
+    },
+    "source": {
+      "custom": "",
+      "rules": "2014",
+      "revision": 1
+    },
+    "cover": null,
+    "crewed": false,
+    "uses": {
+      "max": "",
+      "spent": 0,
+      "recovery": []
+    },
+    "type": {
+      "value": "class",
+      "subtype": ""
+    },
+    "prerequisites": {
+      "level": null,
+      "items": [],
+      "repeatable": false
+    },
+    "properties": [],
+    "requirements": "",
+    "identifier": "power-surge",
+    "activities": {},
+    "advancement": [],
+    "enchant": {}
+  },
+  "effects": [],
+  "flags": {
+    "rsr5e": {
+      "quickFooter": {
+        "value": true
+      }
+    }
+  },
+  "_stats": {
+    "coreVersion": "13.348",
+    "systemId": "dnd5e",
+    "systemVersion": "5.1.8",
+    "createdTime": 1736053123010,
+    "modifiedTime": 1758412774333,
+    "lastModifiedBy": "4OXDglwbAF8vWcgq",
+    "exportSource": {
+      "worldId": "echoes-of-the-aether",
+      "uuid": "Item.W1kpHMVjDlfz9di6",
+      "coreVersion": "13.348",
+      "systemId": "dnd5e",
+      "systemVersion": "5.1.8"
+    }
+  },
+  "ownership": {
+    "default": 0
+  }
+}
