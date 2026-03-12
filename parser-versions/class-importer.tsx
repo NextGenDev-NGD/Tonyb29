@@ -3,7 +3,7 @@
 // Phase 9
 
 import React, { useState } from 'react';
-import { Download, Copy, Info, Zap, Package, BookOpen } from 'lucide-react';
+import { Download, Copy, Info, Zap, Package, BookOpen, FileJson } from 'lucide-react';
 
 // ─── Pure Helpers ─────────────────────────────────────────────────────────────
 const _djb2 = (s: string) => {
@@ -118,7 +118,17 @@ const parseProgression = (text: string): Map<number, string[]> => {
   let m: RegExpExecArray | null;
   while ((m = rx.exec(text)) !== null) {
     const lvl = parseInt(m[1]);
-    const feats = m[2].split(',').map(f => f.trim()).filter(Boolean);
+    const feats = m[2].split(',').map(f => {
+      // Strip parenthetical qualifiers: "Power Surge (2d6)" → "Power Surge"
+      let name = f.trim().replace(/\s*\([^)]*\)/g, '').trim();
+      // "Ability Score Improvement/Improvements" → ASI keyword
+      if (/^Ability Score Improvements?$/i.test(name)) return 'ASI';
+      // "Technomantic Vision feature" (and similar subclass grant notes) → Subclass keyword
+      if (/\b(subclass|vision)\s+feature\b/i.test(name)) return 'Subclass';
+      // "Inventor improvement" / "X improvement" → flag as upgrade, not new item
+      if (/\bimprovement\b/i.test(name) && !/^Ability Score/i.test(name)) return `__upgrade:${name}`;
+      return name;
+    }).filter(Boolean);
     map.set(lvl, feats);
   }
   return map;
@@ -264,6 +274,10 @@ const buildClassItem = (
         advancement.push(advASI(hdr.name, lvl));
       } else if (feat.toLowerCase() === 'subclass') {
         // subclass choice already added above
+      } else if (feat.startsWith('__upgrade:')) {
+        // Feature upgrade (e.g. "Inventor improvement") — the existing item's description
+        // covers this; no new Foundry item needed. Just warn.
+        warns.push(`Level ${lvl}: "${feat.replace('__upgrade:','')}" is a feature upgrade — already covered by the existing item. Skipped.`);
       } else {
         const id = featureIdMap.get(feat);
         if (id) {
@@ -373,21 +387,26 @@ Description: Starting at 1st level you have crafted your first invention. Choose
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 export default function ClassImporter() {
-  const [input, setInput]       = useState('');
-  const [bundle, setBundle]     = useState<any[] | null>(null);
-  const [macro, setMacro]       = useState<string | null>(null);
-  const [summary, setSummary]   = useState<any>(null);
-  const [warnings, setWarnings] = useState<string[]>([]);
-  const [errors, setErrors]     = useState<string[]>([]);
-  const [copiedB, setCopiedB]   = useState(false);
-  const [copiedM, setCopiedM]   = useState(false);
+  const [input, setInput]           = useState('');
+  // Store parsed item arrays only — never pre-stringify (blocks main thread on large inputs)
+  const [bundle, setBundle]         = useState<any[] | null>(null);
+  const [macroItems, setMacroItems] = useState<{ features: any[]; subclasses: any[] } | null>(null);
+  const [summary, setSummary]       = useState<any>(null);
+  const [warnings, setWarnings]     = useState<string[]>([]);
+  const [errors, setErrors]         = useState<string[]>([]);
+  const [copiedB, setCopiedB]       = useState(false);
+  const [copiedM, setCopiedM]       = useState(false);
+  const [building, setBuilding]     = useState(false);
 
   const buildClass = () => {
-    const warns: string[] = [], errs: string[] = [];
+    setBuilding(true);
+    setErrors([]); setWarnings([]); setBundle(null); setMacroItems(null); setSummary(null);
+    // Yield to the event loop so React renders the loading state before heavy work starts
+    setTimeout(() => {
+    const warns: string[] = [];
     try {
       if (!input.trim()) throw new Error('Nothing to parse — paste your class definition above.');
 
-      // Parse all sections
       const header      = parseClassHeader(input, warns);
       const scales      = parseScaleValues(input);
       const progression = parseProgression(input);
@@ -395,7 +414,6 @@ export default function ClassImporter() {
 
       if (!progression.size) warns.push('No Level N: lines found. Add at least "Level 1: Feature Name".');
 
-      // Build feature items
       const featureIdMap = new Map<string, string>();
       const featureItems: any[] = [];
       for (const f of featureDefs) {
@@ -404,10 +422,9 @@ export default function ClassImporter() {
         featureItems.push(item);
       }
 
-      // Stub items for progression entries with no Feature: block
       const allProgressionFeats = new Set(
         Array.from(progression.values()).flat()
-          .filter(f => f !== 'ASI' && f.toLowerCase() !== 'subclass')
+          .filter(f => f !== 'ASI' && f.toLowerCase() !== 'subclass' && !f.startsWith('__upgrade:'))
       );
       for (const feat of allProgressionFeats) {
         if (!featureIdMap.has(feat)) {
@@ -418,7 +435,6 @@ export default function ClassImporter() {
         }
       }
 
-      // Build subclass items
       const subclassIdMap = new Map<string, string>();
       const subclassItems: any[] = [];
       for (const scName of header.subclassNames) {
@@ -427,31 +443,36 @@ export default function ClassImporter() {
         subclassItems.push(item);
       }
 
-      // Build class item
-      const classItem = buildClassItem(header, progression, featureIdMap, subclassIdMap, scales, warns);
-
-      // Bundle: features first (macro creates them), then subclasses, class last
-      const bundleArr = [...featureItems, ...subclassItems, classItem];
-      const macroStr  = buildMacro(header.name, featureItems, subclassItems);
+      const classItem  = buildClassItem(header, progression, featureIdMap, subclassIdMap, scales, warns);
+      const bundleArr  = [...featureItems, ...subclassItems, classItem];
 
       setSummary({
         name: header.name, hitDie: header.hitDie,
         levels: progression.size,
-        features: featureItems.length, stubs: featureItems.filter(f => f.system.description.value.includes('not yet filled')).length,
+        features: featureItems.length,
+        stubs: featureItems.filter(f => f.system.description.value.includes('not yet filled')).length,
         subclasses: subclassItems.length, scales: scales.length,
-        spellcasting: header.spellProgression !== 'none' ? `${header.spellProgression} / ${header.spellAbility.toUpperCase()}` : 'None',
+        spellcasting: header.spellProgression !== 'none'
+          ? `${header.spellProgression} / ${header.spellAbility.toUpperCase()}` : 'None',
         scaleFormula: scales.length ? `@scale.${header.name}.${scales[0].identifier}` : '',
+        itemNames: featureItems.map(f => ({ name: f.name, stub: f.system.description.value.includes('not yet filled') })),
+        subclassNames: subclassItems.map(s => s.name),
       });
       setBundle(bundleArr);
-      setMacro(macroStr);
+      setMacroItems({ features: featureItems, subclasses: subclassItems });
       setWarnings(warns);
       setErrors([]);
     } catch (e: any) {
-      setErrors([e.message]);
-      setBundle(null); setMacro(null); setSummary(null);
+      console.error('ClassImporter error:', e);
+      setErrors([String(e?.message || e)]);
+      setBundle(null); setMacroItems(null); setSummary(null);
+    } finally {
+      setBuilding(false);
     }
+    }, 50);
   };
 
+  // JSON.stringify only happens here — never during render
   const downloadJSON = () => {
     if (!bundle) return;
     const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
@@ -462,18 +483,25 @@ export default function ClassImporter() {
   };
 
   const downloadMacro = () => {
-    if (!macro) return;
-    const blob = new Blob([macro], { type: 'text/javascript' });
+    if (!macroItems || !summary) return;
+    const str  = buildMacro(summary.name, macroItems.features, macroItems.subclasses);
+    const blob = new Blob([str], { type: 'text/javascript' });
     const url  = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url;
-    a.download = `${summary?.name?.replace(/\s+/g,'_') || 'class'}_import_macro.js`;
+    a.download = `${summary.name.replace(/\s+/g,'_')}_import_macro.js`;
     a.click(); URL.revokeObjectURL(url);
   };
 
-  const copy = (text: string, which: 'b' | 'm') => {
-    navigator.clipboard.writeText(text);
-    if (which === 'b') { setCopiedB(true); setTimeout(() => setCopiedB(false), 2000); }
-    else               { setCopiedM(true); setTimeout(() => setCopiedM(false), 2000); }
+  const copyJSON = () => {
+    if (!bundle) return;
+    navigator.clipboard.writeText(JSON.stringify(bundle, null, 2));
+    setCopiedB(true); setTimeout(() => setCopiedB(false), 2000);
+  };
+
+  const copyMacro = () => {
+    if (!macroItems || !summary) return;
+    navigator.clipboard.writeText(buildMacro(summary.name, macroItems.features, macroItems.subclasses));
+    setCopiedM(true); setTimeout(() => setCopiedM(false), 2000);
   };
 
   const Alert = ({ msg, color }: { msg: string; color: string }) => (
@@ -509,8 +537,9 @@ export default function ClassImporter() {
               />
               <button
                 onClick={buildClass}
-                className="mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2">
-                <Zap size={16} /> Build Class
+                disabled={building}
+                className="mt-3 w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2">
+                <Zap size={16} /> {building ? 'Building…' : 'Build Class'}
               </button>
             </div>
 
@@ -584,12 +613,29 @@ export default function ClassImporter() {
                   <div className="text-slate-500 text-xs mt-1">The macro creates features with stable IDs — the class advancement links resolve automatically.</div>
                 </div>
 
-                {/* Macro output */}
+                {/* Feature item list */}
+                <div className="bg-slate-800 rounded-lg p-4 border border-slate-600/30">
+                  <div className="text-slate-300 font-semibold text-sm mb-2">
+                    Features ({summary.itemNames.length}) · Subclasses ({summary.subclassNames.length})
+                  </div>
+                  <div className="grid grid-cols-2 gap-1 text-xs max-h-40 overflow-y-auto">
+                    {summary.itemNames.map((f: any, i: number) => (
+                      <div key={i} className={`px-2 py-0.5 rounded ${f.stub ? 'text-yellow-400' : 'text-green-400'}`}>
+                        {f.stub ? '⚠ ' : '✓ '}{f.name}
+                      </div>
+                    ))}
+                    {summary.subclassNames.map((n: string, i: number) => (
+                      <div key={`sc${i}`} className="px-2 py-0.5 rounded text-indigo-400">◆ {n}</div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Macro — Step 1 */}
                 <div className="bg-slate-800 rounded-lg p-5 border border-amber-500/30">
-                  <div className="flex items-center gap-2 mb-3"><Package size={20} className="text-amber-400" /><span className="text-white font-semibold">Step 1 — Foundry Import Macro</span></div>
-                  <pre className="w-full h-48 bg-slate-700 text-amber-300 rounded p-3 text-xs font-mono overflow-auto border border-amber-400/20">{macro}</pre>
-                  <div className="flex gap-3 mt-3">
-                    <button onClick={() => copy(macro!, 'm')}
+                  <div className="flex items-center gap-2 mb-1"><Package size={20} className="text-amber-400" /><span className="text-white font-semibold">Step 1 — Foundry Import Macro</span></div>
+                  <p className="text-xs text-slate-400 mb-3">Creates {summary.features + summary.subclasses} items with stable IDs in Foundry (Macros → New → Execute)</p>
+                  <div className="flex gap-3">
+                    <button onClick={copyMacro}
                       className="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2">
                       <Copy size={16} />{copiedM ? 'Copied!' : 'Copy Macro'}
                     </button>
@@ -600,12 +646,12 @@ export default function ClassImporter() {
                   </div>
                 </div>
 
-                {/* Bundle JSON output */}
+                {/* Bundle JSON — Step 2 */}
                 <div className="bg-slate-800 rounded-lg p-5 border border-indigo-500/30">
-                  <div className="flex items-center gap-2 mb-3"><FileJson size={20} className="text-indigo-400" /><span className="text-white font-semibold">Step 2 — Class Bundle JSON ({bundle?.length} items)</span></div>
-                  <pre className="w-full h-64 bg-slate-700 text-indigo-300 rounded p-3 text-xs font-mono overflow-auto border border-indigo-400/20">{JSON.stringify(bundle, null, 2)}</pre>
-                  <div className="flex gap-3 mt-3">
-                    <button onClick={() => copy(JSON.stringify(bundle, null, 2), 'b')}
+                  <div className="flex items-center gap-2 mb-1"><FileJson size={20} className="text-indigo-400" /><span className="text-white font-semibold">Step 2 — Class Bundle JSON</span></div>
+                  <p className="text-xs text-slate-400 mb-3">{bundle?.length} items — import the class item (last in array) after running the macro</p>
+                  <div className="flex gap-3">
+                    <button onClick={copyJSON}
                       className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2">
                       <Copy size={16} />{copiedB ? 'Copied!' : 'Copy JSON'}
                     </button>
