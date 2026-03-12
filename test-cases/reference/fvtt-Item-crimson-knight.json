@@ -1,0 +1,51 @@
+{
+  "name": "Crimson Knight",
+  "type": "subclass",
+  "img": "https://assets.forge-vtt.com/61e22856342cc71dfa3d306c/worlds/idrotfm/pc%20tokens/Sacrier%20icons/Sacrier%20Logo.png",
+  "effects": [],
+  "folder": "R568zxISM3gsENnQ",
+  "flags": {
+    "scene-packer": {
+      "hash": "8917283c69f5184e094d71e8a985e3e51155e915"
+    }
+  },
+  "system": {
+    "description": {
+      "value": "<h2>Crimson Knight</h2><h3>The Crimson King is an elusive mastermind behind the band of ruthless mercenaries known as the Bloodless Court. Clad in a rusty and bloodied set of armors, the self-proclaimed knights of the Bloodless Court roam the battlefield, in pursuit of the glory of the Crimson King. While they name themselves as knights, their attire is where their chivalry ends; they kill, maim, and pillage every living and dead (and undead, in Faerun) soul, other than another knight of the Bloodless Court.</h3><h3> </h3><h3>After the world of Dofus was introduced to Faerun, it is rumored that the Crimson King takes great interest in the new realm, especially a portion of its denizens, caring so little of themselves and shedding blood as if it were sweat. It is only a matter of time before the new generations of the Bloodless Court start a quest... But for now, they should find out which knife is used to cut the steak.</h3><h3> </h3><h3>Bonus Proficiencies</h3><h3>Starting at 3rd level, you gain proficiency in lances, longswords, shortswords, heavy armors, and shields.</h3><h3> </h3><h3>Page of the Bloodless Court</h3><h3>Also starting at 3rd level, as a member of the Bloodless Court, you have undergone intense martial training. You learn two maneuvers of your choice from among those available to the Battle Master archetype in the fighter class. You use your pain dice to fuel your maneuvers. You can use only either of the Pain Given feature or one of the maneuvers you know on the same attack, not both.</h3><h3> </h3><h3>When you use your maneuver, you take bludgeoning damage equal to twice your pain threshold immediately after you use it. The damage you take cannot be reduced or prevented by any means, but it cannot reduce your hit points below 1.</h3><h3> </h3><h3>If a maneuver you use requires your target to make a saving throw to resist the maneuver's effects, the saving throw DC equals 8 + your proficiency bonus + your Strength modifier.</h3><h3> </h3><h3>In the Court of the Crimson King</h3><h3>Starting at 6th level, you are taught manners and etiquettes to suit yourself better as a to-be knight of the Bloodless Court. You gain proficiency in two of the following skills of your choice: Animal Handling, History, Insight, Persuasion, or Religion. Alternatively, you learn one language of your choice.</h3><h3> </h3><h3>Squire of the Bloodless Court</h3><h3>Starting at 10th level, you gain one additional maneuver of your choice. Additionally, you can use both the Pain Given feature and one of the maneuvers you know on the same attack.</h3><h3> </h3><h3>Sanguine Armor</h3><h3>Starting at 14th level, you gain a +1 bonus to AC while wearing heavy armor. If you have no more than half of your hit points, the bonus increases to +3. You do not gain this benefit if you have 0 hit points.</h3><h3> </h3><h3>Knight of the Bloodless Court</h3><h3>Starting at 18th level, you properly knighted in front of the Crimson King and gained his favor. You gain one additional maneuver of your choice. Additionally, whenever you use one of the maneuvers you know on an attack, you add an additional pain dice to the damage roll.</h3><h3>Starting at 3rd level, you gain proficiency in lances, longswords, shortswords, heavy armors, and shields.</h3>",
+      "chat": ""
+    },
+    "source": {
+      "custom": "",
+      "revision": 1,
+      "rules": "2024"
+    },
+    "identifier": "crimson-knight",
+    "classIdentifier": "sacrier",
+    "advancement": [],
+    "spellcasting": {
+      "progression": "none",
+      "ability": "",
+      "preparation": {
+        "formula": ""
+      }
+    }
+  },
+  "_stats": {
+    "systemId": "dnd5e",
+    "systemVersion": "5.1.8",
+    "coreVersion": "13.348",
+    "createdTime": null,
+    "modifiedTime": 1773332803815,
+    "lastModifiedBy": "a1G8WKNDhRqPAh27",
+    "exportSource": {
+      "worldId": "idrotfm",
+      "uuid": "Item.8SwtgPEzOo0hjL06",
+      "coreVersion": "13.348",
+      "systemId": "dnd5e",
+      "systemVersion": "5.1.8"
+    }
+  },
+  "ownership": {
+    "default": 0
+  }
+}
