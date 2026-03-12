@@ -225,7 +225,8 @@ const makeActId = (prefix, actorName, itemName) => {
 // Sidekick blocks (Tasha's CoE) use Level instead of CR, may have PB:, and use
 // class keywords (Warrior/Expert/Spellcaster) in the header line.
 const detectFormat = (text) => {
-  if (/\b(\d+(?:st|nd|rd|th)-level|Level:\s*\d|Warrior|Expert|Spellcaster)\b/i.test(text)
+  // "Level: NPC 3", "Level: 5", "3rd-level Warrior", "Warrior"/"Expert"/"Spellcaster"
+  if (/\b(\d+(?:st|nd|rd|th)[- ]level\s+(?:warrior|expert|spellcaster|sidekick|npc)|Level[:\s]+(?:\w+\s+)?\d|Warrior|Expert|Spellcaster)\b/i.test(text)
     && !/Challenge|\bCR\b/i.test(text)) return 'sidekick';
   return 'standard';
 };
@@ -241,11 +242,15 @@ const levelToXP = (lvl) => LEVEL_XP[Math.max(0, Math.min(lvl - 1, 19))] ?? 0;
 //   "Level: 5"          →  5
 //   Explicit "PB: +3"   →  derives approximate level from PB value
 const parseSidekickLevel = (text) => {
-  const ordM = text.match(/\b(\d+)(?:st|nd|rd|th)[- ]level\b/i);
-  if (ordM) return +ordM[1];
-  const lblM = text.match(/\bLevel[:\s]+(\d+)/i);
+  // Explicit "Level: NPC 3" or "Level: 5" — check first to avoid ordinal in
+  // spell descriptions ("2nd-level spells") returning the wrong number.
+  const lblM = text.match(/\bLevel[:\s]+(?:[A-Za-z]+\s+)?(\d+)/i);
   if (lblM) return +lblM[1];
-  // Derive level from explicit PB if nothing else found
+  // Ordinal format — only match when followed by a class/role keyword so that
+  // "2nd-level spells" or "3rd-level spellcaster" in a description doesn't win.
+  const ordM = text.match(/\b(\d+)(?:st|nd|rd|th)[- ]level\s+(?:Warrior|Expert|Spellcaster|NPC|sidekick|character)\b/i);
+  if (ordM) return +ordM[1];
+  // PB back-calculation
   const pbM  = text.match(/\bPB[:\s]+\+(\d+)/i)
             || text.match(/\bProficiency\s+Bonus[:\s]+\+(\d+)/i);
   if (pbM) {
@@ -333,12 +338,16 @@ const parseTarget = (desc) => {
 // Why not just use char-count on the name?  "Each creature in a" is 4 words and
 // 18 chars — it would slip past a char-only cap.  The sentence-starter filter
 // catches the remaining cases the word-cap misses.
-const ACTION_NAME_RX    = /^([A-Z][A-Za-z\-']*(?:\s+[A-Za-z\-']+){0,3})(?:\s*\(([^)]*)\))?\.\s+(.{15,})$/;
+// [.:] — accept period (standard MM) or colon (ChatGPT/abbreviated format) as separator.
+const ACTION_NAME_RX    = /^([A-Z][A-Za-z\-']*(?:\s+[A-Za-z\-']+){0,3})(?:\s*\(([^)]*)\))?[.:]\s+(.{15,})$/;
 const SENTENCE_START_RX = /^(?:A|An|The|On|Each|If|When|In|At|Once|As|While|After|Before|During|With|By|For|Any|This|That|It|Its|They|Their|He|She)\b/i;
+// Prevents field labels like "Skills:", "Saves:", "Languages:" from being
+// matched as trait/action names when colon separator is allowed.
+const FIELD_LABEL_RX    = /^(?:Skills?|Saves?|Saving\s+Throws?|Senses?|Languages?|Challenge|Initiative|CR|Damage|Condition|Immunities?|Resistances?|Vulnerabilities?|Speed|AC|HP|Armor\s+Class|Hit\s+Points|Proficiency\s+Bonus|PB)\b/i;
 
 // ─── Action Parser ─────────────────────────────────────────────────────────────
 const parseActions = (text) => {
-  const section = text.match(/Actions\s+([\s\S]+?)(?=Reactions|Legendary Actions|Bonus Actions|$)/i)?.[1];
+  const section = text.match(/Actions:?\s+([\s\S]+?)(?=Reactions:?|Legendary\s+Actions:?|Bonus\s+Actions:?|$)/i)?.[1];
   if (!section) return [];
   const actions = [];
   let cur = null;
@@ -346,7 +355,7 @@ const parseActions = (text) => {
     // Strip sidekick bullet markers (* / •) before matching
     const line = raw.replace(/^[*•]\s*/, '');
     const m = line.match(ACTION_NAME_RX);
-    if (m && !SENTENCE_START_RX.test(m[1])) {
+    if (m && !SENTENCE_START_RX.test(m[1]) && !FIELD_LABEL_RX.test(m[1])) {
       if (cur) actions.push(cur);
       cur = { name: m[1].trim(), qualifier: m[2]?.trim()||'', description: m[3].trim(), attack: null, damage: null };
     } else if (cur) cur.description += ' ' + line;
@@ -361,6 +370,15 @@ const parseActions = (text) => {
     const add = d.match(/plus\s+(\d+)\s*\(([^)]+)\)\s+(\w+)\s+damage/i);
     if (atk) a.attack = { bonus: +atk[1], reach: rch ? +rch[1] : null, range: rng ? { normal: +rng[1], long: rng[2] ? +rng[2] : null } : null };
     if (hit) { a.damage = { formula: hit[2], type: hit[3].toLowerCase() }; if (add) a.damage.additional = { formula: add[2], type: add[3].toLowerCase() }; }
+    // Shorthand fallback: "+2 to hit, 1d6 bludgeoning" (ChatGPT/abbreviated format)
+    // Only fires when the standard pattern above didn't find an attack line.
+    if (!atk) {
+      const shAtk = d.match(/^([+-]\d+)\s+to\s+hit[,.]?\s+(\d+d\d+(?:[+-]\d+)?)\s+(\w+)/i);
+      if (shAtk) {
+        a.attack = { bonus: +shAtk[1], reach: 5, range: null };
+        a.damage = { formula: shAtk[2], type: shAtk[3].toLowerCase() };
+      }
+    }
   });
   return actions;
 };
@@ -371,14 +389,14 @@ const parseActions = (text) => {
 const ALL_SEC_STOP = 'Traits?|Actions?|Bonus\\s+Actions?|Reactions?|Legendary\\s+Actions?|Lair\\s+Actions?|Equipment|Features?';
 const parseSection = (text, headerRx) => {
   const sec = text.match(
-    new RegExp(`(?:^|\\n)[ \\t]*${headerRx}[ \\t]*(?:\\n|$)([\\s\\S]+?)(?=\\n[ \\t]*(?:${ALL_SEC_STOP})[ \\t]*(?:\\n|$)|$)`, 'i')
+    new RegExp(`(?:^|\\n)[ \\t]*${headerRx}[ \\t]*:?[ \\t]*(?:\\n|$)([\\s\\S]+?)(?=\\n[ \\t]*(?:${ALL_SEC_STOP})[ \\t]*:?[ \\t]*(?:\\n|$)|$)`, 'i')
   )?.[1];
   if (!sec) return [];
   const out = []; let cur = null;
   for (const raw of sec.split('\n').map(l => l.trim()).filter(Boolean)) {
     const line = raw.replace(/^[*•]\s*/, '');
     const m = line.match(ACTION_NAME_RX);
-    if (m && !SENTENCE_START_RX.test(m[1])) {
+    if (m && !SENTENCE_START_RX.test(m[1]) && !FIELD_LABEL_RX.test(m[1])) {
       if (cur) out.push(cur);
       cur = { name:m[1].trim(), qualifier:m[2]?.trim()||'', description:m[3].trim() };
     } else if (cur) cur.description += ' ' + line;
@@ -393,7 +411,7 @@ const parseSection = (text, headerRx) => {
 //   2014: "The creature can take 3 legendary actions..."
 //   2024: "Legendary Action Uses: 3 (4 in Lair)."
 const parseLegendaryCount = (text) => {
-  const sec = text.match(/(?:^|\n)[ \t]*Legendary\s+Actions?[ \t]*(?:\n|$)([\s\S]+?)(?=\n[ \t]*(?:Lair\s+Actions?|Mythic\s+Actions?)[ \t]*(?:\n|$)|$)/i)?.[1] || '';
+  const sec = text.match(/(?:^|\n)[ \t]*Legendary\s+Actions?[ \t]*:?[ \t]*(?:\n|$)([\s\S]+?)(?=\n[ \t]*(?:Lair\s+Actions?|Mythic\s+Actions?)[ \t]*:?[ \t]*(?:\n|$)|$)/i)?.[1] || '';
   // 2024 format: "Legendary Action Uses: 3 (4 in Lair)."
   const m24 = sec.match(/Legendary\s+Action\s+Uses?:\s*(\d+)(?:\s*\((\d+)\s+in\s+Lair\))?/i);
   if (m24) return { base: +m24[1], lair: m24[2] ? +m24[2] : +m24[1] };
@@ -407,21 +425,33 @@ const parseLegendaryCount = (text) => {
 // Produces a Foundry feat item with a utility activity.
 // actType: '' = passive trait, 'reaction' = reaction, 'bonus' = bonus action.
 // prefix: single char to namespace IDs by section ('t'=trait,'b'=bonus,'r'=reaction,'l'=legendary,'i'=lair)
-// This prevents cross-section ID collisions when two items share the same actor+name prefix.
-const makeSimpleItem = (a, actorName, actType, itemCost = 1, prefix = 't') => {
+// isCharacter: true for PC sheet output — uses type:'feat' instead of type:'monster'
+//   NPC sheets need type.value:'monster' to render in the stat block section.
+//   PC sheets use type.value:'class'|'feat'|'race' etc. — 'monster' would misplace items.
+const makeSimpleItem = (a, actorName, actType, itemCost = 1, prefix = 't', isCharacter = false) => {
   const itemId = makeItemId(prefix, actorName, a.name);
   const actId  = makeActId(prefix, actorName, a.name);
   const cost   = actType ? itemCost : 0;
   return { _id:itemId, name:a.name, type:'feat',
     system:{ description:{value:a.description},
-      // Fix #1: type.value:'monster' required for NPC feat items to appear
-      // in the correct section of the Foundry NPC sheet (not the PC features tab).
       type:{ value:'monster', subtype:'' },
       activation:{type:actType||'', cost, condition:''},
       uses:{value:null,max:null,per:null,recovery:[]},
       activities:{[actId]:{ _id:actId, type:'utility', name:'',
         activation:{type:actType||'', cost, condition:''}, uses:{spent:0,recovery:[]} }} } };
 };
+
+// ─── Spellcaster Sidekick Spell Slot Table (Tasha's CoE) ─────────────────────
+// Indexed by level 1–20: [1st, 2nd, 3rd, 4th, 5th] slots.
+// Spellcaster sidekicks cap at 5th-level spells; progression is roughly half-caster.
+const SPELLCASTER_SIDEKICK_SLOTS = [
+  [0,0,0,0,0],  // placeholder for index 0
+  [2,0,0,0,0],[2,0,0,0,0],[3,0,0,0,0],[3,0,0,0,0],  // levels 1-4
+  [4,2,0,0,0],[4,2,0,0,0],[4,3,0,0,0],[4,3,0,0,0],  // levels 5-8
+  [4,3,2,0,0],[4,3,2,0,0],[4,3,3,0,0],[4,3,3,0,0],  // levels 9-12
+  [4,3,3,1,0],[4,3,3,1,0],[4,3,3,2,0],[4,3,3,2,0],  // levels 13-16
+  [4,3,3,3,1],[4,3,3,3,1],[4,3,3,3,2],[4,3,3,3,2],  // levels 17-20
+];
 
 // ─── Spell Item Builder ───────────────────────────────────────────────────────
 // mode: 'spell' (slot-based), 'atwill' (at will), 'innate' (N/Day)
@@ -438,11 +468,15 @@ const makeSimpleItem = (a, actorName, actType, itemCost = 1, prefix = 't') => {
 const makeSpellItem = (spellName, level, mode, uses, actorName, prefix = 's') => {
   const meta    = spellMeta(spellName);
   // Level resolution rules:
-  //   mode:'spell'  + level:0 → intentional cantrip — lookup confirms, never overrides
-  //   mode:'atwill' + level:0 → 2024 "At Will" = cantrip-equivalent, keep at 0
-  //                             (these function as cantrips regardless of PHB slot level)
-  //   mode:'innate' + level:0 → placeholder — correct to real level via lookup
-  const resolvedLevel  = (level === 0 && mode === 'innate' && meta?.level != null) ? meta.level : level;
+  //   mode:'atwill' + level:0 → 2024 "At Will" = cantrip-equivalent — always stay 0
+  //   All other modes + level:0 + meta.level > 0 → correct to real level
+  //     This covers: mode:'innate' (N/Day), mode:'spell' (Prepared list without level headers)
+  //     A genuine cantrip has meta.level === 0 so no correction fires.
+  const resolvedLevel = (level === 0 && mode !== 'atwill' && meta != null && meta.level > 0) ? meta.level : level;
+  // prepared value: 2 = always prepared (PC reference uses 2 for all prepared/innate spells)
+  //                 1 = prepared (NPC slot-based)
+  //                 0 = unprepared
+  const resolvedPrepared = (mode === 'atwill') ? 2 : (mode === 'innate') ? 2 : (mode === 'spell') ? 2 : 1;
   const resolvedSchool = meta?.school ?? '';
   const itemId = makeItemId(prefix, actorName, spellName + resolvedLevel);
   const actId  = makeActId(prefix, actorName, spellName + resolvedLevel);
@@ -490,10 +524,8 @@ const makeSpellItem = (spellName, level, mode, uses, actorName, prefix = 's') =>
       level: resolvedLevel,
       school: resolvedSchool,
       // Fix #2: method + prepared replaces deprecated preparation.mode + preparation.prepared
-      method:   mode,         // 'spell' | 'innate' | 'atwill'
-      prepared: isAtwill ? 2  // atwill = always prepared
-               : isSlotSpell ? 1  // prepared
-               : 1,              // innate = prepared
+      method:   mode,
+      prepared: resolvedPrepared,
       uses: itemUses,
       activities: { [actId]: spellActivity }
     }
@@ -508,7 +540,9 @@ const makeSpellItem = (spellName, level, mode, uses, actorName, prefix = 's') =>
 // Uses position-based slicing so spell names between two headers are captured
 // correctly without relying on newlines (which parseSection collapses to spaces).
 const LEVEL_HDR_RX = /(?:Cantrips?(?:\s*\([^)]+\))?|(?:1st|2nd|3rd|[4-9]th)\s+level(?:\s*\([^)]+\))?)\s*:/gi;
-const FREQ_HDR_RX  = /(?:At\s+Will|\d+\/Day(?:\s+Each)?)\s*:/gi;
+// "Prepared (typical):" added for ChatGPT/condensed formats — treated as
+// prepared spell list; levels resolved via SPELL_META lookup in makeSpellItem.
+const FREQ_HDR_RX  = /(?:At\s+Will|\d+\/Day(?:\s+Each)?|Prepared(?:\s*\([^)]*\))?)\s*:/gi;
 
 const extractSpellLists = (desc) => {
   const cleanNames = (raw) => raw.split(',')
@@ -576,10 +610,16 @@ const parseSpellcasting = (traits, actions) => {
 
   if (spellTrait || spellAction) {
     const desc      = (spellTrait || spellAction).description;
+    // Ability — three formats:
+    //   Standard:  "spellcasting ability is Intelligence"
+    //   2024:      "using Intelligence as the spellcasting ability"
+    //   Condensed: "(WIS, spell DC 13)" — ChatGPT/abbreviated format
     const abilityM  = desc.match(/spellcasting ability is (\w+)/i)
-                   || desc.match(/using (\w+) as the spellcasting ability/i);
+                   || desc.match(/using (\w+) as the spellcasting ability/i)
+                   || desc.match(/\((\w{3}),\s*spell(?:\s+save)?\s+DC/i);
     const ability   = SPELL_AB_MAP[abilityM?.[1]?.toLowerCase()] || 'int';
-    const dc        = +(desc.match(/spell save DC\s*(\d+)/i)?.[1]                       || 0);
+    // DC — "spell save DC 13" (standard) or "spell DC 13" (condensed)
+    const dc        = +(desc.match(/spell\s+(?:save\s+)?DC\s*(\d+)/i)?.[1]              || 0);
     const atk       = +(desc.match(/\+(\d+)\s+to\s+hit\s+with\s+spell\s+attacks?/i)?.[1] || 0);
     const lvlM      = desc.match(/(\d+)(?:st|nd|rd|th)[- ]level\s+spellcaster/i);
     const { spells, slots, freqSpells, isSlotBased } = extractSpellLists(desc);
@@ -591,7 +631,7 @@ const parseSpellcasting = (traits, actions) => {
     const abilityM  = desc.match(/innate spellcasting ability is (\w+)/i)
                    || desc.match(/spellcasting ability is (\w+)/i);
     const ability   = SPELL_AB_MAP[abilityM?.[1]?.toLowerCase()] || 'int';
-    const dc        = +(desc.match(/spell save DC\s*(\d+)/i)?.[1]                       || 0);
+    const dc        = +(desc.match(/spell\s+(?:save\s+)?DC\s*(\d+)/i)?.[1]              || 0);
     const atk       = +(desc.match(/\+(\d+)\s+to\s+hit\s+with\s+spell\s+attacks?/i)?.[1] || 0);
     const { freqSpells } = extractSpellLists(desc);
     const innate = { ability, dc, atk, freqSpells };
@@ -719,7 +759,7 @@ export default function StatBlockParser() {
       // Colon is optional — "Saving Throws Int +9" and "Saving Throws: Int +9" both appear.
       // Line-start anchor (?:^|\n)\s* prevents false matches on "saving throw" inside
       // ability descriptions (e.g. "...must succeed on a DC 13 Constitution saving throw...").
-      let savesText = text.match(new RegExp('(?:^|\\n)\\s*(?:Saving Throws?|Save):?\\s+(.+?)' + SECSTOP, 'is'))?.[1]?.trim() || '';
+      let savesText = text.match(new RegExp('(?:^|\\n)\\s*(?:Saving Throws?|Saves?):?\\s+(.+?)' + SECSTOP, 'is'))?.[1]?.trim() || '';
       if (!savesText) {
         const fs = ['Str','Dex','Con','Int','Wis','Cha'].map(ab => {
           const m1 = text.match(new RegExp(`${ab}\\s+\\d+\\s+[+-]?\\d+\\s+([+-]\\d+)`, 'i'));
@@ -840,10 +880,13 @@ export default function StatBlockParser() {
         } else if (Object.keys(spellInfo.freqSpells).length) {
           // 2024: frequency only — spell level unknown, default to 0 with warning
           for (const [key, names] of Object.entries(spellInfo.freqSpells)) {
-            const isAtwill = key === 'atwill';
-            const uses = isAtwill ? null : { value: +key, max: +key, per: 'day' };
+            const isPrepared = key === 'prepared';
+            const isAtwill   = key === 'atwill';
+            // 'prepared' key from "Prepared (typical):" → mode:'spell', no uses, level from lookup
+            const mode = isPrepared ? 'spell' : isAtwill ? 'atwill' : 'innate';
+            const uses = (isPrepared || isAtwill) ? null : { value: +key, max: +key, per: 'day' };
             for (const n of names)
-              spellItems.push(makeSpellItem(n, 0, isAtwill ? 'atwill' : 'innate', uses, name, 's'));
+              spellItems.push(makeSpellItem(n, 0, mode, uses, name, 's'));
           }
           const unknownFreq = spellItems.filter(s => s.system.level === 0 && s.system.method !== 'spell');
           if (unknownFreq.length)
@@ -897,8 +940,110 @@ export default function StatBlockParser() {
       if (legLair !== legBase || legResLair !== legResBase)
         warns.push(`Lair bonus detected — imported with base values (${legBase} legendary action(s), ${legResBase} resistance(s)). Manually set to ${legLair}/${legResLair} if using this creature in its lair.`);
 
-      // ── Build Foundry Actor ──
+      // ── Build action items ────────────────────────────────────────────────────
       const ABS = ['str','dex','con','int','wis','cha'];
+      const buildActionItems = () => actions.map(a => {
+        const itemId = makeItemId('a', name, a.name);
+        const actId  = makeActId('a', name, a.name);
+        const rchM = a.qualifier?.match(/Recharge\s+(\d+)(?:[–\-]\d+)?/i);
+        const srM  = !rchM && /short\s+(?:or\s+)?long\s+rest/i.test(a.qualifier||'');
+        const lrM  = !rchM && !srM && /long\s+rest/i.test(a.qualifier||'');
+        const itemUses = rchM ? { value:+rchM[1], max:'6',  per:null, recovery:[{period:'recharge', formula:rchM[1], type:'recoverAll'}] }
+                       : srM  ? { value:1,         max:'1',  per:null, recovery:[{period:'sr',       type:'recoverAll'}] }
+                       : lrM  ? { value:1,         max:'1',  per:null, recovery:[{period:'lr',       type:'recoverAll'}] }
+                       :        { value:null,       max:null, per:null, recovery:[] };
+        const isMeleeOrRanged = /Melee\s+or\s+Ranged/i.test(a.description);
+        const isMelee  = /Melee\s+(?:Weapon\s+)?Attack(?:\s+Roll)?:/i.test(a.description);
+        const isRanged = /Ranged\s+(?:Weapon\s+)?Attack(?:\s+Roll)?:/i.test(a.description);
+        const isAttack = !!a.attack;
+        const saveInfo = parseSaveInfo(a.description);
+        const atkValue = isMeleeOrRanged||isMelee ? 'mwak' : isRanged ? 'rwak' : 'mwak';
+        let atkAbility='', atkBonus='';
+        if (isAttack && a.attack?.bonus!=null) {
+          const strTot=mod(abilities.str)+profBonus, dexTot=mod(abilities.dex)+profBonus, b=a.attack.bonus;
+          if (Math.abs(b-strTot)<=Math.abs(b-dexTot)) { atkAbility='str'; const d=b-strTot; atkBonus=d?String(d):''; }
+          else { atkAbility='dex'; const d=b-dexTot; atkBonus=d?String(d):''; }
+        }
+        const baseDmg = a.damage ? {...parseDiceFormula(a.damage.formula), types:[a.damage.type]} : null;
+        const addDmg  = a.damage?.additional ? {...parseDiceFormula(a.damage.additional.formula), types:[a.damage.additional.type]} : null;
+        let activity;
+        if (isAttack) {
+          activity = { _id:actId, type:'attack', name:'', activation:{type:'action',cost:1,condition:''},
+            attack:{ ability:atkAbility, bonus:atkBonus, flat:false, type:{value:atkValue,classification:'weapon'} },
+            damage:{ includeBase:true, parts:addDmg?[addDmg]:[] },
+            range: a.attack?.range ? {value:a.attack.range.normal,long:a.attack.range.long??null,units:'ft'}
+                 : a.attack?.reach ? {value:a.attack.reach,long:null,units:'ft'} : {value:null,long:null,units:'ft'},
+            target: parseTarget(a.description), uses:{spent:0,recovery:[]} };
+        } else if (saveInfo) {
+          activity = { _id:actId, type:'save', name:'', activation:{type:'action',cost:1,condition:''},
+            save:{ ability:[saveInfo.ability], dc:{calculation:'',formula:saveInfo.dc} },
+            damage:{ onSave:'half', parts:baseDmg?[baseDmg]:[] },
+            target: parseTarget(a.description), uses:{spent:0,recovery:[]} };
+        } else {
+          activity = { _id:actId, type:'utility', name:'', activation:{type:'action',cost:1,condition:''},
+            uses:{spent:0,recovery:[]} };
+        }
+        return { _id:itemId, name:a.name, type:isAttack?'weapon':'feat',
+          system:{ description:{value:a.description},
+            type:{ value:'monster', subtype:'' },
+            activation:{type:'action',cost:1,condition:''},
+            uses:itemUses, ...(baseDmg&&isAttack?{damage:{base:baseDmg}}:{}),
+            activities:{[actId]:activity} } };
+      });
+
+      // ── Detect sidekick class keyword ──────────────────────────────────────
+      // Explicit keyword wins; otherwise infer from content:
+      //   Spellcasting trait/action → Spellcaster
+      //   Expertise/Sneak Attack    → Expert
+      //   Default                   → Warrior
+      const sidekickClassKw = isSidekick ? (() => {
+        const explicit = text.match(/\b(Warrior|Expert|Spellcaster)\b/i)?.[1];
+        if (explicit) return explicit;
+        if (/\b(?:Spellcasting|Innate\s+Spellcasting|Cleric|Wizard|Sorcerer|Druid|Bard|Warlock|Paladin|Ranger)\s+spells?\b/i.test(text)
+          || traits.some(t => /^(?:Innate\s+)?Spellcasting$/i.test(t.name))
+          || actions.some(a => /^Spellcasting$/i.test(a.name))) return 'Spellcaster';
+        if (/\b(?:Expertise|Sneak\s+Attack)\b/i.test(text)) return 'Expert';
+        return 'Warrior';
+      })() : null;
+
+      // ── Build Foundry Actor (NPC for all formats including sidekicks) ──────────
+      // Foundry dnd5e sidekick classes go on NPC actors, not character sheets.
+      // Users with the TCoE Foundry module can drag the sidekick class item onto
+      // the NPC sheet for full leveling support (features, progression, etc.).
+      // Sidekick tweaks: cr:0, character advancement XP, Spellcaster slot table.
+      const langArr = languages ? languages.split(',').map(l => l.trim().toLowerCase().replace(/\s+/g,'')) : [];
+      const allItems = [
+        ...features.map(a => makeSimpleItem(a, name, '', 1, 'f')),
+        ...traits.map(a   => makeSimpleItem(a, name, '', 1, 't')),
+        ...buildActionItems(),
+        ...bonusActions.map(a => makeSimpleItem(a, name, 'bonus',    1, 'b')),
+        ...reactions.map(a    => makeSimpleItem(a, name, 'reaction', 1, 'r')),
+        ...legendaryActions.map(a => {
+          const costM = a.qualifier?.match(/Costs?\s+(\d+)\s+Actions?/i);
+          return makeSimpleItem(a, name, 'legendary', costM ? +costM[1] : 1, 'l');
+        }),
+        ...lairActions.map(a  => makeSimpleItem(a, name, 'lair', 1, 'i')),
+        ...spellItems, ...innateItems,
+      ];
+
+      // Spell slot source — priority: sidekick table → parsed headers → none
+      const isSpellcasterSidekick = isSidekick && sidekickClassKw?.toLowerCase() === 'spellcaster';
+      const spellSlots = isSpellcasterSidekick
+        ? (() => {
+            const s = SPELLCASTER_SIDEKICK_SLOTS[Math.min(sidekickLevel, 20)] || [0,0,0,0,0];
+            return Object.fromEntries([
+              ...s.map((n,i) => [`spell${i+1}`, { value:n, override:n||null }]),
+              ...Array.from({length:4},(_,i) => [`spell${i+6}`, { value:0, override:null }]),
+              ['pact', { value:0, override:null }]
+            ]);
+          })()
+        : spellInfo?.isSlotBased
+          ? Object.fromEntries(Array.from({length:9},(_,i)=>i+1).map(i => {
+              const max = spellInfo.slots[i] ?? 0;
+              return [`spell${i}`, { value:max, override:max||null }];
+            }))
+          : null;
+
       const foundryActor = {
         name, type: 'npc',
         system: {
@@ -908,134 +1053,37 @@ export default function StatBlockParser() {
             hp:           { value: hp, max: hp, temp: 0, tempmax: 0, formula: hpFormula },
             init:         { ability: 'dex', bonus: initBonus },
             movement:     { ...speeds, units: 'ft', hover: false },
-            // Fix #7: senses moved to ranges sub-object in dnd5e v4.0+
-            // 0-values become null (no sense), units:null = system default (ft)
             senses: {
               ranges:  { darkvision:  darkvision  || null, blindsight: blindsight || null,
                          tremorsense: tremorsense || null, truesight:  truesight  || null },
-              units:   null,
-              special: sensesSpecial
+              units:   null, special: sensesSpecial
             },
             spellcasting: spellInfo?.ability || '',
-            // Fix #5: spell.level = NPC caster level, required for proficiency-based
-            // DC/attack calculation when ability alone isn't enough.
-            spell: { level: spellInfo?.casterLevel ?? 0 }
+            spell:        { level: spellInfo?.casterLevel ?? 0 }
           },
           details: {
             alignment, type: { value: type, subtype: '', custom: '' },
-            cr: isSidekick ? 0 : crToFloat(cr),
-            xp: { value: isSidekick ? levelToXP(sidekickLevel) : crToXP(cr) },
+            cr:  isSidekick ? 0 : crToFloat(cr),
+            xp:  { value: isSidekick ? levelToXP(sidekickLevel) : crToXP(cr) },
             biography: { value: '', public: '' }
           },
           traits: {
             size: sizeCode,
-            languages: { value: languages ? languages.split(',').map(l => l.trim().toLowerCase().replace(/\s+/g, '')) : [], custom: '' },
+            languages: { value: langArr, custom: '' },
             di: { ...parseDamageField(diText), bypasses: [] },
             dr: { ...parseDamageField(drText), bypasses: [] },
             dv: { ...parseDamageField(dvText), bypasses: [] },
             ci: { value: extractConditionTypes(ciText), custom: '' }
           },
           skills,
-          // Fix #6: resources schema changed in dnd5e v4.0+
-          // legact/legres: { max, spent } — old { value, max, sr, lr, label } is deprecated
-          // lair: { value:bool, initiative, inside } — completely different shape
           resources: {
             legact: { max: legBase,    spent: 0 },
             legres: { max: legResBase, spent: 0 },
             lair:   { value: lairActions.length > 0, initiative: null, inside: false }
           },
-          // Spell slot tracking — only emitted for slot-based (2014) spellcasters.
-          // Foundry uses this to track remaining slots in combat. Innate/freq-based
-          // casters track uses on the individual spell item instead.
-          ...(spellInfo?.isSlotBased ? {
-            spells: Object.fromEntries(
-              Array.from({ length: 9 }, (_, i) => i + 1).map(i => {
-                // Fix #4: override must equal the slot count (not null) for NPCs.
-                // With override:null Foundry computes slots from class progression,
-                // which is 0 for NPCs with no class items attached.
-                const max = spellInfo.slots[i] ?? 0;
-                return [`spell${i}`, { value: max, override: max || null }];
-              })
-            )
-          } : {})
+          ...(spellSlots ? { spells: spellSlots } : {})
         },
-        items: [
-          ...features.map(a => makeSimpleItem(a, name, '', 1, 'f')),
-          ...traits.map(a => makeSimpleItem(a, name, '', 1, 't')),
-          ...actions.map(a => {
-          const itemId = makeItemId('a', name, a.name);
-          const actId  = makeActId('a', name, a.name);
-          // Recharge detection — three cases from qualifier text:
-          //   Combat die  "Recharge 5-6"            → period:'recharge', Foundry rolls d6
-          //   Short rest  "Recharges after a Short or Long Rest" → period:'sr'
-          //   Long rest   "Recharges after a Long Rest"          → period:'lr'
-          // Note: SR/LR recovery is stored correctly in JSON but the NPC sheet
-          // rest button may not surface it visually — a Foundry display limitation.
-          const rchM = a.qualifier?.match(/Recharge\s+(\d+)(?:[–\-]\d+)?/i);
-          const srM  = !rchM && /short\s+(?:or\s+)?long\s+rest/i.test(a.qualifier||'');
-          const lrM  = !rchM && !srM && /long\s+rest/i.test(a.qualifier||'');
-          const itemUses = rchM ? { value:+rchM[1], max:'6',  per:null, recovery:[{period:'recharge', formula:rchM[1], type:'recoverAll'}] }
-                         : srM  ? { value:1,         max:'1',  per:null, recovery:[{period:'sr',       type:'recoverAll'}] }
-                         : lrM  ? { value:1,         max:'1',  per:null, recovery:[{period:'lr',       type:'recoverAll'}] }
-                         :        { value:null,       max:null, per:null, recovery:[] };
-          // Classify
-          const isMeleeOrRanged = /Melee\s+or\s+Ranged/i.test(a.description);
-          const isMelee  = /Melee\s+(?:Weapon\s+)?Attack(?:\s+Roll)?:/i.test(a.description);
-          const isRanged = /Ranged\s+(?:Weapon\s+)?Attack(?:\s+Roll)?:/i.test(a.description);
-          const isAttack = !!a.attack;
-          const saveInfo = parseSaveInfo(a.description);
-          const atkValue = isMeleeOrRanged||isMelee ? 'mwak' : isRanged ? 'rwak' : 'mwak';
-          // Infer attack ability from stat bonus vs listed attack bonus
-          let atkAbility='', atkBonus='';
-          if (isAttack && a.attack?.bonus!=null) {
-            const strTot=mod(abilities.str)+profBonus, dexTot=mod(abilities.dex)+profBonus, b=a.attack.bonus;
-            if (Math.abs(b-strTot)<=Math.abs(b-dexTot)) { atkAbility='str'; const d=b-strTot; atkBonus=d?String(d):''; }
-            else { atkAbility='dex'; const d=b-dexTot; atkBonus=d?String(d):''; }
-          }
-          // Damage fields (DamageField format)
-          const baseDmg = a.damage ? {...parseDiceFormula(a.damage.formula), types:[a.damage.type]} : null;
-          const addDmg  = a.damage?.additional ? {...parseDiceFormula(a.damage.additional.formula), types:[a.damage.additional.type]} : null;
-          // Build activity entry
-          let activity;
-          if (isAttack) {
-            activity = { _id:actId, type:'attack', name:'', activation:{type:'action',cost:1,condition:''},
-              attack:{ ability:atkAbility, bonus:atkBonus, flat:false, type:{value:atkValue,classification:'weapon'} },
-              damage:{ includeBase:true, parts:addDmg?[addDmg]:[] },
-              range: a.attack?.range ? {value:a.attack.range.normal,long:a.attack.range.long??null,units:'ft'}
-                   : a.attack?.reach ? {value:a.attack.reach,long:null,units:'ft'} : {value:null,long:null,units:'ft'},
-              target: parseTarget(a.description),
-              uses:{spent:0,recovery:[]} };
-          } else if (saveInfo) {
-            activity = { _id:actId, type:'save', name:'', activation:{type:'action',cost:1,condition:''},
-              save:{ ability:[saveInfo.ability], dc:{calculation:'',formula:saveInfo.dc} },
-              damage:{ onSave:'half', parts:baseDmg?[baseDmg]:[] },
-              target: parseTarget(a.description),
-              uses:{spent:0,recovery:[]} };
-          } else {
-            activity = { _id:actId, type:'utility', name:'', activation:{type:'action',cost:1,condition:''},
-              uses:{spent:0,recovery:[]} };
-          }
-          return { _id:itemId, name:a.name, type:isAttack?'weapon':'feat',
-            system:{ description:{value:a.description},
-              type:{ value:'monster', subtype:'' },
-              activation:{type:'action',cost:1,condition:''},
-              uses:itemUses, ...(baseDmg&&isAttack?{damage:{base:baseDmg}}:{}),
-              activities:{[actId]:activity} } };
-          }),
-          ...bonusActions.map(a => makeSimpleItem(a, name, 'bonus',     1, 'b')),
-          ...reactions.map(a =>    makeSimpleItem(a, name, 'reaction',  1, 'r')),
-          ...legendaryActions.map(a => {
-            // 2024: all legendary actions cost 1 (no "Costs N Actions" qualifier)
-            // 2014: parse "(Costs N Actions)" qualifier
-            const costM = a.qualifier?.match(/Costs?\s+(\d+)\s+Actions?/i);
-            const legCost = costM ? +costM[1] : 1;
-            return makeSimpleItem(a, name, 'legendary', legCost, 'l');
-          }),
-          ...lairActions.map(a => makeSimpleItem(a, name, 'lair', 1, 'i')),
-          // Spells — go to the Spell tab in Foundry automatically via type:'spell'
-          ...spellItems,
-          ...innateItems,
-        ],
+        items: allItems,
         effects: [], flags: {}
       };
 
