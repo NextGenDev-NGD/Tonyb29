@@ -1,0 +1,557 @@
+{
+  "name": "Technomancer",
+  "type": "class",
+  "img": "systems/dnd5e/icons/svg/items/class.svg",
+  "system": {
+    "description": {
+      "value": "<table><tbody><tr style=\"box-sizing:inherit\"><th style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:9px 0.4em;background-color:var(--theme-page-background-color--secondary);text-align:center\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Level</span></p></th><th style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:9px 0.4em;background-color:var(--theme-page-background-color--secondary);text-align:center\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Proficiency Bonus</span></p></th><th style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:9px 0.4em;background-color:var(--theme-page-background-color--secondary);text-align:center\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Features</span></p></th><th style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:9px 0.4em;background-color:var(--theme-page-background-color--secondary);text-align:center\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Power Charges</span></p></th><th style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:9px 0.4em;background-color:var(--theme-page-background-color--secondary);text-align:center\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Charge Potency</span></p></th></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">1st</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">+2</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Magiteknical Energy, Power Charges, Inventor</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">3</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">2d6</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">2nd</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">+2</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Journeyman, Knowledge Sponge</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">4</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">2d6</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">3rd</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">+2</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Technomantic Vision, Power Refill</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">5</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">3d6</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">4th</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">+2</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Ability Score Improvement</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">5</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">3d6</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">5th</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">+3</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Power Surge (2d6), Quick Thinking</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">6</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">3d6</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">6th</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">+3</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Technomantic Vision feature</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">6</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">4d6</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">7th</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">+3</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Magiteknical Power</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">6</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">4d6</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">8th</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">+3</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Ability Score Improvement</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">7</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">4d6</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">9th</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">+4</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Fail Safe (one use)</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">7</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">4d6</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">10th</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">+4</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Inventor improvement, Weathered Toughness</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">7</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">4d6</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">11th</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">+4</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Technomantic Vision feature</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">8</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">5d6</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">12th</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">+4</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Ability Score Improvement</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">8</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">5d6</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">13th</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">+5</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Fail Safe (two uses)</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">8</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">5d6</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">14th</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">+5</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Power Surge (3d6)</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">9</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">5d6</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">15th</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">+5</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Energy Absorption</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">9</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">5d6</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">16th</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">+5</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Ability Score Improvement</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">9</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">6d6</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">17th</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">+6</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Technomantic Vision feature</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">10</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">6d6</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">18th</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">+6</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Tricks of the Trade, Fail Safe (three uses)</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">10</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">6d6</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">19th</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">+6</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Ability Score Improvements</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">10</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">6d6</span></p></td></tr><tr style=\"box-sizing:inherit\"><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">20th</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">+6</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">Perfection</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">12</span></p></td><td style=\"box-sizing:inherit;border-width:1px;border-style:solid;border-color:var(--theme-border-color);border-image:initial;padding:0.2em 0.4em\"><p><span style=\"font-family:rubik, helvetica, arial, sans-serif\">7d6</span></p></td></tr></tbody></table>",
+      "chat": ""
+    },
+    "source": {
+      "custom": "",
+      "rules": "2014",
+      "revision": 1
+    },
+    "startingEquipment": [],
+    "identifier": "Technomancer",
+    "levels": 1,
+    "advancement": [
+      {
+        "_id": "PlTHli46unbShQBZ",
+        "type": "HitPoints",
+        "configuration": {},
+        "value": {}
+      },
+      {
+        "_id": "oNCsTQjRTictX79Q",
+        "type": "ItemGrant",
+        "configuration": {
+          "items": [
+            {
+              "uuid": "Item.28vSlSps1jeDsPNW",
+              "optional": false
+            },
+            {
+              "uuid": "Item.RVawoMLHl1sQ0WEP",
+              "optional": false
+            },
+            {
+              "uuid": "Item.5OMDZ7qE5f3fqC1M",
+              "optional": false
+            }
+          ],
+          "optional": false,
+          "spell": null
+        },
+        "value": {},
+        "level": 1
+      },
+      {
+        "_id": "7aLHzMugJXEjpvGj",
+        "type": "AbilityScoreImprovement",
+        "configuration": {
+          "points": 2,
+          "fixed": {
+            "str": 0,
+            "dex": 0,
+            "con": 0,
+            "int": 0,
+            "wis": 0,
+            "cha": 0
+          },
+          "cap": 2,
+          "locked": [],
+          "recommendation": null
+        },
+        "value": {
+          "type": "asi"
+        },
+        "level": 4,
+        "title": "",
+        "hint": ""
+      },
+      {
+        "_id": "dF7F3cS4TVfQgXrK",
+        "type": "AbilityScoreImprovement",
+        "configuration": {
+          "points": 2,
+          "fixed": {
+            "str": 0,
+            "dex": 0,
+            "con": 0,
+            "int": 0,
+            "wis": 0,
+            "cha": 0
+          },
+          "cap": 2,
+          "locked": [],
+          "recommendation": null
+        },
+        "value": {
+          "type": "asi"
+        },
+        "level": 8,
+        "title": "",
+        "hint": ""
+      },
+      {
+        "_id": "5L5rLWPkv05pTluC",
+        "type": "Trait",
+        "configuration": {
+          "mode": "default",
+          "allowReplacements": false,
+          "grants": [
+            "armor:lgt",
+            "armor:shl"
+          ],
+          "choices": []
+        },
+        "value": {
+          "chosen": []
+        },
+        "level": 1,
+        "title": "",
+        "hint": "",
+        "classRestriction": "primary"
+      },
+      {
+        "_id": "tyXcgaY18pW9gIEK",
+        "type": "Trait",
+        "configuration": {
+          "mode": "default",
+          "allowReplacements": false,
+          "grants": [
+            "weapon:sim"
+          ],
+          "choices": []
+        },
+        "value": {
+          "chosen": []
+        },
+        "level": 1,
+        "title": "",
+        "hint": ""
+      },
+      {
+        "_id": "LPJgVtEZIxliJKwa",
+        "type": "Trait",
+        "configuration": {
+          "mode": "default",
+          "allowReplacements": false,
+          "grants": [
+            "saves:con",
+            "saves:int"
+          ],
+          "choices": []
+        },
+        "value": {
+          "chosen": []
+        },
+        "level": 1,
+        "title": "",
+        "hint": ""
+      },
+      {
+        "_id": "yhtoKJkyW0spPL0f",
+        "type": "Trait",
+        "configuration": {
+          "mode": "default",
+          "allowReplacements": false,
+          "grants": [],
+          "choices": [
+            {
+              "count": 2,
+              "pool": [
+                "skills:arc",
+                "skills:his",
+                "skills:ins",
+                "skills:inv",
+                "skills:per",
+                "skills:slt"
+              ]
+            }
+          ]
+        },
+        "value": {
+          "chosen": []
+        },
+        "level": 1,
+        "title": "",
+        "hint": "",
+        "classRestriction": "primary"
+      },
+      {
+        "_id": "xvNfbZOWR8UHtiPQ",
+        "type": "ItemChoice",
+        "configuration": {
+          "choices": {
+            "1": {
+              "count": 1,
+              "replacement": true
+            }
+          },
+          "allowDrops": false,
+          "type": null,
+          "pool": [
+            {
+              "uuid": "Item.fdZzN3yJAf5gjSfP"
+            },
+            {
+              "uuid": "Item.mFD5BXZDWFCKMZ0b"
+            }
+          ],
+          "spell": null,
+          "restriction": {
+            "list": []
+          }
+        },
+        "value": {
+          "added": {},
+          "replaced": {}
+        },
+        "title": "",
+        "hint": "(a) a shield or (b) a light crossbow",
+        "classRestriction": "primary"
+      },
+      {
+        "_id": "HlSZMntxXuv1hFgA",
+        "type": "ScaleValue",
+        "configuration": {
+          "identifier": "",
+          "type": "string",
+          "distance": {
+            "units": ""
+          },
+          "scale": {
+            "1": {
+              "value": "3"
+            },
+            "2": {
+              "value": "4"
+            },
+            "3": {
+              "value": "5"
+            },
+            "5": {
+              "value": "6"
+            },
+            "8": {
+              "value": "7"
+            },
+            "11": {
+              "value": "8"
+            },
+            "14": {
+              "value": "9"
+            },
+            "17": {
+              "value": "10"
+            },
+            "20": {
+              "value": "12"
+            }
+          }
+        },
+        "value": {},
+        "title": "Power Charges",
+        "hint": "Beginning at 1st level you have 3 power charges, as an action on your turn you can expend one charge and throw it at a target within 30 feet of you.",
+        "classRestriction": "primary"
+      },
+      {
+        "_id": "5miIu6nnw1121rI5",
+        "type": "ItemChoice",
+        "configuration": {
+          "choices": {
+            "1": {
+              "count": 1,
+              "replacement": true
+            }
+          },
+          "allowDrops": false,
+          "type": null,
+          "pool": [
+            {
+              "uuid": "Item.QswYn2mQzPvse2SO"
+            },
+            {
+              "uuid": "Item.5Q0EZrXsXhTc7iNq"
+            }
+          ],
+          "spell": null,
+          "restriction": {
+            "list": []
+          }
+        },
+        "value": {
+          "added": {},
+          "replaced": {}
+        },
+        "title": "",
+        "hint": "(a) an explorer's pack or (b) a dungeoneer's pack",
+        "classRestriction": "primary"
+      },
+      {
+        "_id": "eR3KaNDIEMWG5DwP",
+        "type": "ItemGrant",
+        "configuration": {
+          "items": [
+            {
+              "uuid": "Item.aRF5Yk77BeMqN9W0",
+              "optional": false
+            },
+            {
+              "uuid": "Item.nZfMNgHcLPTC7MRO",
+              "optional": false
+            }
+          ],
+          "optional": false,
+          "spell": null
+        },
+        "value": {},
+        "level": 2,
+        "title": "Journeyman",
+        "hint": "",
+        "classRestriction": "primary"
+      },
+      {
+        "_id": "R7FpfO4m546wmY6b",
+        "type": "ItemGrant",
+        "configuration": {
+          "items": [
+            {
+              "uuid": "Item.FoUBppBvEgiShp9d",
+              "optional": false
+            },
+            {
+              "uuid": "Item.ZaOyy057ISFtsz18",
+              "optional": false
+            }
+          ],
+          "optional": false,
+          "spell": null
+        },
+        "value": {},
+        "level": 3,
+        "title": "",
+        "hint": ""
+      },
+      {
+        "_id": "wbIHqYPWiYN69FE0",
+        "type": "AbilityScoreImprovement",
+        "configuration": {
+          "points": 2,
+          "fixed": {
+            "str": 0,
+            "dex": 0,
+            "con": 0,
+            "int": 0,
+            "wis": 0,
+            "cha": 0
+          },
+          "cap": 2,
+          "locked": [],
+          "recommendation": null
+        },
+        "value": {
+          "type": "asi"
+        },
+        "level": 12,
+        "title": "",
+        "hint": ""
+      },
+      {
+        "_id": "zfCAmano4BSfeGFG",
+        "type": "AbilityScoreImprovement",
+        "configuration": {
+          "points": 2,
+          "fixed": {
+            "str": 0,
+            "dex": 0,
+            "con": 0,
+            "int": 0,
+            "wis": 0,
+            "cha": 0
+          },
+          "cap": 2,
+          "locked": [],
+          "recommendation": null
+        },
+        "value": {
+          "type": "asi"
+        },
+        "level": 16,
+        "title": "",
+        "hint": ""
+      },
+      {
+        "_id": "4ijLja9PcEpcOAeZ",
+        "type": "AbilityScoreImprovement",
+        "configuration": {
+          "points": 2,
+          "fixed": {
+            "str": 0,
+            "dex": 0,
+            "con": 0,
+            "int": 0,
+            "wis": 0,
+            "cha": 0
+          },
+          "cap": 2,
+          "locked": [],
+          "recommendation": null
+        },
+        "value": {
+          "type": "asi"
+        },
+        "level": 19,
+        "title": "",
+        "hint": ""
+      },
+      {
+        "_id": "I7FgLAkKAGAryePq",
+        "type": "Trait",
+        "configuration": {
+          "mode": "default",
+          "allowReplacements": false,
+          "grants": [],
+          "choices": []
+        },
+        "value": {
+          "chosen": []
+        },
+        "level": 1
+      },
+      {
+        "_id": "PvnSaJJbGrDk8zFD",
+        "type": "ScaleValue",
+        "configuration": {
+          "identifier": "",
+          "type": "dice",
+          "distance": {
+            "units": ""
+          },
+          "scale": {
+            "1": {
+              "number": 2,
+              "faces": 6,
+              "modifiers": []
+            },
+            "3": {
+              "number": 3,
+              "faces": 6,
+              "modifiers": []
+            },
+            "6": {
+              "number": 4,
+              "faces": 6,
+              "modifiers": []
+            },
+            "11": {
+              "number": 5,
+              "faces": 6,
+              "modifiers": []
+            },
+            "16": {
+              "number": 6,
+              "faces": 6,
+              "modifiers": []
+            },
+            "20": {
+              "number": 7,
+              "faces": 6,
+              "modifiers": []
+            }
+          }
+        },
+        "value": {},
+        "title": "Charge Potency",
+        "hint": ""
+      },
+      {
+        "_id": "jDLrjDCjMlATRJZ5",
+        "type": "ItemGrant",
+        "configuration": {
+          "items": [
+            {
+              "optional": false,
+              "uuid": "Item.FZCbYtaRfJe54FgI"
+            }
+          ],
+          "optional": false,
+          "spell": null
+        },
+        "value": {},
+        "level": 5,
+        "title": "",
+        "hint": "",
+        "classRestriction": "primary"
+      },
+      {
+        "_id": "u2Em9bwK8orvxxoN",
+        "type": "ItemChoice",
+        "configuration": {
+          "choices": {
+            "3": {
+              "count": null,
+              "replacement": true
+            }
+          },
+          "allowDrops": false,
+          "type": "feat",
+          "pool": [],
+          "spell": null,
+          "restriction": {
+            "type": "class",
+            "subtype": "",
+            "list": []
+          }
+        },
+        "value": {
+          "added": {},
+          "replaced": {}
+        },
+        "title": "",
+        "hint": ""
+      }
+    ],
+    "spellcasting": {
+      "progression": "artificer",
+      "ability": "int",
+      "preparation": {
+        "formula": ""
+      }
+    },
+    "wealth": "",
+    "hd": {
+      "denomination": "d8",
+      "spent": 0,
+      "additional": ""
+    },
+    "primaryAbility": {
+      "value": [],
+      "all": true
+    },
+    "properties": []
+  },
+  "effects": [],
+  "folder": "v5cbvyWAlvrgpazX",
+  "flags": {},
+  "_stats": {
+    "coreVersion": "13.348",
+    "systemId": "dnd5e",
+    "systemVersion": "5.1.8",
+    "createdTime": 1736049399994,
+    "modifiedTime": 1773334921393,
+    "lastModifiedBy": "4OXDglwbAF8vWcgq",
+    "exportSource": {
+      "worldId": "echoes-of-the-aether",
+      "uuid": "Item.jtoDJUPUMucecvR8",
+      "coreVersion": "13.348",
+      "systemId": "dnd5e",
+      "systemVersion": "5.1.8"
+    }
+  },
+  "ownership": {
+    "default": 0
+  }
+}
