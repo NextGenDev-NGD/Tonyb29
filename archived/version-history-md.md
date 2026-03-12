@@ -1,217 +1,141 @@
 # Version History
 
-## Version 1.3 - Foundry VTT Compatible (Current)
-**Release Date:** December 10, 2024  
-**Status:** Stable - Production Ready
+---
 
-### Major Changes
-- **Complete JSON Structure Overhaul** - Rebuilt entire Foundry Actor format to match v3.3+ specification
-- **Abilities Restructure** - Added proficient flags, bonuses, check/save roll objects
-- **Skills Simplification** - Removed redundant fields, Foundry calculates bonuses
-- **Movement Parsing** - Added speed extraction for walk, climb, fly, swim, burrow
-- **Size Code Mapping** - Proper conversion to Foundry's internal size codes
+## v3.0-alpha — Phase 8: Sidekick + Format Compatibility
+**Date:** 2026-03-11
+**Status:** Current (Alpha)
 
 ### New Features
-- Speed parsing from stat block
-- Language text cleanup (removes parenthetical notes)
-- Proper size code conversion (tiny, sm, med, lg, huge, grg)
-- All required Foundry v3.3+ fields included
+- **Sidekick NPC output** — Tasha's Companion sidekicks parse as Foundry NPC actors (not PC)
+  - Level-based proficiency bonus
+  - `cr: 0`, character advancement XP, type "humanoid"
+  - `SPELLCASTER_SIDEKICK_SLOTS` table (TCoE levels 1–20, up to 5th slot)
+- **Colon format support** — ChatGPT-generated stat blocks with `Name: desc` entries
+  - `ACTION_NAME_RX` accepts `[.:]` — period OR colon as entry separator
+  - `FIELD_LABEL_RX` blacklists Skills/Saves/Cantrips/Prepared etc. from matching as action names
+  - `parseSection`/`parseActions`/`parseLegendaryCount` handle optional colon after section headers
+- **Condensed spellcasting** — `(WIS, spell DC 13)` format extraction
+- **Shorthand attack fallback** — `"+2 to hit, 1d6 bludgeoning"` detected as attack description
+- **Spell list key fix** — "Prepared (typical):" → key `'prepared'` (was producing 1/Day bug)
+- **Format detection** — `detectFormat`/`parseSidekickLevel` handle "Level: NPC 3" header
 
-### Bug Fixes
-- Fixed size field using wrong format
-- Fixed abilities missing proficiency data
-- Fixed skills missing proper structure
-- Fixed saves not integrating with abilities
-
-### Breaking Changes
-- JSON output structure completely changed
-- Old v1.2 exports will not import correctly
-- Must use v1.3 for Foundry VTT compatibility
-
----
-
-## Version 1.2 - AC & HP Formula Fixed
-**Release Date:** December 10, 2024  
-**Status:** Deprecated (Use v1.3)
-
-### Changes
-- **AC Formula Parsing** - Now captures armor type (e.g., "natural armor")
-- **HP Formula Parsing** - Extracts dice formula (e.g., "2d6 + 2")
-- **Field Editor Fixes** - Editor now properly updates JSON output
-
-### Bug Fixes
-- AC not exporting with armor type
-- HP formula not being captured
-- Field editor not saving changes to JSON
+### Removed
+- `makeClassItem` function removed
+- PC actor branch removed entirely (sidekicks go on NPC actors per Foundry dnd5e v4 design)
 
 ---
 
-## Version 1.1 - Field Editor Added
-**Release Date:** December 9, 2024  
-**Status:** Deprecated
-
-### Changes
-- **Field Editor Implementation** - Click edit icon to modify any parsed field
-- **Visual Indicators** - Green "exact" vs gray "default" badges
-- **Save/Cancel** - Inline editing with save/cancel buttons
-- **All Fields Editable** - Name, AC, HP, CR, Size, Type, Alignment, Senses, Languages
+## v3.0 — Phase 7: Spellcasting
+**Date:** 2026-02 (approx)
+**Status:** Superseded by v3.0-alpha
 
 ### New Features
-- Show/Hide Field Editor toggle button
-- Color-coded method badges (exact/default)
-- Real-time field editing
-- Parsing stats preservation during edits
+- Full spellcasting block parsing — prepared spells by slot level
+- Innate spellcasting — X/day entries with uses tracking
+- At-will spell support
+- Spell items with Foundry `method: 'spell'/'innate'/'atwill'` + `prepared: 1/2`
+- `consumption.spellSlot: false` + `targets:[{type:'itemUses'...}]` for innate/at-will activities
+- Spell slot overrides: `system.spells.spellN: { value: N, override: N }` (override = max for NPCs)
+- Caster level: `system.attributes.spell.level`
+- Lair actions section parsed
+- `extractSpellLists` position-based header slicer for single-line spell strings
+- `parseSpellcasting` finds block in traits or actions section
+- PC sheet reference work (later scrapped — sidekicks confirmed NPC-only)
+
+### Infrastructure
+- `makeSpellItem(name, level, mode, uses, actorName, prefix)` — spell item builder
+- `parseSaveInfo(desc)` — save DC/ability extraction from action descriptions
+- Activity key must equal `activity._id` (mismatch causes silent Foundry failures)
 
 ---
 
-## Version 1.0 - Stable Release
-**Release Date:** December 8, 2024  
-**Status:** Deprecated
+## v2.0 — Phase 6: Actions & Features
+**Date:** 2026-01 (approx)
+**Status:** Superseded
 
-### Changes
-- **Parse Analytics** - Accuracy percentage display
-- **Progress Bar** - Visual accuracy indicator
-- **Field Tracking** - Shows which fields parsed correctly
-- **Parse Statistics** - Parsed/total fields, exact matches count
-
-### Features
-- Basic stat block parsing
-- Goblin.json structure compatibility
-- Download/Copy JSON functions
-- Error and warning display
-
----
-
-## Phase 5 (Development Versions)
-**Date Range:** December 5-8, 2024
-
-### Focus Areas
-- Stats and abilities parsing
-- Skills with proficiency detection
-- Saving throws with proficiency
-- Challenge rating extraction
-- Foundry JSON structure
-
-### Key Milestones
-- Ability score modifiers calculation
-- Proficiency bonus from CR
-- Skill proficiency vs expertise detection
-- Save proficiency detection
-
----
-
-## Phase 4 (Iteration)
-**Date Range:** December 3-5, 2024
-
-### Focus Areas
-- Regex pattern refinement
-- Error handling improvements
-- Default value system
-
----
-
-## Phase 3 (Goblin.json Compatibility)
-**Date Range:** December 1-3, 2024
-
-### Focus Areas
-- Matching Goblin.json structure
-- Testing with known-good JSON
-- Structure validation
-
-### Key Achievement
-- First successful Foundry import
-
----
-
-## Phase 2 (Basic Parser)
-**Date Range:** November 28-30, 2024
-
-### Focus Areas
-- Initial parsing logic
-- Basic regex patterns
-- JSON structure research
-
----
-
-## Phase 1 (Prototype)
-**Date Range:** November 25-27, 2024
-
-### Focus Areas
-- Proof of concept
-- UI design
-- React component setup
-
----
-
-## Upcoming Versions
-
-### Version 1.4 (Planned - Phase 6)
-**Target:** Q1 2025
-
-#### Planned Features
-- Actions parsing (attacks, special abilities)
-- Features parsing (traits, reactions)
-- Legendary actions parsing
-- Bonus actions parsing
-- Damage type extraction
-
----
-
-### Version 2.0 (Future - Phase 7)
-**Target:** Q2 2025
-
-#### Planned Features
-- Spell list parsing
-- Innate spellcasting
+### New Features
+- Actions section parsing — name + full description
+- Attack rolls: `+X to hit`, reach, range, target count
+- Damage formulas: `XdY + Z`, damage type, additional damage (`plus 2d10 lightning`)
+- Multiattack detection
+- Special Traits section (passive features)
+- Reactions section
+- Bonus actions
+- Legendary Actions with cost (1–3 actions)
+- Legendary Resistance
 - Lair actions
-- Regional effects
+- Damage resistances, immunities, vulnerabilities
 - Condition immunities
-- Damage resistances/immunities/vulnerabilities
+- Actions output as Foundry feat/weapon items
+- `makeSimpleItem(a, actorName, actType, cost, prefix)` — feat item builder
+- `parseDiceFormula(s)` → Foundry DamageField
+
+### Infrastructure
+- `SECSTOP` — shared lookahead boundary for all field regexes
+- `parseSection(text, headerRx)` — generic section parser
+- `makeItemId(prefix, actorName, itemName)` / `makeActId()` — djb2 hash, always 16 chars
+- Resources: `legact/legres: { max, spent }` (replaced deprecated `{ value, max, sr, lr, label }`)
+- Lair resource: `{ value: bool, initiative: null, inside: false }`
 
 ---
 
-### Version 3.0 (Future - Phase 8)
-**Target:** Q3 2025
+## v1.6 — Phase 5 Stable
+**Date:** December 18, 2025
+**Status:** Superseded
 
-#### Planned Features
-- Batch processing (multiple stat blocks)
-- AI-enhanced parsing (Claude API integration)
-- Template system for homebrew
-- Image/token integration
-- Advanced validation
-
----
-
-## Version Comparison
-
-| Feature | v1.0 | v1.1 | v1.2 | v1.3 |
-|---------|------|------|------|------|
-| Basic Stats | ✅ | ✅ | ✅ | ✅ |
-| Field Editor | ❌ | ✅ | ✅ | ✅ |
-| AC Formula | ❌ | ❌ | ✅ | ✅ |
-| HP Formula | ❌ | ❌ | ✅ | ✅ |
-| Foundry v3.3+ Compatible | ❌ | ❌ | ❌ | ✅ |
-| Speed Parsing | ❌ | ❌ | ❌ | ✅ |
-| Proper Size Codes | ❌ | ❌ | ❌ | ✅ |
-| Actions Parsing | ❌ | ❌ | ❌ | ❌ (v1.4) |
+### Features (Phase 5 Complete)
+- All basic statistics: name, size, type, alignment
+- Armor Class with armor type
+- Hit Points with dice formula
+- Movement speeds: walk, climb, fly, swim, burrow
+- All 6 ability scores (standard, parenthetical, D&D Beyond split table)
+- Challenge Rating (any format including `CR 4 (XP 1,100; PB +2)`)
+- Initiative bonus
+- Saving throws with proficiency detection
+- All 18 skills with proficiency/expertise detection
+- Senses and languages
+- Field editor for manual corrections
+- D&D Beyond format compatibility
+- Foundry VTT v3.3+ JSON export
 
 ---
 
-## Changelog Format
+## v1.5 — Skills Fixed
+**Date:** December 17, 2024
+**Status:** Superseded
 
-Each version includes:
-- **Release Date** - When version was completed
-- **Status** - Current status (Stable, Deprecated, Development)
-- **Changes** - What was modified
-- **New Features** - What was added
-- **Bug Fixes** - What was fixed
-- **Breaking Changes** - What might break existing usage
+- Complete code rewrite — clean, stable
+- Skills properly structured with `bonuses: { check: '', passive: '' }`
+- All 18 skills initialized with correct ability mappings
+- Proficiency/expertise detection working
 
 ---
 
-## Deprecation Policy
+## v1.3 — Foundry VTT Compatible
+**Date:** December 10, 2024
+**Status:** Superseded
 
-- Previous versions marked as deprecated when new major version releases
-- Critical bugs backported for 1 version
-- Documentation maintained for 2 versions back
-- Current stable version always recommended
+- Complete JSON structure overhaul for Foundry dnd5e v3.3+
+- Speed parsing, language cleanup, size code mapping
+
+---
+
+## v1.0–1.2 — Foundation
+**Date:** December 2024
+**Status:** Deprecated
+
+- v1.0: Parse analytics, basic stat block parsing
+- v1.1: Field editor, exact/default badges
+- v1.2: AC/HP formula parsing
+
+---
+
+## Phase 1–4 (Prototype)
+**Date:** November–December 2024
+**Status:** Historical
+
+- Initial React component setup
+- Proof of concept parsing
+- Goblin.json compatibility testing
+- First successful Foundry import

@@ -651,6 +651,76 @@ const parseSpellcasting = (traits, actions) => {
   return result;
 };
 
+// ─── Field Editor → Output Applier ───────────────────────────────────────────
+// Maps field editor names back to the Foundry actor structure.
+// Returns a deep-cloned, updated copy of the actor.
+const applyFieldEdit = (fieldName, newValue, actor) => {
+  const o = JSON.parse(JSON.stringify(actor));
+  const v = newValue.trim();
+  const SIZE_CODE = { tiny:'tiny', small:'sm', medium:'med', large:'lg', huge:'huge', gargantuan:'grg' };
+  switch (fieldName) {
+    case 'name':
+      o.name = v;
+      break;
+    case 'size': {
+      const code = SIZE_CODE[v.toLowerCase()];
+      if (code) o.system.traits.size = code;
+      break;
+    }
+    case 'type':
+      o.system.details.type.value = v.toLowerCase();
+      break;
+    case 'subtype':
+      o.system.details.type.subtype = v === 'none' ? '' : v;
+      break;
+    case 'alignment':
+      o.system.details.alignment = v;
+      break;
+    case 'ac':
+      if (!isNaN(+v)) o.system.attributes.ac.flat = +v;
+      break;
+    case 'hp':
+      if (!isNaN(+v)) { o.system.attributes.hp.value = +v; o.system.attributes.hp.max = +v; }
+      break;
+    case 'cr': {
+      const f = v.includes('/') ? v.split('/').reduce((a,b) => a/b) : parseFloat(v);
+      if (!isNaN(f)) { o.system.details.cr = f; o.system.details.xp.value = crToXP(v); }
+      break;
+    }
+    case 'abilities': {
+      const parts = v.split(',').map(n => parseInt(n.trim()));
+      const keys  = ['str','dex','con','int','wis','cha'];
+      if (parts.length === 6 && parts.every(n => !isNaN(n)))
+        keys.forEach((k, i) => { o.system.abilities[k].value = parts[i]; });
+      break;
+    }
+    case 'speed': {
+      const wM = v.match(/^(\d+)/);
+      if (wM) o.system.attributes.movement.walk = +wM[1];
+      o.system.attributes.movement.hover = /\(hover\)/i.test(v);
+      break;
+    }
+    case 'languages':
+      o.system.traits.languages.value = v === 'none' ? [] : v.split(',').map(l => l.trim().toLowerCase().replace(/\s+/g,''));
+      break;
+    case 'initiative':
+      o.system.attributes.init.bonus = v === 'auto' ? '' : v;
+      break;
+    case 'senses': {
+      const sn = (rx) => +(v.match(rx)?.[1] || 0);
+      o.system.attributes.senses.ranges = {
+        darkvision:  sn(/darkvision\s+(\d+)/i)  || null,
+        blindsight:  sn(/blindsight\s+(\d+)/i)  || null,
+        tremorsense: sn(/tremorsense\s+(\d+)/i) || null,
+        truesight:   sn(/truesight\s+(\d+)/i)   || null,
+      };
+      break;
+    }
+    default: break;
+  }
+  return o;
+};
+
 // ─── Main Component ────────────────────────────────────────────────────────────
 export default function StatBlockParser() {
   const [input, setInput]           = useState('');
@@ -664,7 +734,12 @@ export default function StatBlockParser() {
   const [editValue, setEditValue]   = useState('');
 
   const startEdit = (name) => { setEditField(name); setEditValue(parseStats?.fields.find(f => f.name === name)?.value ?? ''); };
-  const saveEdit  = () => { if (!editField) return; setParseStats(p => ({ ...p, fields: p.fields.map(f => f.name === editField ? { ...f, value: editValue } : f) })); setEditField(null); };
+  const saveEdit  = () => {
+    if (!editField) return;
+    setParseStats(p => ({ ...p, fields: p.fields.map(f => f.name === editField ? { ...f, value: editValue } : f) }));
+    setOutput(o => o ? applyFieldEdit(editField, editValue, o) : o);
+    setEditField(null);
+  };
 
   const parseStatBlock = (text) => {
     const errs = [], warns = [];
@@ -698,10 +773,12 @@ export default function StatBlockParser() {
       const sizeCode = { tiny:'tiny', small:'sm', medium:'med', large:'lg', huge:'huge', gargantuan:'grg' }[size] || 'med';
       track('size', size, !!sizeM);
 
-      // Type
-      const typeM = text.match(/\b(beast|humanoid|dragon|undead|elemental|monstrosity|fey|fiend|giant|ooze|plant|construct|celestial|aberration)\b/i);
-      const type  = typeM?.[1]?.toLowerCase() || 'humanoid';
+      // Type — capture optional subtype in parens: "humanoid (goblinoid)"
+      const typeM    = text.match(/\b(beast|humanoid|dragon|undead|elemental|monstrosity|fey|fiend|giant|ooze|plant|construct|celestial|aberration)(?:\s*\(([^)]+)\))?/i);
+      const type     = typeM?.[1]?.toLowerCase() || 'humanoid';
+      const subtype  = typeM?.[2]?.trim() || '';
       track('type', type, !!typeM);
+      track('subtype', subtype || 'none', !!subtype, true);
 
       // Alignment
       const alignM  = text.match(/(?:tiny|small|medium|large|huge|gargantuan)\s+(?:\w+)[^,]*,\s*(.+?)(?:\n|$)/i) || text.match(/alignment[:\s]+(.+?)(?:\n|$)/i);
@@ -724,6 +801,7 @@ export default function StatBlockParser() {
       const spdLineM = text.match(/Speed[:\s]+(.+?)(?:\n|$)/i);
       const spdLine  = spdLineM?.[1]?.trim() || '';
       const spdGet   = (rx) => { const m = spdLine.match(rx); return m ? +m[1] : 0; };
+      const hover    = /\bfly\s+\d+\s*ft\.?\s*\(hover\)/i.test(spdLine);
       const speeds = {
         walk:   spdGet(/^(\d+)/),                   // first number on line = walk
         fly:    spdGet(/\bfly\s+(\d+)/i),
@@ -732,7 +810,7 @@ export default function StatBlockParser() {
         burrow: spdGet(/\bburrow\s+(\d+)/i),
       };
       if (!speeds.walk && !spdLine) { speeds.walk = 30; warns.push('Speed not found, using 30 ft.'); }
-      track('speed', `${speeds.walk} ft.`, !!spdLineM);
+      track('speed', `${speeds.walk} ft.${hover ? ' (hover)' : ''}`, !!spdLineM);
 
       // Abilities
       let abilities = { str:10, dex:10, con:10, int:10, wis:10, cha:10 };
@@ -1058,7 +1136,7 @@ export default function StatBlockParser() {
             ac:           { flat: ac, calc: 'natural', formula: '' },
             hp:           { value: hp, max: hp, temp: 0, tempmax: 0, formula: hpFormula },
             init:         { ability: 'dex', bonus: initBonus },
-            movement:     { ...speeds, units: 'ft', hover: false },
+            movement:     { ...speeds, units: 'ft', hover },
             senses: {
               ranges:  { darkvision:  darkvision  || null, blindsight: blindsight || null,
                          tremorsense: tremorsense || null, truesight:  truesight  || null },
@@ -1068,7 +1146,7 @@ export default function StatBlockParser() {
             spell:        { level: spellInfo?.casterLevel ?? 0 }
           },
           details: {
-            alignment, type: { value: type, subtype: '', custom: '' },
+            alignment, type: { value: type, subtype, custom: '' },
             cr:  isSidekick ? 0 : crToFloat(cr),
             xp:  { value: isSidekick ? levelToXP(sidekickLevel) : crToXP(cr) },
             biography: { value: '', public: '' }
@@ -1203,9 +1281,9 @@ export default function StatBlockParser() {
                             {item.system.activation?.type === 'lair'      && <span className="ml-2 text-xs text-cyan-400">[lair]</span>}
                             {!item.system.activation?.type && item.type === 'feat' && <span className="ml-2 text-xs text-purple-400">[trait]</span>}
                             {item.type === 'weapon' && <span className="ml-2 text-xs text-slate-500">[weapon]</span>}
-                            {item.type === 'spell' && item.system.preparation?.mode === 'prepared' && <span className="ml-2 text-xs text-sky-400">[spell lv{item.system.level}]</span>}
-                            {item.type === 'spell' && item.system.preparation?.mode === 'atwill'   && <span className="ml-2 text-xs text-sky-300">[at will]</span>}
-                            {item.type === 'spell' && item.system.preparation?.mode === 'innate'   && <span className="ml-2 text-xs text-violet-400">[innate {item.system.uses?.max}/day]</span>}
+                            {item.type === 'spell' && item.system.method === 'spell'   && <span className="ml-2 text-xs text-sky-400">[spell lv{item.system.level}]</span>}
+                            {item.type === 'spell' && item.system.method === 'atwill'  && <span className="ml-2 text-xs text-sky-300">[at will]</span>}
+                            {item.type === 'spell' && item.system.method === 'innate'  && <span className="ml-2 text-xs text-violet-400">[innate {item.system.uses?.max}/day]</span>}
                           </div>
                           {act?.type==='attack' && <div className="text-sm text-green-400">Attack [{act.attack?.type?.value?.toUpperCase()}] · {act.attack?.ability?.toUpperCase()}{act.attack?.bonus ? ` +${act.attack.bonus} extra` : ''}</div>}
                           {act?.type==='save' && <div className="text-sm text-blue-400">Save: DC {act.save?.dc?.formula} {act.save?.ability?.[0]?.toUpperCase()}</div>}
