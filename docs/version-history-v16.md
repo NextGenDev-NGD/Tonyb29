@@ -2,6 +2,69 @@
 
 ---
 
+## Version 4.0-alpha — Phase 9 Sprint 3 Complete
+**Release Date:** March 17, 2026
+**Status:** Alpha — Active Development
+**Phase:** Phase 9 — Custom Class Importer (Sprint 3 Complete)
+**File:** `parser-versions/class-importer.tsx` (new tab), `parser-versions/dnd-parser-v20-stable.tsx`
+
+### Major Changes
+
+#### Class Importer — Third Tab (Sprints 1–3 Complete)
+- New `class-importer.tsx` component: parses structured class template → Foundry bundle
+- Input: header block (Class/HitDie/Saves/Armor/Weapons/Skills/Spellcasting/SubclassLevel/Subclasses), Scale: lines, Level N: progression, Feature:/Uses:/Description: blocks
+- Output: bundle JSON array + self-contained Foundry macro (Item.create with UUID resolution)
+- Import workflow: Build Class → Copy Macro → run in Foundry → drag class to character sheet
+
+#### Self-Contained Macro (Sprint 3)
+- Macro creates features + subclasses + class item in a single Foundry macro run
+- ItemGrant advancements wire actual Foundry-assigned UUIDs (looked up after `Item.create`) — no UUID mismatch
+- Features auto-granted when class is dragged onto character sheet and advancement flow runs
+
+#### dnd5e 5.x Schema Fixes (Sprint 2)
+- `hd.denomination` = string "d8" (not number)
+- `spellcasting.preparation = { formula: '' }` (required field)
+- `ItemGrant.spell = null`
+- Subclass type used (not ItemChoice) for subclass advancement
+
+#### Input Robustness (Sprint 3)
+- `\r\n`, non-breaking spaces, and leading whitespace per line stripped before parsing
+- Load Example button fills full Technomancer template (all 20 levels + all features)
+
+#### Advancements Built
+- HitPoints, ItemGrant, AbilityScoreImprovement, Trait (armor/weapons/saves/skills), ScaleValue, ItemChoice (subclass)
+- Feature items use `system.type.value:'class'`
+
+### Sprint 4 — Up Next
+- Subclass feature blocks, tool proficiency support, ScaleValue schema verification
+
+---
+
+## Version 3.1 — Phase 8 Complete
+**Release Date:** March 12–15, 2026
+**Status:** Stable
+**Phase:** Phase 8 — Sidekick NPC Final + ChatGPT Format Support
+**File:** `parser-versions/dnd-parser-v20-stable.tsx`
+
+### Major Changes
+
+#### ChatGPT / Alternate Format Support
+- `ACTION_NAME_RX` accepts `[.:]` — period OR colon as entry separator
+- `FIELD_LABEL_RX` blacklists Skills/Saves/Cantrips/Prepared etc. from matching as entries
+- `extractSpellLists`: "Prepared (typical):" → key 'prepared' (was '1' → 1/Day bug)
+- Shorthand attack `"+2 to hit, 1d6 bludgeoning"` detected as fallback
+- Spellcasting ability from `(WIS, spell DC 13)` condensed format
+- `detectFormat`/`parseSidekickLevel` handle "Level: NPC 3" format
+
+#### Sidekick NPC (Final — PC branch scrapped)
+- Research confirmed: Foundry dnd5e sidekick classes go on NPC actors (not character)
+- TCoE Foundry module provides the class items; users drag onto NPC sheet
+- `SPELLCASTER_SIDEKICK_SLOTS` table added (Tasha's CoE levels 1–20, max 5th slot)
+- Sidekick NPC tweaks: `cr:0`, character advancement XP, level-based proficiency
+- `makeClassItem` removed; PC branch removed entirely
+
+---
+
 ## Version 3.0-alpha — Phase 7 Complete
 **Release Date:** March 11, 2026
 **Status:** Alpha — Active Development
@@ -360,9 +423,14 @@ v1.5 → v1.6: Direct upgrade, no breaking changes
 | Phase 3 | ✅ Complete | Goblin.json | Dec 1-3, 2025 |
 | Phase 4 | ✅ Complete | Iteration | Dec 3-5, 2025 |
 | **Phase 5** | **✅ Complete** | **v1.0-1.6** | **Dec 5-18, 2025** |
-| Phase 6 | 🚧 Starting | v2.0 | Dec 18, 2025 → Q1 2026 |
-| Phase 7 | 📋 Planned | v3.0 | Q2 2026 |
-| Phase 8 | 📋 Planned | v4.0 | Q3 2026 |
+| Phase 6 | ✅ Complete | v2.0-stable | Dec 18, 2025 → Mar 8, 2026 |
+| Phase 7 | ✅ Complete | v3.0-alpha | Mar 8-11, 2026 |
+| Phase 8 | ✅ Complete | v3.1 | Mar 12-15, 2026 |
+| **Phase 9** | **🚧 Sprint 3 Complete** | **v4.0-alpha** | **Mar 15-17, 2026 →** |
+| Phase 10 | 📋 Planned | — | Multi-VTT Export |
+| Phase 11 | 📋 Planned | — | Batch Processing |
+| Phase 12 | 📋 Planned | — | OCR |
+| Phase 13 | 📋 Planned | — | AI + URL Import |
 
 ---
 
@@ -377,10 +445,18 @@ v1.5 → v1.6: Direct upgrade, no breaking changes
 - **v1.5** - Skills fixed, clean rewrite
 - **v1.6** - D&D Beyond support, Phase 5.0 complete
 
-### Phase 6.0 - Actions & Features (NEXT) 🚧
-- **v2.0-alpha** - Basic action parsing
-- **v2.0-beta** - Legendary actions
-- **v2.0** - Complete actions support
+### Phase 6.0 - Actions & Features ✅ COMPLETE
+- **v2.0-alpha** - Basic action parsing, Activities system
+- **v2.0-stable** - Full actions, traits, legendary/lair, resistances, djb2 IDs
+
+### Phase 7.0 - Spellcasting + Schema Fixes ✅ COMPLETE
+- **v3.0-alpha** - Full spellcasting parser, dnd5e v4 schema, sidekick format
+
+### Phase 8.0 - Sidekick Final + ChatGPT Format ✅ COMPLETE
+- **v3.1** - NPC sidekick final, ChatGPT colon format support, PC branch removed
+
+### Phase 9.0 - Class Importer 🚧 SPRINT 3 COMPLETE
+- **v4.0-alpha** - Sprint 1-3: Class Importer tab, full macro, UUID resolution
 
 ---
 
@@ -422,27 +498,21 @@ Each version includes:
 
 ## What's Next?
 
-### Phase 6 Development Roadmap
+### Phase 9 Sprint 4 — Class Importer Polish
 
-**Sprint 1 (Week 1-2):**
-- Basic action parsing (name, description)
-- Attack roll detection
-- Damage formula parsing
+- Subclass feature blocks (full feature parsing for subclass abilities)
+- Tool proficiency support
+- ScaleValue advancement schema verification
+- Further edge case handling
 
-**Sprint 2 (Week 3-4):**
-- Multiattack parsing
-- Legendary actions
-- Action types (action/bonus/reaction)
+### Planned Phases
 
-**Sprint 3 (Week 5-6):**
-- Special features and traits
-- Damage resistances/immunities
-- Condition immunities
-
-**Sprint 4 (Week 7-8):**
-- Testing and refinement
-- Documentation
-- v2.0 release
+| Phase | Goal |
+|-------|------|
+| Phase 10 | Multi-VTT Export (Roll20, Fantasy Grounds, PF2e) |
+| Phase 11 | Batch Processing (multiple stat blocks) |
+| Phase 12 | OCR (screenshot/image → parsed output) |
+| Phase 13 | AI-enhanced parsing (Claude API fallback) + URL import |
 
 ---
 
@@ -487,7 +557,7 @@ Include:
 
 ---
 
-**Last Updated:** December 18, 2025  
-**Current Stable:** v1.6 (Phase 5.0 Complete)  
-**Next Release:** v2.0 (Phase 6.0)  
-**Status:** ✅ Phase 5 Complete, 🚧 Phase 6 Starting
+**Last Updated:** March 17, 2026
+**Current Stable:** v3.1 (Phase 8 Complete)
+**Active Development:** v4.0-alpha (Phase 9 Sprint 3 Complete)
+**Status:** ✅ Phases 5–8 Complete, 🚧 Phase 9 Sprint 4 Up Next

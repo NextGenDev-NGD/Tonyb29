@@ -271,7 +271,6 @@ Click **"Show Field Editor"** orange button at top of output section
 **Don't:**
 - Remove labels to save space
 - Mix multiple stat blocks
-- Include action descriptions yet (Phase 6)
 - Use special characters that don't copy well
 
 ### Quality Checking
@@ -303,11 +302,10 @@ Click **"Show Field Editor"** orange button at top of output section
 5. Repeat
 
 **For Complex Creatures:**
-1. Parse basic stats first
+1. Parse stat block
 2. Review Parse Analytics
-3. Use field editor extensively
-4. Export base stats
-5. Add actions manually in Foundry (until Phase 6)
+3. Use field editor for corrections
+4. Export and import — actions, spellcasting, traits, and legendary abilities are all parsed
 
 ---
 
@@ -445,19 +443,20 @@ See TROUBLESHOOTING.md for detailed solutions.
 
 ## Version Notes
 
-**Current Version:** v1.3 - Foundry VTT Compatible
+**Current Version:** v3.1 (Phase 8 Complete) / v4.0-alpha (Phase 9 active)
 
 **What's Included:**
-- ✅ Basic stats parsing
-- ✅ Skills and saves with proficiency
-- ✅ Movement speeds
-- ✅ Field editor
-- ✅ Foundry v3.3+ compatibility
+- ✅ Basic stats parsing (name, AC, HP, speeds, senses, abilities, skills, saves)
+- ✅ Actions, attacks, multiattack, reactions, bonus actions
+- ✅ Traits and special features
+- ✅ Legendary actions and lair actions
+- ✅ Damage resistances, immunities, vulnerabilities, condition immunities
+- ✅ Spellcasting (slot-based, innate, 2024 frequency format)
+- ✅ Sidekick NPC format (Tasha's CoE)
+- ✅ ChatGPT / alternate stat block formats (colon separator, condensed spellcasting)
+- ✅ Field editor for manual corrections
+- ✅ Foundry dnd5e v4.0+ schema (Activities system, correct spell/resource fields)
+- ✅ Class Importer tab (Phase 9) — homebrew class → Foundry macro + JSON bundle
 
-**Coming in Phase 6:**
-- 🔜 Actions and attacks
-- 🔜 Special features
-- 🔜 Legendary actions
-- 🔜 Damage resistances/immunities
-
-**Use this guide for v1.3** - Previous versions work differently.
+**Parser tab:** Stat block → Foundry Actor JSON
+**Class Importer tab:** Class template → Foundry Class + Features + Macro

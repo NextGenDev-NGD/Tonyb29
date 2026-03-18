@@ -1,7 +1,8 @@
 # Phase 9 — Custom Class Importer
 
-**Status:** Planned 📋
+**Status:** Sprint 3 Complete ✅ — Sprint 4 Up Next
 **Created:** 2026-03-12
+**Last Updated:** 2026-03-17
 **Follows:** Phase 8 Complete (v3.0-alpha)
 
 ---
@@ -190,37 +191,43 @@ For choices (skill proficiencies, subclass):
 }
 ```
 
-**Note:** Full advancement UUIDs require knowing where the items live (compendium vs. world).
-Initial implementation should output items + class item separately, letting users link them in Foundry. A future polish pass can generate the advancement links.
+**Note:** Sprint 3 resolved UUID linking — the macro looks up actual Foundry-assigned UUIDs after `Item.create()`, so advancement links are fully wired without any manual steps. The user runs the macro, then drags the class onto a character sheet to trigger advancements.
 
 ---
 
 ## Phase 9 Sprint Plan
 
-### Sprint 1 — Class Header + Progression Table
-- [ ] Parse class header block (name, hit die, saves, proficiencies, skills)
-- [ ] Parse progression table (level, features column)
-- [ ] Detect spellcasting progression type (full/half/third) from slot columns
-- [ ] Output class item with correct `system` structure
+### Sprint 1 — Class Header + Progression Table ✅ COMPLETE
+- [x] Parse class header block (name, hit die, saves, proficiencies, skills)
+- [x] Parse progression table (level, features column)
+- [x] Detect spellcasting progression type (full/half/third) from slot columns
+- [x] Output class item with correct `system` structure
+- [x] Third tab in App.tsx — Class Importer live at localhost:3000
+- [x] Async build with 'Building...' button state; no JSON.stringify in render path
 
-### Sprint 2 — Feature Items
-- [ ] Parse feature definition blocks
-- [ ] Build feat items with `system.requirements`
-- [ ] Handle recharge/uses properties
-- [ ] Cross-reference feature names from table to definitions
+### Sprint 2 — Feature Items + dnd5e 5.x Schema Fixes ✅ COMPLETE
+- [x] Parse feature definition blocks
+- [x] Build feat items with `system.requirements` (`system.type.value:'class'`)
+- [x] Handle recharge/uses properties
+- [x] Cross-reference feature names from table to definitions
+- [x] Fix ClassImporter for dnd5e 5.x: `hd.denomination` as string "d8", `spellcasting.preparation = {formula:''}`, `ItemGrant.spell = null`
+- [x] Use `Subclass` type (not `ItemChoice`) for subclass advancement
+- [x] Load Example button fills full Technomancer template
 
-### Sprint 3 — Subclass + Bundle
-- [ ] Parse subclass block
-- [ ] Build subclass item
-- [ ] Bundle class + subclass + all features into one JSON
-- [ ] Export as single downloadable file
+### Sprint 3 — Self-Contained Macro + UUID Resolution ✅ COMPLETE
+- [x] Macro is fully self-contained: creates features + subclasses + class item in one run
+- [x] ItemGrant advancements use actual Foundry-assigned UUIDs (looked up after `Item.create`)
+- [x] Features auto-granted when class is dragged onto character sheet
+- [x] Input normalization: strips `\r\n`, non-breaking spaces, leading whitespace per line
+- [x] Class Item JSON button retained as backup only
+- [x] Bundle JSON array output kept alongside macro
 
-### Sprint 4 — Polish + UI
-- [ ] Third tab in App.tsx
-- [ ] Parse analytics (fields detected vs. expected)
-- [ ] Field editor for corrections
-- [ ] Test with Technomancer homebrew
-- [ ] Documentation
+### Sprint 4 — Polish + Additional Features 📋 UP NEXT
+- [ ] Subclass feature blocks (full feature parsing for subclass abilities)
+- [ ] Tool proficiency support
+- [ ] ScaleValue advancement schema verification (currently may be silently dropped by Foundry)
+- [ ] Further polish and edge case handling
+- [ ] Documentation update
 
 ---
 
@@ -256,18 +263,18 @@ The primary test will be the user's Technomancer homebrew class (torar.fandom.co
 
 ---
 
-## Decisions (2026-03-12)
+## Decisions (2026-03-12, updated 2026-03-17)
 
-1. **Input format:** Some structure required — not fully freeform. Define a clear template the user fills in; document it in the UI. Avoids the complexity of freeform parsing while still being far easier than manual Foundry entry.
-2. **Advancement linking:** Skip UUID linking for v1 — output class item + feature items separately, user links in Foundry. Note: UUID format is VTT-specific anyway; Foundry uses `Compendium.world.items.<id>` but other VTTs will differ. Research deferred to Phase 10 (Multi-VTT).
-3. **Tab placement:** Separate tab in the existing app. Replaces JSON Validator tab in the final production push (Validator becomes dev-only tooling).
-4. **Multi-subclass:** Single subclass for v1. Technomancer only needs one.
-5. **Spell lists:** Deferred — class importer won't bundle spells known in Phase 9.
+1. **Input format:** Structured template required — not freeform. Template defined and documented in UI. Load Example button provides full Technomancer template.
+2. **Advancement linking:** ~~Skip UUID linking for v1~~ — **Resolved in Sprint 3**: macro looks up actual Foundry UUIDs after item creation, wires ItemGrant advancements automatically. No manual linking needed.
+3. **Tab placement:** Third tab in existing app (`class-importer.tsx`). JSON Validator kept as dev tooling tab.
+4. **Multi-subclass:** Single subclass for v1 (Technomancer → Nanoweave). Multi-subclass deferred.
+5. **Spell lists:** Deferred — class importer does not bundle spells known in Phase 9.
 
 ## Open Questions
 
-1. **Multi-subclass:** Does the initial build need to handle more than one subclass? Probably not for Technomancer.
-2. **Spell lists:** Does the class importer also need to bundle cantrips/spells known? Likely deferred.
+1. **ScaleValue advancements:** Still potentially being silently dropped by Foundry. Needs verification in Sprint 4.
+2. **Spell lists:** Class importer does not bundle cantrips/spells known — deferred to Sprint 4 or later.
 
 ---
 
