@@ -194,8 +194,8 @@ const buildSubclassItem = (subclassName: string, className: string) => ({
   system: {
     description: { value: '', chat: '' },
     source: { custom: '', rules: '2014', revision: 1 },
-    identifier: subclassName.trim(),
-    classIdentifier: className.trim(),
+    identifier: toSlug(subclassName),
+    classIdentifier: toSlug(className),
     advancement: [],
     spellcasting: { progression: 'none', ability: '', preparation: {} },
   },
@@ -224,20 +224,21 @@ const advTrait = (cn: string, tag: string, grants: string[], choices: any[], lvl
 const advItemGrant = (cn: string, lvl: number, idx: number, ids: string[]) => ({
   _id: makeId('adv',cn,'grant',String(lvl),String(idx)),
   type: 'ItemGrant',
-  configuration: { items: ids.map(id => ({ uuid:`Item.${id}`, optional:false })), optional:false, spell:null },
-  value: {}, level:lvl, title:'', hint:'',
+  configuration: {
+    items: ids.map(id => ({ uuid:`Item.${id}`, optional:false })),
+    optional: false,
+    spell: null,
+  },
+  value: {}, level:lvl, title:'',
 });
 
-const advSubclassChoice = (cn: string, lvl: number, subclassIds: string[]) => ({
+const advSubclass = (cn: string, lvl: number) => ({
   _id: makeId('adv',cn,'subclass',String(lvl)),
-  type: 'ItemChoice',
-  configuration: {
-    choices: { [String(lvl)]: { count:null, replacement:true } },
-    allowDrops: false, type:'feat',
-    pool: subclassIds.map(id => ({ uuid:`Item.${id}` })),
-    spell: null, restriction: { type:'class', subtype:'', list:[] },
-  },
-  value: { added:{}, replaced:{} }, title:'', hint:'',
+  type: 'Subclass',
+  configuration: {},
+  value: {},
+  level: lvl,
+  title: '',
 });
 
 const advScaleValue = (cn: string, sv: ScaleValue) => ({
@@ -264,8 +265,7 @@ const buildClassItem = (
   if (hdr.skillPool.length) advancement.push(advTrait(hdr.name,'skills', [],
     [{ count: hdr.skillCount, pool: hdr.skillPool }], 1, 'primary'));
   for (const sv of scales) advancement.push(advScaleValue(hdr.name, sv));
-  advancement.push(advSubclassChoice(hdr.name, hdr.subclassLevel,
-    Array.from(subclassIdMap.values())));
+  advancement.push(advSubclass(hdr.name, hdr.subclassLevel));
 
   for (const [lvl, feats] of Array.from(progression.entries()).sort((a,b) => a[0]-b[0])) {
     const grantIds: string[] = [];
@@ -300,7 +300,7 @@ const buildClassItem = (
       description: { value:'', chat:'' },
       source: { custom:'', rules:'2014', revision:1 },
       startingEquipment: [],
-      identifier: hdr.name.trim(),
+      identifier: toSlug(hdr.name),
       levels: 1,
       advancement,
       spellcasting: hdr.spellProgression !== 'none'
@@ -379,11 +379,49 @@ Feature: Magiteknical Energy
 Description: You have learned to harness energy into power charges and channel them into powerful attacks.
 
 Feature: Power Charges
-Uses: @scale.Technomancer.power-charges / lr
+Uses: @scale.technomancer.power-charges / lr
 Description: Beginning at 1st level you have 3 power charges. As an action you can expend one charge and throw it at a target within 30 feet. The number of charges increases as shown on the Technomancer table.
 
 Feature: Inventor
-Description: Starting at 1st level you have crafted your first invention. Choose one item from the Basic Inventions table.`;
+Description: Starting at 1st level you have crafted your first invention. Choose one item from the Basic Inventions table.
+
+Feature: Journeyman
+Description: At 2nd level your understanding of magitek deepens. You gain proficiency with tinker's tools if you don't already have it.
+
+Feature: Knowledge Sponge
+Description: Also at 2nd level, you can add half your proficiency bonus to any Intelligence check you make that doesn't already include your proficiency bonus.
+
+Feature: Technomantic Vision
+Description: Starting at 3rd level, you can use a bonus action to activate a magitek lens, giving you advantage on Perception checks that rely on sight until the end of your next turn.
+
+Feature: Power Refill
+Description: At 3rd level, when you finish a short rest you regain a number of expended power charges equal to your Intelligence modifier.
+
+Feature: Power Surge
+Uses: 1 / lr
+Description: At 5th level, once per long rest you can expend all remaining power charges to unleash a devastating burst of energy dealing Charge Potency damage to all creatures in a 15-foot cone.
+
+Feature: Quick Thinking
+Description: At 5th level you can add your Intelligence modifier to your Initiative rolls.
+
+Feature: Magiteknical Power
+Description: At 7th level your magitek inventions grow more powerful. All inventions from the Basic and Advanced Inventions tables are available to you.
+
+Feature: Fail Safe
+Description: At 9th level you have rigged a failsafe into your gear. When you are reduced to 0 hit points but not killed outright, you can use your reaction to expend 2 power charges and drop to 1 hit point instead.
+
+Feature: Weathered Toughness
+Description: At 10th level your hit point maximum increases by 10 and increases by 1 again whenever you gain a level in this class.
+
+Feature: Energy Absorption
+Uses: 1 / lr
+Description: At 15th level, when you take energy damage you can use your reaction to absorb some of it, regaining a number of power charges equal to half the damage taken (rounded down, minimum 1).
+
+Feature: Tricks of the Trade
+Description: At 18th level you have mastered every secret of magitek engineering. You gain the benefits of all inventions from all Invention tables.
+
+Feature: Perfection
+Description: At 20th level your mastery is complete. Your Intelligence score increases by 4, to a maximum of 24. Additionally, your power charges maximum increases by 4.`;
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 export default function ClassImporter() {
@@ -407,10 +445,13 @@ export default function ClassImporter() {
     try {
       if (!input.trim()) throw new Error('Nothing to parse — paste your class definition above.');
 
-      const header      = parseClassHeader(input, warns);
-      const scales      = parseScaleValues(input);
-      const progression = parseProgression(input);
-      const featureDefs = parseFeatureDefs(input);
+      // Normalize line endings (Windows \r\n → \n) so all regexes work consistently
+      const text = input.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+      const header      = parseClassHeader(text, warns);
+      const scales      = parseScaleValues(text);
+      const progression = parseProgression(text);
+      const featureDefs = parseFeatureDefs(text);
 
       if (!progression.size) warns.push('No Level N: lines found. Add at least "Level 1: Feature Name".');
 
@@ -454,7 +495,7 @@ export default function ClassImporter() {
         subclasses: subclassItems.length, scales: scales.length,
         spellcasting: header.spellProgression !== 'none'
           ? `${header.spellProgression} / ${header.spellAbility.toUpperCase()}` : 'None',
-        scaleFormula: scales.length ? `@scale.${header.name}.${scales[0].identifier}` : '',
+        scaleFormula: scales.length ? `@scale.${toSlug(header.name)}.${scales[0].identifier}` : '',
         itemNames: featureItems.map(f => ({ name: f.name, stub: f.system.description.value.includes('not yet filled') })),
         subclassNames: subclassItems.map(s => s.name),
       });
@@ -473,12 +514,15 @@ export default function ClassImporter() {
   };
 
   // JSON.stringify only happens here — never during render
+  const getClassItem = () => bundle?.find((i: any) => i.type === 'class') ?? null;
+
   const downloadJSON = () => {
-    if (!bundle) return;
-    const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
+    const classItem = getClassItem();
+    if (!classItem) return;
+    const blob = new Blob([JSON.stringify(classItem, null, 2)], { type: 'application/json' });
     const url  = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url;
-    a.download = `${summary?.name?.replace(/\s+/g,'_') || 'class'}_foundry_bundle.json`;
+    a.download = `${summary?.name?.replace(/\s+/g,'_') || 'class'}_class_item.json`;
     a.click(); URL.revokeObjectURL(url);
   };
 
@@ -493,8 +537,9 @@ export default function ClassImporter() {
   };
 
   const copyJSON = () => {
-    if (!bundle) return;
-    navigator.clipboard.writeText(JSON.stringify(bundle, null, 2));
+    const classItem = getClassItem();
+    if (!classItem) return;
+    navigator.clipboard.writeText(JSON.stringify(classItem, null, 2));
     setCopiedB(true); setTimeout(() => setCopiedB(false), 2000);
   };
 
@@ -535,12 +580,19 @@ export default function ClassImporter() {
                 placeholder={TEMPLATE}
                 className="w-full h-96 bg-slate-700 text-white rounded p-3 text-xs font-mono border border-indigo-400/30 focus:border-indigo-400 focus:outline-none resize-none"
               />
-              <button
-                onClick={buildClass}
-                disabled={building}
-                className="mt-3 w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2">
-                <Zap size={16} /> {building ? 'Building…' : 'Build Class'}
-              </button>
+              <div className="mt-3 flex gap-2">
+                <button
+                  onClick={buildClass}
+                  disabled={building}
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2">
+                  <Zap size={16} /> {building ? 'Building…' : 'Build Class'}
+                </button>
+                <button
+                  onClick={() => setInput(TEMPLATE)}
+                  className="bg-slate-600 hover:bg-slate-500 text-slate-200 font-semibold py-2 px-3 rounded transition text-xs whitespace-nowrap">
+                  Load Example
+                </button>
+              </div>
             </div>
 
             {/* Format reference */}
@@ -608,8 +660,8 @@ export default function ClassImporter() {
                 <div className="bg-slate-800 rounded-lg p-4 border border-green-500/20 text-sm text-slate-300 space-y-1">
                   <div className="text-green-400 font-semibold mb-2">Import Instructions</div>
                   <div><span className="text-white font-bold">1.</span> Copy the <span className="text-amber-400">macro</span> and run it in Foundry (Macros → New → Execute).</div>
-                  <div><span className="text-white font-bold">2.</span> Create a blank Class item in the Items tab, open it, click <span className="text-slate-300 font-mono">⚙ Import Data</span>.</div>
-                  <div><span className="text-white font-bold">3.</span> Paste the <span className="text-indigo-400">bundle JSON</span>, find the class item (last in the array), and import it.</div>
+                  <div><span className="text-white font-bold">2.</span> Create a blank Class item in Foundry Items tab, open it, click <span className="text-slate-300 font-mono">⚙ Import Data</span>.</div>
+                  <div><span className="text-white font-bold">3.</span> Copy the <span className="text-indigo-400">Class Item JSON</span> (Step 2) and paste it — this is a single item, not an array.</div>
                   <div className="text-slate-500 text-xs mt-1">The macro creates features with stable IDs — the class advancement links resolve automatically.</div>
                 </div>
 
@@ -648,8 +700,8 @@ export default function ClassImporter() {
 
                 {/* Bundle JSON — Step 2 */}
                 <div className="bg-slate-800 rounded-lg p-5 border border-indigo-500/30">
-                  <div className="flex items-center gap-2 mb-1"><FileJson size={20} className="text-indigo-400" /><span className="text-white font-semibold">Step 2 — Class Bundle JSON</span></div>
-                  <p className="text-xs text-slate-400 mb-3">{bundle?.length} items — import the class item (last in array) after running the macro</p>
+                  <div className="flex items-center gap-2 mb-1"><FileJson size={20} className="text-indigo-400" /><span className="text-white font-semibold">Step 2 — Class Item JSON</span></div>
+                  <p className="text-xs text-slate-400 mb-3">Single class item — paste directly into the Import Data dialog</p>
                   <div className="flex gap-3">
                     <button onClick={copyJSON}
                       className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2">
