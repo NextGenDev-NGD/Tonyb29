@@ -267,19 +267,21 @@ const buildClassItem = (
   for (const sv of scales) advancement.push(advScaleValue(hdr.name, sv));
   advancement.push(advSubclass(hdr.name, hdr.subclassLevel));
 
+  const levelGrantNames = new Map<number, string[]>();
+
   for (const [lvl, feats] of Array.from(progression.entries()).sort((a,b) => a[0]-b[0])) {
     const grantIds: string[] = [];
+    const grantNames: string[] = [];
     for (const feat of feats) {
       if (feat === 'ASI') {
         advancement.push(advASI(hdr.name, lvl));
       } else if (feat.toLowerCase() === 'subclass') {
         // subclass choice already added above
       } else if (feat.startsWith('__upgrade:')) {
-        // Feature upgrade (e.g. "Inventor improvement") — the existing item's description
-        // covers this; no new Foundry item needed. Just warn.
         warns.push(`Level ${lvl}: "${feat.replace('__upgrade:','')}" is a feature upgrade — already covered by the existing item. Skipped.`);
       } else {
         const id = featureIdMap.get(feat);
+        grantNames.push(feat);
         if (id) {
           grantIds.push(id);
         } else {
@@ -288,10 +290,13 @@ const buildClassItem = (
         }
       }
     }
-    if (grantIds.length) advancement.push(advItemGrant(hdr.name, lvl, 0, grantIds));
+    if (grantIds.length) {
+      advancement.push(advItemGrant(hdr.name, lvl, 0, grantIds));
+      levelGrantNames.set(lvl, grantNames);
+    }
   }
 
-  return {
+  const item = {
     _id: makeId('cls', hdr.name),
     name: hdr.name,
     type: 'class',
@@ -313,6 +318,7 @@ const buildClassItem = (
     },
     effects: [], flags: {},
   };
+  return { item, levelGrantNames };
 };
 
 // ─── Stub Feature Builder (for undefined progression entries) ─────────────────
@@ -320,23 +326,58 @@ const buildStubFeature = (name: string, className: string) =>
   buildFeatureItem({ name, uses: '', description: `(Description not yet filled in for ${name}.)` }, className);
 
 // ─── Macro Builder ────────────────────────────────────────────────────────────
-const buildMacro = (className: string, featureItems: any[], subclassItems: any[]) => {
-  const allItems = [...featureItems, ...subclassItems];
+const buildMacro = (
+  className: string,
+  featureItems: any[],
+  subclassItems: any[],
+  classBase: any,
+  levelGrantNames: Map<number, string[]>,
+) => {
+  // Strip _id so Foundry assigns real world IDs — we capture them after creation
+  const itemsForCreation = [...featureItems, ...subclassItems]
+    .map(({ _id, ...rest }: any) => rest);
+  const levelGrantsObj = Object.fromEntries(
+    Array.from(levelGrantNames.entries()).map(([lvl, names]) => [String(lvl), names])
+  );
   return `// ${className} — Class Import Macro
 // ─────────────────────────────────────────────────────────────────────
-// Step 1: Run this macro in Foundry VTT (Macros → New → Paste → Execute).
-//         This creates all feature and subclass items with stable IDs
-//         so the class item's advancement links will resolve correctly.
+// Run this macro in Foundry VTT (Macros → New → Paste → Execute).
+// It creates all feature items, subclass items, AND the class item,
+// with advancement links automatically wired to the correct items.
+// No manual JSON import needed.
 //
-// Step 2: After the macro runs, create a new blank Class item in Foundry,
-//         open it, click the ⚙ Import button, and paste the class item JSON.
-//
-// Items created: ${allItems.length} (${featureItems.length} feature(s), ${subclassItems.length} subclass(es))
+// Items created: ${itemsForCreation.length} feature/subclass item(s) + 1 class item
 // ─────────────────────────────────────────────────────────────────────
 (async () => {
-  const items = ${JSON.stringify(allItems, null, 2)};
+  // Step 1 — Create feature and subclass items (Foundry assigns real IDs)
+  const items = ${JSON.stringify(itemsForCreation, null, 2)};
   const created = await Item.create(items);
-  ui.notifications.info(\`${className}: \${created.length} item(s) created successfully.\`);
+  if (!created?.length) { ui.notifications.error("${className}: item creation failed."); return; }
+
+  // Step 2 — Map item names to their actual world UUIDs
+  const byName = Object.fromEntries(created.map(i => [i.name, i.uuid]));
+
+  // Step 3 — Build ItemGrant advancements using real UUIDs
+  const levelGrants = ${JSON.stringify(levelGrantsObj)};
+  const itemGrants = Object.entries(levelGrants).map(([lvl, names]) => ({
+    _id: foundry.utils.randomID(),
+    type: "ItemGrant",
+    configuration: {
+      items: names.map(n => ({ uuid: byName[n] ?? ("Item.MISSING_" + n.replace(/\\s+/g,"_")), optional: false })),
+      optional: false,
+      spell: null,
+    },
+    value: {},
+    level: Number(lvl),
+    title: "",
+  }));
+
+  // Step 4 — Create class item with wired advancements
+  const classData = ${JSON.stringify(classBase, null, 2)};
+  classData.system.advancement.push(...itemGrants);
+  await Item.create([classData]);
+
+  ui.notifications.info(\`${className}: \${created.length} feature(s) + class item created. Drag the class onto your character sheet to begin!\`);
 })();`;
 };
 
@@ -428,7 +469,7 @@ export default function ClassImporter() {
   const [input, setInput]           = useState('');
   // Store parsed item arrays only — never pre-stringify (blocks main thread on large inputs)
   const [bundle, setBundle]         = useState<any[] | null>(null);
-  const [macroItems, setMacroItems] = useState<{ features: any[]; subclasses: any[] } | null>(null);
+  const [macroItems, setMacroItems] = useState<{ features: any[]; subclasses: any[]; classBase: any; levelGrantNames: Map<number, string[]> } | null>(null);
   const [summary, setSummary]       = useState<any>(null);
   const [warnings, setWarnings]     = useState<string[]>([]);
   const [errors, setErrors]         = useState<string[]>([]);
@@ -445,8 +486,11 @@ export default function ClassImporter() {
     try {
       if (!input.trim()) throw new Error('Nothing to parse — paste your class definition above.');
 
-      // Normalize line endings (Windows \r\n → \n) so all regexes work consistently
-      const text = input.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+      // Normalize input: line endings, non-breaking spaces, leading whitespace per line
+      const text = input
+        .replace(/\r\n/g, '\n').replace(/\r/g, '\n')   // Windows line endings
+        .replace(/\u00A0/g, ' ')                        // non-breaking spaces → regular space
+        .replace(/^[ \t]+/gm, '');                      // strip leading whitespace per line
 
       const header      = parseClassHeader(text, warns);
       const scales      = parseScaleValues(text);
@@ -484,7 +528,10 @@ export default function ClassImporter() {
         subclassItems.push(item);
       }
 
-      const classItem  = buildClassItem(header, progression, featureIdMap, subclassIdMap, scales, warns);
+      const { item: classItem, levelGrantNames } = buildClassItem(header, progression, featureIdMap, subclassIdMap, scales, warns);
+      // classBase = class item without ItemGrant advancements (macro adds them with real UUIDs)
+      const classBase = { ...classItem, system: { ...classItem.system,
+        advancement: classItem.system.advancement.filter((a: any) => a.type !== 'ItemGrant') } };
       const bundleArr  = [...featureItems, ...subclassItems, classItem];
 
       setSummary({
@@ -500,7 +547,7 @@ export default function ClassImporter() {
         subclassNames: subclassItems.map(s => s.name),
       });
       setBundle(bundleArr);
-      setMacroItems({ features: featureItems, subclasses: subclassItems });
+      setMacroItems({ features: featureItems, subclasses: subclassItems, classBase, levelGrantNames });
       setWarnings(warns);
       setErrors([]);
     } catch (e: any) {
@@ -526,13 +573,17 @@ export default function ClassImporter() {
     a.click(); URL.revokeObjectURL(url);
   };
 
+  const getMacroStr = () => macroItems && summary
+    ? buildMacro(summary.name, macroItems.features, macroItems.subclasses, macroItems.classBase, macroItems.levelGrantNames)
+    : '';
+
   const downloadMacro = () => {
-    if (!macroItems || !summary) return;
-    const str  = buildMacro(summary.name, macroItems.features, macroItems.subclasses);
+    const str = getMacroStr();
+    if (!str) return;
     const blob = new Blob([str], { type: 'text/javascript' });
     const url  = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url;
-    a.download = `${summary.name.replace(/\s+/g,'_')}_import_macro.js`;
+    a.download = `${summary!.name.replace(/\s+/g,'_')}_import_macro.js`;
     a.click(); URL.revokeObjectURL(url);
   };
 
@@ -544,8 +595,9 @@ export default function ClassImporter() {
   };
 
   const copyMacro = () => {
-    if (!macroItems || !summary) return;
-    navigator.clipboard.writeText(buildMacro(summary.name, macroItems.features, macroItems.subclasses));
+    const str = getMacroStr();
+    if (!str) return;
+    navigator.clipboard.writeText(str);
     setCopiedM(true); setTimeout(() => setCopiedM(false), 2000);
   };
 
@@ -660,9 +712,9 @@ export default function ClassImporter() {
                 <div className="bg-slate-800 rounded-lg p-4 border border-green-500/20 text-sm text-slate-300 space-y-1">
                   <div className="text-green-400 font-semibold mb-2">Import Instructions</div>
                   <div><span className="text-white font-bold">1.</span> Copy the <span className="text-amber-400">macro</span> and run it in Foundry (Macros → New → Execute).</div>
-                  <div><span className="text-white font-bold">2.</span> Create a blank Class item in Foundry Items tab, open it, click <span className="text-slate-300 font-mono">⚙ Import Data</span>.</div>
-                  <div><span className="text-white font-bold">3.</span> Copy the <span className="text-indigo-400">Class Item JSON</span> (Step 2) and paste it — this is a single item, not an array.</div>
-                  <div className="text-slate-500 text-xs mt-1">The macro creates features with stable IDs — the class advancement links resolve automatically.</div>
+                  <div><span className="text-white font-bold">2.</span> That's it — the macro creates all features, subclasses, <em>and</em> the class item, fully wired together.</div>
+                  <div><span className="text-white font-bold">3.</span> Drag the class from the Items tab onto your character sheet to begin leveling.</div>
+                  <div className="text-slate-500 text-xs mt-1">The Class Item JSON below is a backup — only needed if you want to re-import the class item separately.</div>
                 </div>
 
                 {/* Feature item list */}
@@ -684,8 +736,8 @@ export default function ClassImporter() {
 
                 {/* Macro — Step 1 */}
                 <div className="bg-slate-800 rounded-lg p-5 border border-amber-500/30">
-                  <div className="flex items-center gap-2 mb-1"><Package size={20} className="text-amber-400" /><span className="text-white font-semibold">Step 1 — Foundry Import Macro</span></div>
-                  <p className="text-xs text-slate-400 mb-3">Creates {summary.features + summary.subclasses} items with stable IDs in Foundry (Macros → New → Execute)</p>
+                  <div className="flex items-center gap-2 mb-1"><Package size={20} className="text-amber-400" /><span className="text-white font-semibold">Step 1 — Complete Import Macro</span></div>
+                  <p className="text-xs text-slate-400 mb-3">Creates {summary.features + summary.subclasses} feature/subclass items + the class item, all wired together (Macros → New → Execute)</p>
                   <div className="flex gap-3">
                     <button onClick={copyMacro}
                       className="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2">
