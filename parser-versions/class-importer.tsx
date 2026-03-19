@@ -59,6 +59,7 @@ interface ScaleValue {
   scale: Record<string, any>;
 }
 interface FeatureDef { name: string; uses: string; description: string; }
+interface SubclassDef { name: string; levelGrants: Map<number, string[]>; }
 
 // ─── Parsers ──────────────────────────────────────────────────────────────────
 const parseClassHeader = (text: string, warns: string[]): ClassHeader => {
@@ -119,13 +120,9 @@ const parseProgression = (text: string): Map<number, string[]> => {
   while ((m = rx.exec(text)) !== null) {
     const lvl = parseInt(m[1]);
     const feats = m[2].split(',').map(f => {
-      // Strip parenthetical qualifiers: "Power Surge (2d6)" → "Power Surge"
       let name = f.trim().replace(/\s*\([^)]*\)/g, '').trim();
-      // "Ability Score Improvement/Improvements" → ASI keyword
       if (/^Ability Score Improvements?$/i.test(name)) return 'ASI';
-      // "Technomantic Vision feature" (and similar subclass grant notes) → Subclass keyword
       if (/\b(subclass|vision)\s+feature\b/i.test(name)) return 'Subclass';
-      // "Inventor improvement" / "X improvement" → flag as upgrade, not new item
       if (/\bimprovement\b/i.test(name) && !/^Ability Score/i.test(name)) return `__upgrade:${name}`;
       return name;
     }).filter(Boolean);
@@ -156,6 +153,21 @@ const parseFeatureDefs = (text: string): FeatureDef[] => {
     defs.push({ name, uses, description: descLines.join('\n').trim() });
   }
   return defs;
+};
+
+// Parses Subclass: Name blocks (not Subclasses: header) for per-subclass level progression
+const parseSubclassBlocks = (text: string): SubclassDef[] => {
+  const sections = text.split(/^(?=Subclass:(?!es)\s)/im);
+  return sections
+    .filter(s => /^Subclass:(?!es)\s/i.test(s))
+    .map(section => {
+      const nameMatch = section.match(/^Subclass:\s+(.+)$/im);
+      const name = nameMatch?.[1]?.trim() || '';
+      if (!name) return null;
+      const levelGrants = parseProgression(section);
+      return { name, levelGrants } as SubclassDef;
+    })
+    .filter(Boolean) as SubclassDef[];
 };
 
 // ─── Uses Struct Builder ──────────────────────────────────────────────────────
@@ -244,7 +256,7 @@ const advSubclass = (cn: string, lvl: number) => ({
 const advScaleValue = (cn: string, sv: ScaleValue) => ({
   _id: makeId('adv',cn,'scale',sv.identifier),
   type: 'ScaleValue',
-  configuration: { identifier:sv.identifier, type:sv.type, distance:{ units:'' }, scale:sv.scale },
+  configuration: { identifier:sv.identifier, type:sv.type, scale:sv.scale },
   value: {}, title:sv.name, hint:'',
 });
 
@@ -321,7 +333,7 @@ const buildClassItem = (
   return { item, levelGrantNames };
 };
 
-// ─── Stub Feature Builder (for undefined progression entries) ─────────────────
+// ─── Stub Feature Builder ─────────────────────────────────────────────────────
 const buildStubFeature = (name: string, className: string) =>
   buildFeatureItem({ name, uses: '', description: `(Description not yet filled in for ${name}.)` }, className);
 
@@ -330,40 +342,70 @@ const buildMacro = (
   className: string,
   featureItems: any[],
   subclassItems: any[],
+  subclassLevelGrants: Record<string, Record<string, string[]>>,
   classBase: any,
   levelGrantNames: Map<number, string[]>,
 ) => {
-  // Strip _id so Foundry assigns real world IDs — we capture them after creation
-  const itemsForCreation = [...featureItems, ...subclassItems]
-    .map(({ _id, ...rest }: any) => rest);
+  // Strip _ids — Foundry assigns real world IDs, which we capture after creation
+  const featureDataForMacro = featureItems.map(({ _id, ...rest }: any) => rest);
+  const subclassDataForMacro = subclassItems.map(({ _id, ...rest }: any) => rest);
   const levelGrantsObj = Object.fromEntries(
     Array.from(levelGrantNames.entries()).map(([lvl, names]) => [String(lvl), names])
   );
+
   return `// ${className} — Class Import Macro
 // ─────────────────────────────────────────────────────────────────────
 // Run this macro in Foundry VTT (Macros → New → Paste → Execute).
-// It creates all feature items, subclass items, AND the class item,
-// with advancement links automatically wired to the correct items.
-// No manual JSON import needed.
+// Creates a folder structure, all feature/subclass items, and the class
+// item, with all advancement links automatically wired to the correct items.
 //
-// Items created: ${itemsForCreation.length} feature/subclass item(s) + 1 class item
+// Structure: ${className}/ → class + subclasses
+//            ${className}/Features/ → all feature items
+// Items: ${featureDataForMacro.length} feature(s) · ${subclassDataForMacro.length} subclass(es) · 1 class item
 // ─────────────────────────────────────────────────────────────────────
 (async () => {
-  // Step 1 — Create feature and subclass items (Foundry assigns real IDs)
-  const items = ${JSON.stringify(itemsForCreation, null, 2)};
-  const created = await Item.create(items);
-  if (!created?.length) { ui.notifications.error("${className}: item creation failed."); return; }
+  // Step 1 — Create main folder and Features subfolder
+  const mainFolder = await Folder.create({ name: "${className}", type: "Item", color: "#4b3f8a" });
+  if (!mainFolder) { ui.notifications.error("${className}: folder creation failed."); return; }
+  const featFolder = await Folder.create({ name: "Features", type: "Item", color: "#2d4a6b", folder: mainFolder.id });
+  if (!featFolder) { ui.notifications.error("${className}: Features subfolder creation failed."); return; }
 
-  // Step 2 — Map item names to their actual world UUIDs
-  const byName = Object.fromEntries(created.map(i => [i.name, i.uuid]));
+  // Step 2 — Create all feature items inside the Features subfolder (Foundry assigns real IDs)
+  const featureData = ${JSON.stringify(featureDataForMacro, null, 2)};
+  const createdFeatures = await Item.create(featureData.map(i => ({ ...i, folder: featFolder.id })));
+  if (!createdFeatures?.length) { ui.notifications.error("${className}: feature creation failed."); return; }
 
-  // Step 3 — Build ItemGrant advancements using real UUIDs
-  const levelGrants = ${JSON.stringify(levelGrantsObj)};
-  const itemGrants = Object.entries(levelGrants).map(([lvl, names]) => ({
+  // Step 3 — Map feature names to their actual world UUIDs
+  const byName = Object.fromEntries(createdFeatures.map(i => [i.name, i.uuid]));
+
+  // Step 4 — Create subclass items in the main folder with their feature advancements wired in
+  const subclassData = ${JSON.stringify(subclassDataForMacro, null, 2)};
+  const subclassGrants = ${JSON.stringify(subclassLevelGrants)};
+  const subclassesWithAdv = subclassData.map(sc => {
+    const grants = subclassGrants[sc.name] || {};
+    const advancements = Object.entries(grants).map(([lvl, names]) => ({
+      _id: foundry.utils.randomID(),
+      type: "ItemGrant",
+      configuration: {
+        items: names.map(n => ({ uuid: byName[n] ?? ("Item.MISSING_" + n.replace(/\\s+/g, "_")), optional: false })),
+        optional: false,
+        spell: null,
+      },
+      value: {},
+      level: Number(lvl),
+      title: "",
+    }));
+    return { ...sc, folder: mainFolder.id, system: { ...sc.system, advancement: [...(sc.system.advancement || []), ...advancements] } };
+  });
+  if (subclassesWithAdv.length) await Item.create(subclassesWithAdv);
+
+  // Step 5 — Build class ItemGrant advancements using real feature UUIDs
+  const classLevelGrants = ${JSON.stringify(levelGrantsObj)};
+  const classItemGrants = Object.entries(classLevelGrants).map(([lvl, names]) => ({
     _id: foundry.utils.randomID(),
     type: "ItemGrant",
     configuration: {
-      items: names.map(n => ({ uuid: byName[n] ?? ("Item.MISSING_" + n.replace(/\\s+/g,"_")), optional: false })),
+      items: names.map(n => ({ uuid: byName[n] ?? ("Item.MISSING_" + n.replace(/\\s+/g, "_")), optional: false })),
       optional: false,
       spell: null,
     },
@@ -372,12 +414,13 @@ const buildMacro = (
     title: "",
   }));
 
-  // Step 4 — Create class item with wired advancements
+  // Step 6 — Create class item in the main folder with wired advancements
   const classData = ${JSON.stringify(classBase, null, 2)};
-  classData.system.advancement.push(...itemGrants);
+  classData.folder = mainFolder.id;
+  classData.system.advancement.push(...classItemGrants);
   await Item.create([classData]);
 
-  ui.notifications.info(\`${className}: \${created.length} feature(s) + class item created. Drag the class onto your character sheet to begin!\`);
+  ui.notifications.info(\`${className}: created — \${createdFeatures.length} feature(s) in Features subfolder, \${subclassesWithAdv.length} subclass(es) + class item in main folder. Drag the class onto your character sheet to begin!\`);
 })();`;
 };
 
@@ -462,14 +505,42 @@ Feature: Tricks of the Trade
 Description: At 18th level you have mastered every secret of magitek engineering. You gain the benefits of all inventions from all Invention tables.
 
 Feature: Perfection
-Description: At 20th level your mastery is complete. Your Intelligence score increases by 4, to a maximum of 24. Additionally, your power charges maximum increases by 4.`;
+Description: At 20th level your mastery is complete. Your Intelligence score increases by 4, to a maximum of 24. Additionally, your power charges maximum increases by 4.
+
+Subclass: Futurist
+Level 3: Future Sight, Temporal Shift
+Level 6: Accelerated Reflexes
+Level 10: Time Ripple
+Level 14: Paradox
+
+Feature: Future Sight
+Description: Starting at 3rd level, once per short or long rest you can see a few seconds into the future. Until the end of your next turn you have advantage on attack rolls and saving throws.
+
+Feature: Temporal Shift
+Description: Also at 3rd level, when you take damage you can use your reaction to shift slightly through time, reducing that damage by 1d10 + your Intelligence modifier.
+
+Feature: Accelerated Reflexes
+Description: At 6th level your temporal awareness sharpens. You cannot be surprised and you add your Intelligence modifier to your initiative rolls.
+
+Feature: Time Ripple
+Uses: 1 / lr
+Description: At 10th level you can tear a ripple in time. As an action, choose a point within 60 feet. All creatures within 10 feet must succeed on a Wisdom saving throw or be stunned until the end of their next turn.
+
+Feature: Paradox
+Uses: 1 / lr
+Description: At 14th level you can fold time itself. As an action, you return to the exact position and state you were in at the start of your last turn. Your hit points, conditions, and position all revert.`;
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 export default function ClassImporter() {
   const [input, setInput]           = useState('');
-  // Store parsed item arrays only — never pre-stringify (blocks main thread on large inputs)
   const [bundle, setBundle]         = useState<any[] | null>(null);
-  const [macroItems, setMacroItems] = useState<{ features: any[]; subclasses: any[]; classBase: any; levelGrantNames: Map<number, string[]> } | null>(null);
+  const [macroItems, setMacroItems] = useState<{
+    features: any[];
+    subclasses: any[];
+    subclassLevelGrants: Record<string, Record<string, string[]>>;
+    classBase: any;
+    levelGrantNames: Map<number, string[]>;
+  } | null>(null);
   const [summary, setSummary]       = useState<any>(null);
   const [warnings, setWarnings]     = useState<string[]>([]);
   const [errors, setErrors]         = useState<string[]>([]);
@@ -480,17 +551,15 @@ export default function ClassImporter() {
   const buildClass = () => {
     setBuilding(true);
     setErrors([]); setWarnings([]); setBundle(null); setMacroItems(null); setSummary(null);
-    // Yield to the event loop so React renders the loading state before heavy work starts
     setTimeout(() => {
     const warns: string[] = [];
     try {
       if (!input.trim()) throw new Error('Nothing to parse — paste your class definition above.');
 
-      // Normalize input: line endings, non-breaking spaces, leading whitespace per line
       const text = input
-        .replace(/\r\n/g, '\n').replace(/\r/g, '\n')   // Windows line endings
-        .replace(/\u00A0/g, ' ')                        // non-breaking spaces → regular space
-        .replace(/^[ \t]+/gm, '');                      // strip leading whitespace per line
+        .replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+        .replace(/\u00A0/g, ' ')
+        .replace(/^[ \t]+/gm, '');
 
       const header      = parseClassHeader(text, warns);
       const scales      = parseScaleValues(text);
@@ -499,6 +568,7 @@ export default function ClassImporter() {
 
       if (!progression.size) warns.push('No Level N: lines found. Add at least "Level 1: Feature Name".');
 
+      // ── Build class feature items ──────────────────────────────────────────
       const featureIdMap = new Map<string, string>();
       const featureItems: any[] = [];
       for (const f of featureDefs) {
@@ -507,11 +577,12 @@ export default function ClassImporter() {
         featureItems.push(item);
       }
 
-      const allProgressionFeats = new Set(
+      // Stubs for class progression features with no Feature: block
+      const allClassFeats = new Set(
         Array.from(progression.values()).flat()
           .filter(f => f !== 'ASI' && f.toLowerCase() !== 'subclass' && !f.startsWith('__upgrade:'))
       );
-      for (const feat of allProgressionFeats) {
+      for (const feat of allClassFeats) {
         if (!featureIdMap.has(feat)) {
           const stub = buildStubFeature(feat, header.name);
           featureIdMap.set(feat, stub._id);
@@ -520,6 +591,7 @@ export default function ClassImporter() {
         }
       }
 
+      // ── Build subclass items + parse their level progression ───────────────
       const subclassIdMap = new Map<string, string>();
       const subclassItems: any[] = [];
       for (const scName of header.subclassNames) {
@@ -528,26 +600,78 @@ export default function ClassImporter() {
         subclassItems.push(item);
       }
 
+      // Parse Subclass: Name blocks for per-subclass feature grants
+      const subclassBlockDefs = parseSubclassBlocks(text);
+      const subclassLevelGrantsObj: Record<string, Record<string, string[]>> = {};
+
+      for (const scDef of subclassBlockDefs) {
+        const grants: Record<string, string[]> = {};
+        for (const [lvl, feats] of Array.from(scDef.levelGrants.entries()).sort((a,b) => a[0]-b[0])) {
+          const grantNames: string[] = [];
+          for (const feat of feats) {
+            if (feat === 'ASI' || feat.toLowerCase() === 'subclass' || feat.startsWith('__upgrade:')) continue;
+            // Create feature item if not already in the map (subclass-specific features)
+            if (!featureIdMap.has(feat)) {
+              const def = featureDefs.find(f => f.name === feat);
+              const item = def
+                ? buildFeatureItem(def, scDef.name)
+                : buildStubFeature(feat, scDef.name);
+              featureIdMap.set(feat, item._id);
+              featureItems.push(item);
+              if (!def) warns.push(`Subclass "${scDef.name}" Level ${lvl}: "${feat}" — no Feature: block found. Stub created.`);
+            }
+            grantNames.push(feat);
+          }
+          if (grantNames.length) grants[String(lvl)] = grantNames;
+        }
+        subclassLevelGrantsObj[scDef.name] = grants;
+      }
+
       const { item: classItem, levelGrantNames } = buildClassItem(header, progression, featureIdMap, subclassIdMap, scales, warns);
-      // classBase = class item without ItemGrant advancements (macro adds them with real UUIDs)
       const classBase = { ...classItem, system: { ...classItem.system,
         advancement: classItem.system.advancement.filter((a: any) => a.type !== 'ItemGrant') } };
-      const bundleArr  = [...featureItems, ...subclassItems, classItem];
+      const bundleArr = [...featureItems, ...subclassItems, classItem];
+
+      const subclassFeatureCount = subclassBlockDefs.reduce(
+        (acc, sc) => acc + Array.from(sc.levelGrants.values()).flat()
+          .filter(f => f !== 'ASI' && f.toLowerCase() !== 'subclass' && !f.startsWith('__upgrade:')).length,
+        0
+      );
 
       setSummary({
         name: header.name, hitDie: header.hitDie,
         levels: progression.size,
-        features: featureItems.length,
+        features: featureItems.filter(f => !subclassBlockDefs.some(sc =>
+          Array.from(sc.levelGrants.values()).flat().includes(f.name)
+        )).length,
+        subclassFeatures: subclassFeatureCount,
         stubs: featureItems.filter(f => f.system.description.value.includes('not yet filled')).length,
-        subclasses: subclassItems.length, scales: scales.length,
+        subclasses: subclassItems.length,
+        subclassesWithFeatures: subclassBlockDefs.length,
+        scales: scales.length,
         spellcasting: header.spellProgression !== 'none'
           ? `${header.spellProgression} / ${header.spellAbility.toUpperCase()}` : 'None',
         scaleFormula: scales.length ? `@scale.${toSlug(header.name)}.${scales[0].identifier}` : '',
-        itemNames: featureItems.map(f => ({ name: f.name, stub: f.system.description.value.includes('not yet filled') })),
+        scaleRefs: scales.map(sv => ({
+          name: sv.name,
+          id: sv.identifier,
+          ref: `@scale.${toSlug(header.name)}.${sv.identifier}`,
+        })),
+        itemNames: featureItems.map(f => ({
+          name: f.name,
+          stub: f.system.description.value.includes('not yet filled'),
+          isSubclass: subclassBlockDefs.some(sc =>
+            Array.from(sc.levelGrants.values()).flat().includes(f.name)
+          ),
+        })),
         subclassNames: subclassItems.map(s => s.name),
+        subclassGrantSummary: subclassBlockDefs.map(sc => ({
+          name: sc.name,
+          levels: Array.from(sc.levelGrants.keys()).sort((a,b) => a-b),
+        })),
       });
       setBundle(bundleArr);
-      setMacroItems({ features: featureItems, subclasses: subclassItems, classBase, levelGrantNames });
+      setMacroItems({ features: featureItems, subclasses: subclassItems, subclassLevelGrants: subclassLevelGrantsObj, classBase, levelGrantNames });
       setWarnings(warns);
       setErrors([]);
     } catch (e: any) {
@@ -560,7 +684,6 @@ export default function ClassImporter() {
     }, 50);
   };
 
-  // JSON.stringify only happens here — never during render
   const getClassItem = () => bundle?.find((i: any) => i.type === 'class') ?? null;
 
   const downloadJSON = () => {
@@ -574,7 +697,7 @@ export default function ClassImporter() {
   };
 
   const getMacroStr = () => macroItems && summary
-    ? buildMacro(summary.name, macroItems.features, macroItems.subclasses, macroItems.classBase, macroItems.levelGrantNames)
+    ? buildMacro(summary.name, macroItems.features, macroItems.subclasses, macroItems.subclassLevelGrants, macroItems.classBase, macroItems.levelGrantNames)
     : '';
 
   const downloadMacro = () => {
@@ -624,7 +747,7 @@ export default function ClassImporter() {
             <div className="bg-slate-800 rounded-lg p-5 border border-indigo-500/30">
               <label className="block text-white font-semibold mb-1">Class Definition</label>
               <p className="text-slate-400 text-xs mb-3">
-                Fill in the template below. Every field on a line by itself. Scale, Level, and Feature blocks can appear in any order.
+                Fill in the template below. Add <span className="text-purple-400 font-mono">Subclass: Name</span> blocks with their own <span className="text-green-400 font-mono">Level N:</span> lines for subclass features.
               </p>
               <textarea
                 value={input}
@@ -661,6 +784,8 @@ export default function ClassImporter() {
               <div><span className="text-indigo-400">Subclasses:</span> Name1, Name2</div>
               <div className="mt-2"><span className="text-amber-400">Scale:</span> Name | string|dice|number | 1:val, 5:val</div>
               <div><span className="text-green-400">Level 1:</span> Feature, Feature, ASI, Subclass</div>
+              <div className="mt-2"><span className="text-purple-400">Subclass:</span> Name</div>
+              <div><span className="text-green-400">Level 3:</span> Subclass Feature Name</div>
               <div className="mt-2"><span className="text-purple-400">Feature:</span> Name</div>
               <div><span className="text-purple-400">Uses:</span> @scale.Class.id / lr</div>
               <div><span className="text-purple-400">Description:</span> text...</div>
@@ -695,15 +820,34 @@ export default function ClassImporter() {
                     <div className="flex justify-between"><span className="text-slate-400">Name:</span><span className="text-white font-bold">{summary.name}</span></div>
                     <div className="flex justify-between"><span className="text-slate-400">Hit Die:</span><span className="text-white">{summary.hitDie}</span></div>
                     <div className="flex justify-between"><span className="text-slate-400">Levels defined:</span><span className="text-green-400">{summary.levels}</span></div>
-                    <div className="flex justify-between"><span className="text-slate-400">Features:</span><span className="text-green-400">{summary.features}</span></div>
+                    <div className="flex justify-between"><span className="text-slate-400">Class features:</span><span className="text-green-400">{summary.features}</span></div>
+                    <div className="flex justify-between"><span className="text-slate-400">Subclass features:</span><span className="text-purple-400">{summary.subclassFeatures}</span></div>
                     <div className="flex justify-between"><span className="text-slate-400">Stubs:</span><span className={summary.stubs > 0 ? 'text-yellow-400' : 'text-green-400'}>{summary.stubs}</span></div>
-                    <div className="flex justify-between"><span className="text-slate-400">Subclasses:</span><span className="text-indigo-400">{summary.subclasses}</span></div>
+                    <div className="flex justify-between"><span className="text-slate-400">Subclasses:</span><span className="text-indigo-400">{summary.subclasses} ({summary.subclassesWithFeatures} with features)</span></div>
                     <div className="flex justify-between"><span className="text-slate-400">Scale values:</span><span className="text-amber-400">{summary.scales}</span></div>
-                    <div className="flex justify-between"><span className="text-slate-400">Spellcasting:</span><span className="text-sky-400">{summary.spellcasting}</span></div>
+                    <div className="flex justify-between col-span-2"><span className="text-slate-400">Spellcasting:</span><span className="text-sky-400">{summary.spellcasting}</span></div>
                   </div>
-                  {summary.scaleFormula && (
-                    <div className="mt-3 text-xs text-slate-400">
-                      Scale formula prefix: <span className="text-amber-300 font-mono">{summary.scaleFormula}</span>
+                  {summary.scaleRefs?.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-slate-700">
+                      <div className="text-amber-400 text-xs font-semibold mb-1">Scale References — use these in Uses: fields</div>
+                      <div className="space-y-1">
+                        {summary.scaleRefs.map((r: any) => (
+                          <div key={r.id} className="flex items-center justify-between gap-2 text-xs">
+                            <span className="text-slate-400">{r.name}</span>
+                            <span className="text-amber-300 font-mono select-all">{r.ref}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="text-slate-500 text-xs mt-1">Append <span className="font-mono">/ lr</span> or <span className="font-mono">/ sr</span> for recovery period.</div>
+                    </div>
+                  )}
+                  {summary.subclassGrantSummary?.length > 0 && (
+                    <div className="mt-3 text-xs space-y-1">
+                      {summary.subclassGrantSummary.map((sc: any) => (
+                        <div key={sc.name} className="text-slate-400">
+                          <span className="text-purple-400">{sc.name}</span> — features at levels: <span className="text-slate-300">{sc.levels.join(', ')}</span>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -712,8 +856,8 @@ export default function ClassImporter() {
                 <div className="bg-slate-800 rounded-lg p-4 border border-green-500/20 text-sm text-slate-300 space-y-1">
                   <div className="text-green-400 font-semibold mb-2">Import Instructions</div>
                   <div><span className="text-white font-bold">1.</span> Copy the <span className="text-amber-400">macro</span> and run it in Foundry (Macros → New → Execute).</div>
-                  <div><span className="text-white font-bold">2.</span> That's it — the macro creates all features, subclasses, <em>and</em> the class item, fully wired together.</div>
-                  <div><span className="text-white font-bold">3.</span> Drag the class from the Items tab onto your character sheet to begin leveling.</div>
+                  <div><span className="text-white font-bold">2.</span> The macro creates a folder, all features, subclasses (with their own feature grants), and the class item.</div>
+                  <div><span className="text-white font-bold">3.</span> Drag the class from the folder in the Items tab onto your character sheet to begin leveling.</div>
                   <div className="text-slate-500 text-xs mt-1">The Class Item JSON below is a backup — only needed if you want to re-import the class item separately.</div>
                 </div>
 
@@ -722,10 +866,10 @@ export default function ClassImporter() {
                   <div className="text-slate-300 font-semibold text-sm mb-2">
                     Features ({summary.itemNames.length}) · Subclasses ({summary.subclassNames.length})
                   </div>
-                  <div className="grid grid-cols-2 gap-1 text-xs max-h-40 overflow-y-auto">
+                  <div className="grid grid-cols-2 gap-1 text-xs max-h-48 overflow-y-auto">
                     {summary.itemNames.map((f: any, i: number) => (
-                      <div key={i} className={`px-2 py-0.5 rounded ${f.stub ? 'text-yellow-400' : 'text-green-400'}`}>
-                        {f.stub ? '⚠ ' : '✓ '}{f.name}
+                      <div key={i} className={`px-2 py-0.5 rounded ${f.stub ? 'text-yellow-400' : f.isSubclass ? 'text-purple-400' : 'text-green-400'}`}>
+                        {f.stub ? '⚠ ' : f.isSubclass ? '◈ ' : '✓ '}{f.name}
                       </div>
                     ))}
                     {summary.subclassNames.map((n: string, i: number) => (
@@ -737,7 +881,7 @@ export default function ClassImporter() {
                 {/* Macro — Step 1 */}
                 <div className="bg-slate-800 rounded-lg p-5 border border-amber-500/30">
                   <div className="flex items-center gap-2 mb-1"><Package size={20} className="text-amber-400" /><span className="text-white font-semibold">Step 1 — Complete Import Macro</span></div>
-                  <p className="text-xs text-slate-400 mb-3">Creates {summary.features + summary.subclasses} feature/subclass items + the class item, all wired together (Macros → New → Execute)</p>
+                  <p className="text-xs text-slate-400 mb-3">Creates folder + {summary.features + summary.subclassFeatures} feature(s) + {summary.subclasses} subclass(es) + class item, all wired together (Macros → New → Execute)</p>
                   <div className="flex gap-3">
                     <button onClick={copyMacro}
                       className="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2">

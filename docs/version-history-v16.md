@@ -35,8 +35,14 @@
 - HitPoints, ItemGrant, AbilityScoreImprovement, Trait (armor/weapons/saves/skills), ScaleValue, ItemChoice (subclass)
 - Feature items use `system.type.value:'class'`
 
-### Sprint 4 — Up Next
-- Subclass feature blocks, tool proficiency support, ScaleValue schema verification
+### Sprint 4 — In Progress (2026-03-19)
+- Subclass feature blocks with per-subclass ItemGrant advancements ✅
+- ScaleValue fix (removed `distance` field — was silently dropped by dnd5e 5.x) ✅
+- Folder structure: `ClassName/` + `ClassName/Features/` subfolder ✅
+- Scale References UI panel (ready-to-copy @scale formula strings) ✅
+- Macro restructured to 6 steps ✅
+- Tested with Sacrier class (dandwiki) — 3 subclasses, pain dice/threshold ScaleValues ✅
+- Tool proficiency support — pending
 
 ---
 

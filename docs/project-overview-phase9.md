@@ -222,12 +222,17 @@ For choices (skill proficiencies, subclass):
 - [x] Class Item JSON button retained as backup only
 - [x] Bundle JSON array output kept alongside macro
 
-### Sprint 4 — Polish + Additional Features 📋 UP NEXT
-- [ ] Subclass feature blocks (full feature parsing for subclass abilities)
+### Sprint 4 — Polish + Additional Features 🚧 IN PROGRESS
+- [x] Subclass feature blocks — `Subclass: Name` sections with own `Level N:` lines, full ItemGrant advancements wired per-subclass in macro
+- [x] ScaleValue fix — removed `distance: { units: '' }` field that caused silent rejection in dnd5e 5.x
+- [x] Folder structure — macro creates `ClassName/` main folder (class + subclasses) + `ClassName/Features/` subfolder (all feature items)
+- [x] Scale References panel — summary card shows ready-to-copy `@scale.class.identifier` strings for all scale values
+- [x] Macro restructured to 6 steps: folder → features → subclasses (with wired advancements) → class item
+- [x] Feature list color-coded: green=class features, purple=subclass features, yellow=stubs
+- [x] `Uses: @scale.class.id / lr` → resolves dynamically in Foundry (scalable uses without hardcoding)
+- [x] Tested: Sacrier class (dandwiki) — 3 subclasses, pain dice/die/threshold ScaleValues confirmed working
 - [ ] Tool proficiency support
-- [ ] ScaleValue advancement schema verification (currently may be silently dropped by Foundry)
-- [ ] Further polish and edge case handling
-- [ ] Documentation update
+- [ ] Activity support for damage rolls (deferred — users add manually via Foundry Activities tab; @scale refs provided in UI)
 
 ---
 
