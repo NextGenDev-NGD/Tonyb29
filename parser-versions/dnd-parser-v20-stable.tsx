@@ -7,6 +7,7 @@
 
 import React, { useState } from 'react';
 import { Download, Copy, Info, FileJson, Zap, BarChart3, Edit2, Save, X, Sword } from 'lucide-react';
+import { toFantasyGroundsXML } from './fantasy-grounds-exporter';
 
 // ─── Pure Helpers ──────────────────────────────────────────────────────────────
 const mod = (s) => Math.floor((s - 10) / 2);
@@ -729,6 +730,7 @@ export default function StatBlockParser() {
   const [warnings, setWarnings]     = useState([]);
   const [parseStats, setParseStats] = useState(null);
   const [copied, setCopied]         = useState(false);
+  const [copiedFGU, setCopiedFGU]   = useState(false);
   const [showEditor, setShowEditor] = useState(false);
   const [editField, setEditField]   = useState(null);
   const [editValue, setEditValue]   = useState('');
@@ -815,7 +817,7 @@ export default function StatBlockParser() {
       // Abilities
       let abilities = { str:10, dex:10, con:10, int:10, wis:10, cha:10 };
       let abM = text.match(/STR\s+(\d+),?\s+DEX\s+(\d+),?\s+CON\s+(\d+),?\s+INT\s+(\d+),?\s+WIS\s+(\d+),?\s+CHA\s+(\d+)/i)
-             || text.match(/STR\s+(\d+)\s*\([+-]\d+\)\s+DEX\s+(\d+)\s*\([+-]\d+\)\s+CON\s+(\d+)\s*\([+-]\d+\)\s+INT\s+(\d+)\s*\([+-]\d+\)\s+WIS\s+(\d+)\s*\([+-]\d+\)\s+CHA\s+(\d+)/i);
+             || text.match(/STR\s+(\d+)\s*\([+\-\u2212]\d+\)\s+DEX\s+(\d+)\s*\([+\-\u2212]\d+\)\s+CON\s+(\d+)\s*\([+\-\u2212]\d+\)\s+INT\s+(\d+)\s*\([+\-\u2212]\d+\)\s+WIS\s+(\d+)\s*\([+\-\u2212]\d+\)\s+CHA\s+(\d+)/i);
       if (abM) { abilities = { str:+abM[1], dex:+abM[2], con:+abM[3], int:+abM[4], wis:+abM[5], cha:+abM[6] }; }
       else {
         const ms = ['Str','Dex','Con','Int','Wis','Cha'].map(ab => text.match(new RegExp(`${ab}\\s+(\\d+)\\s+[+-−]?\\d+\\s+[+-−]?\\d+`, 'i')));
@@ -852,14 +854,14 @@ export default function StatBlockParser() {
         }).filter(Boolean);
         if (fs.length) savesText = fs.join(', ');
       }
-      track('saves', savesText || 'none', !!savesText);
+      track('saves', savesText || 'none', !!savesText, true);
       const saves = { str:0, dex:0, con:0, int:0, wis:0, cha:0 };
       savesText.split(',').forEach(e => { const m = e.trim().match(/^(str|dex|con|int|wis|cha)\s*([+-]\d+)/i); if (m && +m[2] > mod(abilities[m[1].toLowerCase()])) saves[m[1].toLowerCase()] = 1; });
 
       // Skills
       const skillM  = text.match(new RegExp('Skills[:\\s]+(.+?)' + SECSTOP, 'is'));
       const skillTxt = skillM?.[1]?.trim() || '';
-      track('skills', skillTxt || 'none', !!skillM);
+      track('skills', skillTxt || 'none', !!skillM, true);
       const SKILL_MAP = { 'acrobatics':'acr','animal handling':'ani','arcana':'arc','athletics':'ath','deception':'dec','history':'his','insight':'ins','intimidation':'itm','investigation':'inv','medicine':'med','nature':'nat','perception':'prc','performance':'prf','persuasion':'per','religion':'rel','sleight of hand':'slt','stealth':'ste','survival':'sur' };
       const SKILL_AB  = { acr:'dex',ani:'wis',arc:'int',ath:'str',dec:'cha',his:'int',ins:'wis',itm:'cha',inv:'int',med:'wis',nat:'int',prc:'wis',prf:'cha',per:'cha',rel:'int',slt:'dex',ste:'dex',sur:'wis' };
       const skills = Object.fromEntries(Object.values(SKILL_MAP).map(s => [s, { ability: SKILL_AB[s], value: 0, bonuses: { check:'', passive:'' } }]));
@@ -871,11 +873,17 @@ export default function StatBlockParser() {
       // Senses / Languages / Initiative
       const senseM = text.match(new RegExp('Senses[:\\s]+(.+?)' + SECSTOP, 'is'));
       const sensesRaw = senseM?.[1]?.trim() || '';
-      track('senses', sensesRaw || 'none', !!senseM);
+      track('senses', sensesRaw || 'none', !!senseM, true);
       const darkvision  = +(sensesRaw.match(/darkvision\s+(\d+)\s*ft/i)?.[1]  || 0);
       const blindsight  = +(sensesRaw.match(/blindsight\s+(\d+)\s*ft/i)?.[1]  || 0);
       const tremorsense = +(sensesRaw.match(/tremorsense\s+(\d+)\s*ft/i)?.[1] || 0);
       const truesight   = +(sensesRaw.match(/truesight\s+(\d+)\s*ft/i)?.[1]   || 0);
+      const passivePercM = sensesRaw.match(/passive\s+perception\s+(\d+)/i);
+      const passivePerc  = passivePercM
+        ? +passivePercM[1]
+        : 10 + mod(abilities.wis) + (skills.prc?.value > 0 ? skills.prc.value * profBonus : 0);
+      track('passive perception', String(passivePerc), true);
+
       const sensesSpecial = sensesRaw
         .replace(/darkvision\s+\d+\s*ft\.?,?\s*/i,  '')
         .replace(/blindsight\s+\d+\s*ft\.?,?\s*/i,  '')
@@ -886,7 +894,7 @@ export default function StatBlockParser() {
 
       const langM    = text.match(new RegExp('Languages[:\\s]+(.+?)' + SECSTOP, 'is'));
       const languages = langM?.[1]?.trim().replace(/\([^)]*\)/g, '').trim() || '';
-      track('languages', languages || 'none', !!langM);
+      track('languages', languages || 'none', !!langM, true);
 
       const initM    = text.match(/Initiative\s+([+-]\d+)/i);
       const initBonus = initM?.[1] || '';
@@ -930,6 +938,23 @@ export default function StatBlockParser() {
 
       // Sections — Traits / Actions / Bonus Actions / Reactions
       const traits       = parseSection(text, 'Traits?');
+      // Fallback: 2014 SRD style — no "Traits" header; entries appear directly
+      // after the Challenge line and before the "Actions" section header.
+      if (traits.length === 0) {
+        const implicitSec = text.match(
+          /\bChallenge\b[^\n]*\n([\s\S]+?)(?=\n[ \t]*(?:Actions?)[ \t]*:?[ \t]*(?:\n|$)|$)/i
+        )?.[1] ?? '';
+        let cur = null;
+        for (const raw of implicitSec.split('\n').map(l => l.trim()).filter(Boolean)) {
+          const line = raw.replace(/^[*•]\s*/, '');
+          const m = line.match(ACTION_NAME_RX);
+          if (m && !SENTENCE_START_RX.test(m[1]) && !FIELD_LABEL_RX.test(m[1])) {
+            if (cur) traits.push(cur);
+            cur = { name: m[1].trim(), qualifier: m[2]?.trim() || '', description: m[3].trim() };
+          } else if (cur) cur.description += ' ' + line;
+        }
+        if (cur) traits.push(cur);
+      }
       const actions      = parseActions(text);
       const bonusActions = parseSection(text, 'Bonus\\s+Actions?');
       const reactions    = parseSection(text, 'Reactions?');
@@ -1305,6 +1330,17 @@ export default function StatBlockParser() {
                       className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2"><Download size={16} /> Download JSON</button>
                     <button onClick={() => { navigator.clipboard.writeText(JSON.stringify(output, null, 2)); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
                       className="flex-1 bg-green-600/50 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2"><Copy size={16} /> {copied ? 'Copied!' : 'Copy JSON'}</button>
+                  </div>
+                </div>
+
+                <div className="bg-slate-800 rounded-lg p-5 border border-amber-500/30">
+                  <div className="flex items-center gap-2 mb-3"><FileJson size={20} className="text-amber-400" /><label className="text-white font-semibold">Fantasy Grounds Unity XML</label></div>
+                  <pre className="w-full h-64 bg-slate-700 text-amber-300 rounded p-3 text-xs font-mono overflow-auto border border-amber-400/30">{toFantasyGroundsXML(output)}</pre>
+                  <div className="flex gap-3 mt-4">
+                    <button onClick={() => { const xml = toFantasyGroundsXML(output); const b = new Blob([xml], { type: 'application/xml' }); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = `${output.name.replace(/\s+/g,'_')}_fg.xml`; a.click(); URL.revokeObjectURL(u); }}
+                      className="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2"><Download size={16} /> Download XML</button>
+                    <button onClick={() => { navigator.clipboard.writeText(toFantasyGroundsXML(output)); setCopiedFGU(true); setTimeout(() => setCopiedFGU(false), 2000); }}
+                      className="flex-1 bg-amber-600/50 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2"><Copy size={16} /> {copiedFGU ? 'Copied!' : 'Copy XML'}</button>
                   </div>
                 </div>
               </>

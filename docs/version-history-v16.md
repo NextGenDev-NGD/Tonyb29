@@ -2,19 +2,68 @@
 
 ---
 
-## Version 4.0-alpha — Phase 9 Sprint 3 Complete
-**Release Date:** March 17, 2026
+## Version 4.1-alpha — Phase 10 Sprint 1 + Parser Fixes
+**Release Date:** March 20, 2026
 **Status:** Alpha — Active Development
-**Phase:** Phase 9 — Custom Class Importer (Sprint 3 Complete)
-**File:** `parser-versions/class-importer.tsx` (new tab), `parser-versions/dnd-parser-v20-stable.tsx`
+**Phase:** Phase 10 — Multi-VTT Export (Fantasy Grounds Unity complete)
+**Files:** `parser-versions/fantasy-grounds-exporter.ts` (new), `parser-versions/dnd-parser-v20-stable.tsx`
 
 ### Major Changes
 
-#### Class Importer — Third Tab (Sprints 1–3 Complete)
+#### Fantasy Grounds Unity Export (Phase 10 Sprint 1)
+- New `fantasy-grounds-exporter.ts`: converts Foundry actor JSON → FGU-compatible XML
+- Schema reverse-engineered from real FGU export (2024 format)
+- `<npc>` element with correct `<root version="5.1">` attributes
+- Abilities: each has `<bonus>`, `<savemodifier>` (profBonus if proficient, else 0), `<score>`
+- Actions/traits: `<id-00001>` numbered format with `<name>` + `<desc>` children
+- Separate `<bonusactions>`, `<reactions>`, `<legendaryactions>`, `<lairactions>` sections
+- `<senses>` combined text string with Passive Perception appended (e.g. "Darkvision 60 ft.; Passive Perception 12")
+- `<damageimmunities>` combines DI + CI with `;` separator (FGU convention)
+- `<hd>` for HP formula, `<skills>` as display text, `<initiative><misc>` nested
+- All boilerplate summon/spellslots/locked fields included
+- `<version type="string">2024</version>` at NPC level
+- Wired into parser UI: amber-themed panel below Foundry JSON, Download XML + Copy XML buttons
+- **Tested: Umber Hulk imported successfully into Fantasy Grounds Unity**
+- Scope note added: tool is intentionally D&D 5e only — other game systems are separate projects
+
+#### Parser Accuracy Scoring Fixes
+- Ability score regex updated to handle Unicode minus `−` (U+2212) — fixes vertical stat block format (e.g. SRD web layouts)
+- Implicit traits fallback: stat blocks with no "Traits" header (2014 SRD style) now parsed correctly — entries between Challenge line and Actions section captured automatically
+- Passive perception: always tracked as required field; parsed from senses text or calculated from WIS mod + perception proficiency
+- `saves`, `skills`, `senses`, `languages` moved to optional scoring — absent on many creatures and should not penalize score
+- Required score fields now exactly: name, size, type, alignment, AC, HP, speed, abilities, CR, traits, actions, passive perception
+- `subtype` was already optional — confirmed no change needed
+
+#### WSL2 / Vite Stability
+- `vite.config.ts` updated: `host: '0.0.0.0'` — server now accessible from Windows browser via WSL2 network IP (172.26.x.x:3000)
+- `open: false` set to prevent auto-open attempts in headless WSL
+- Use `nohup npm run dev` to keep server alive across terminal sessions
+
+---
+
+## Version 4.0-alpha — Phase 9 Sprint 4 Complete
+**Release Date:** March 19, 2026
+**Status:** Alpha — Active Development
+**Phase:** Phase 9 — Custom Class Importer (Sprint 4 Complete)
+**File:** `parser-versions/class-importer.tsx`, `parser-versions/dnd-parser-v20-stable.tsx`
+
+### Major Changes
+
+#### Class Importer — Third Tab (Sprints 1–4 Complete)
 - New `class-importer.tsx` component: parses structured class template → Foundry bundle
 - Input: header block (Class/HitDie/Saves/Armor/Weapons/Skills/Spellcasting/SubclassLevel/Subclasses), Scale: lines, Level N: progression, Feature:/Uses:/Description: blocks
 - Output: bundle JSON array + self-contained Foundry macro (Item.create with UUID resolution)
 - Import workflow: Build Class → Copy Macro → run in Foundry → drag class to character sheet
+
+#### Sprint 4 Additions
+- Subclass feature blocks: `Subclass: Name` sections parsed with per-subclass ItemGrant advancements
+- ScaleValue fix: removed `distance: { units: '' }` from advScaleValue config (was silently dropped by dnd5e 5.x)
+- Folder structure: macro creates `ClassName/` (class + subclasses) + `ClassName/Features/` subfolder
+- Scale References UI panel: ready-to-copy `@scale.class.identifier` strings for all scale values
+- Macro restructured to 6 steps: folder → features → subclasses (wired) → class item
+- Feature list color-coded: green=class, purple=subclass, yellow=stub
+- `Uses: @scale.class.id / lr` → `max: "@scale..."` in JSON → Foundry resolves dynamically
+- Tested: Sacrier class (dandwiki) — 3 subclasses, pain dice/die/threshold ScaleValues confirmed
 
 #### Self-Contained Macro (Sprint 3)
 - Macro creates features + subclasses + class item in a single Foundry macro run
@@ -27,22 +76,9 @@
 - `ItemGrant.spell = null`
 - Subclass type used (not ItemChoice) for subclass advancement
 
-#### Input Robustness (Sprint 3)
-- `\r\n`, non-breaking spaces, and leading whitespace per line stripped before parsing
-- Load Example button fills full Technomancer template (all 20 levels + all features)
-
 #### Advancements Built
-- HitPoints, ItemGrant, AbilityScoreImprovement, Trait (armor/weapons/saves/skills), ScaleValue, ItemChoice (subclass)
+- HitPoints, ItemGrant, AbilityScoreImprovement, Trait (armor/weapons/saves/skills), ScaleValue, Subclass
 - Feature items use `system.type.value:'class'`
-
-### Sprint 4 — In Progress (2026-03-19)
-- Subclass feature blocks with per-subclass ItemGrant advancements ✅
-- ScaleValue fix (removed `distance` field — was silently dropped by dnd5e 5.x) ✅
-- Folder structure: `ClassName/` + `ClassName/Features/` subfolder ✅
-- Scale References UI panel (ready-to-copy @scale formula strings) ✅
-- Macro restructured to 6 steps ✅
-- Tested with Sacrier class (dandwiki) — 3 subclasses, pain dice/threshold ScaleValues ✅
-- Tool proficiency support — pending
 
 ---
 

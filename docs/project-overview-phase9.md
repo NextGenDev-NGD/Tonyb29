@@ -1,6 +1,6 @@
 # Phase 9 — Custom Class Importer
 
-**Status:** Sprint 3 Complete ✅ — Sprint 4 Up Next
+**Status:** Sprint 4 Complete ✅ — Phase 9 Done
 **Created:** 2026-03-12
 **Last Updated:** 2026-03-17
 **Follows:** Phase 8 Complete (v3.0-alpha)
@@ -222,7 +222,7 @@ For choices (skill proficiencies, subclass):
 - [x] Class Item JSON button retained as backup only
 - [x] Bundle JSON array output kept alongside macro
 
-### Sprint 4 — Polish + Additional Features 🚧 IN PROGRESS
+### Sprint 4 — Polish + Additional Features ✅ COMPLETE
 - [x] Subclass feature blocks — `Subclass: Name` sections with own `Level N:` lines, full ItemGrant advancements wired per-subclass in macro
 - [x] ScaleValue fix — removed `distance: { units: '' }` field that caused silent rejection in dnd5e 5.x
 - [x] Folder structure — macro creates `ClassName/` main folder (class + subclasses) + `ClassName/Features/` subfolder (all feature items)
