@@ -2,6 +2,36 @@
 
 ---
 
+## Version 4.2-alpha — Phase 11 Batch Processing
+**Release Date:** March 25, 2026
+**Status:** Alpha — Active Development
+**Phase:** Phase 11 — Batch Processing
+**Files:** `parser-versions/batch-processor.tsx` (new), `parser-versions/dnd-parser-v20-stable.tsx` (refactored), `src/App.tsx`
+
+### Major Changes
+
+#### Batch Processor Tab (Phase 11)
+- New `batch-processor.tsx`: processes multiple stat blocks in a single session
+- Separator: paste blocks divided by `---` on its own line
+- Results panel: each creature shows status icon (green/yellow/red), accuracy %, per-field default warnings, parse errors
+- Defaulted fields shown per creature: "Used defaults for: ac, speed, alignment"
+- Summary bar: counts of ok / warn / failed across all blocks
+- **Copy Macro** (purple): copies self-contained Foundry macro to clipboard — actors embedded, paste and run, no file upload needed
+- **Download Macro** (indigo): saves same script as `.js` file
+- **JSON** (green): raw actor array download
+- **FGU XML** (amber): batch FGU module file using `<npclist><id-XXXXX>` format (all creatures in one importable XML)
+- Per-creature copy buttons: JSON or FGU XML for individual actors
+- Macro uses `Actor.create(actors)` with embedded array — identical workflow to Class Importer
+
+#### Parser Refactor — `parseStatBlock` extracted
+- `parseStatBlock(text)` lifted out of the component to module-level named export
+- Now returns `{ errors, warnings, stats, actor }` instead of calling state setters
+- Component calls `runParse(text)` wrapper that sets state from return value
+- Batch processor imports `parseStatBlock` directly — no duplication of parsing logic
+- No behaviour change to single-parse tab
+
+---
+
 ## Version 4.1-alpha — Phase 10 Sprint 1 + Parser Fixes
 **Release Date:** March 20, 2026
 **Status:** Alpha — Active Development

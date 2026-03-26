@@ -4,15 +4,57 @@
 
 ### Component Structure
 ```
+App (tab router)
+├── StatBlockParser          — single stat block parse + FGU export
+├── ClassImporter            — homebrew class → Foundry macro
+├── BatchProcessor           — multi-block parse + bulk export
+└── JSONValidator            — reference vs. output comparison
+
+parseStatBlock(text)         — module-level named export (dnd-parser-v20-stable.tsx)
+  └── imported by both StatBlockParser and BatchProcessor
+      returns { errors, warnings, stats, actor }
+
+toFantasyGroundsXML(actor)   — module-level named export (fantasy-grounds-exporter.ts)
+  └── imported by both StatBlockParser and BatchProcessor
+```
+
+### StatBlockParser Component
+```
 StatBlockParser (Root Component)
 ├── State Management (useState hooks)
-├── Parsing Logic (parseStatBlock function)
-├── Edit Logic (startEdit, saveEdit functions)
+├── runParse(text) — calls parseStatBlock, sets state from return value
+├── Edit Logic (startEdit, saveEdit, applyFieldEdit)
 └── UI Rendering
     ├── Input Section (textarea + parse button)
     ├── Analytics Section (accuracy display)
     ├── Field Editor Section (editable fields)
-    └── Output Section (JSON display + export)
+    └── Output Section (JSON display + FGU export)
+```
+
+### BatchProcessor Component
+```
+BatchProcessor
+├── splitBlocks(text) — splits on /^---+$/m delimiter
+├── runAll() — maps blocks through parseStatBlock, collects BlockResult[]
+├── buildMacroScript() — embeds actor array in Foundry Actor.create() script
+├── downloadAll() / downloadFGU() / downloadMacro() / copyMacro()
+└── UI Rendering
+    ├── Input Section (multi-block textarea)
+    ├── Summary Bar (ok/warn/failed counts + bulk export buttons)
+    └── Results Panel (per-creature cards with status, accuracy, defaulted fields)
+```
+
+### BlockResult Type
+```typescript
+type BlockResult = {
+  index: number
+  name: string
+  accuracy: number | null
+  defaultedFields: string[]   // field names that fell back to defaults
+  errors: string[]
+  warnings: string[]
+  actor: any                  // null if parse failed
+}
 ```
 
 ### State Variables

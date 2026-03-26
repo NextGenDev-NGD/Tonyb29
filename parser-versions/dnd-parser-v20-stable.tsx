@@ -722,28 +722,8 @@ const applyFieldEdit = (fieldName, newValue, actor) => {
   return o;
 };
 
-// ─── Main Component ────────────────────────────────────────────────────────────
-export default function StatBlockParser() {
-  const [input, setInput]           = useState('');
-  const [output, setOutput]         = useState(null);
-  const [errors, setErrors]         = useState([]);
-  const [warnings, setWarnings]     = useState([]);
-  const [parseStats, setParseStats] = useState(null);
-  const [copied, setCopied]         = useState(false);
-  const [copiedFGU, setCopiedFGU]   = useState(false);
-  const [showEditor, setShowEditor] = useState(false);
-  const [editField, setEditField]   = useState(null);
-  const [editValue, setEditValue]   = useState('');
-
-  const startEdit = (name) => { setEditField(name); setEditValue(parseStats?.fields.find(f => f.name === name)?.value ?? ''); };
-  const saveEdit  = () => {
-    if (!editField) return;
-    setParseStats(p => ({ ...p, fields: p.fields.map(f => f.name === editField ? { ...f, value: editValue } : f) }));
-    setOutput(o => o ? applyFieldEdit(editField, editValue, o) : o);
-    setEditField(null);
-  };
-
-  const parseStatBlock = (text) => {
+// ─── Core Parse Function (exported for batch use) ─────────────────────────────
+export function parseStatBlock(text) {
     const errs = [], warns = [];
     const stats = { parsed: 0, total: 0, exact: 0, fields: [] };
     // optional=true: if not found, record as 'n/a' and exclude from accuracy score entirely.
@@ -1197,8 +1177,36 @@ export default function StatBlockParser() {
       };
 
       stats.accuracy = Math.round((stats.parsed / stats.total) * 100);
-      setErrors(errs); setWarnings(warns); setParseStats(stats); setOutput(foundryActor);
-    } catch (err) { setErrors([err.message]); setWarnings([]); setOutput(null); setParseStats(null); }
+      return { errors: errs, warnings: warns, stats, actor: foundryActor };
+    } catch (err) {
+      return { errors: [err.message], warnings: [], stats: null, actor: null };
+    }
+}
+
+// ─── Main Component ────────────────────────────────────────────────────────────
+export default function StatBlockParser() {
+  const [input, setInput]           = useState('');
+  const [output, setOutput]         = useState(null);
+  const [errors, setErrors]         = useState([]);
+  const [warnings, setWarnings]     = useState([]);
+  const [parseStats, setParseStats] = useState(null);
+  const [copied, setCopied]         = useState(false);
+  const [copiedFGU, setCopiedFGU]   = useState(false);
+  const [showEditor, setShowEditor] = useState(false);
+  const [editField, setEditField]   = useState(null);
+  const [editValue, setEditValue]   = useState('');
+
+  const startEdit = (name) => { setEditField(name); setEditValue(parseStats?.fields.find(f => f.name === name)?.value ?? ''); };
+  const saveEdit  = () => {
+    if (!editField) return;
+    setParseStats(p => ({ ...p, fields: p.fields.map(f => f.name === editField ? { ...f, value: editValue } : f) }));
+    setOutput(o => o ? applyFieldEdit(editField, editValue, o) : o);
+    setEditField(null);
+  };
+
+  const runParse = (text) => {
+    const { errors: errs, warnings: warns, stats, actor } = parseStatBlock(text);
+    setErrors(errs); setWarnings(warns); setParseStats(stats); setOutput(actor);
   };
 
   // ─── Small UI helpers ──────────────────────────────────────────────────────
@@ -1212,7 +1220,7 @@ export default function StatBlockParser() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-8 flex items-center gap-3">
           <h1 className="text-4xl font-bold text-white">D&D Stat Block Converter</h1>
-          <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1"><Sword size={14} /> v3.0-alpha</span>
+          <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1"><Sword size={14} /> v4.2-alpha</span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1222,7 +1230,7 @@ export default function StatBlockParser() {
               <label className="block text-white font-semibold mb-3">Paste Stat Block</label>
               <textarea value={input} onChange={e => setInput(e.target.value)} placeholder="Paste D&D 5e stat block here..."
                 className="w-full h-56 bg-slate-700 text-white rounded p-3 text-sm font-mono border border-purple-400/30 focus:border-purple-400 focus:outline-none resize-none" />
-              <button onClick={() => parseStatBlock(input)} className="mt-3 w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2">
+              <button onClick={() => runParse(input)} className="mt-3 w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2">
                 <Zap size={16} /> Parse Stat Block
               </button>
             </div>

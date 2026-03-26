@@ -104,6 +104,55 @@ Click **"Download JSON"** or **"Copy JSON"**
 
 ---
 
+## Batch Processor Tab
+
+Use the Batch Processor to parse multiple stat blocks at once and export them all to Foundry VTT or Fantasy Grounds Unity in a single operation.
+
+### Step 1: Prepare Your Stat Blocks
+Separate each stat block with a line containing only `---`:
+```
+Goblin
+Small humanoid, neutral evil
+Armor Class 15 ...
+
+---
+
+Orc
+Medium humanoid, chaotic evil
+Armor Class 13 ...
+```
+
+### Step 2: Parse All
+Click **Parse All Blocks**. Each block is processed independently through the same parser as the single-block tab.
+
+### Step 3: Review Results
+Each creature card shows:
+- **Green** (✓): Parsed cleanly with no defaults used
+- **Yellow** (⚠): Parsed successfully but some fields used default values — "Used defaults for: ac, speed"
+- **Red** (✗): Parse failed entirely
+
+The **Summary Bar** shows total ok / warn / failed counts.
+
+### Step 4: Export
+
+#### Foundry VTT — Copy Macro (recommended)
+Click **Copy Macro** to copy a self-contained Foundry macro to your clipboard. All actor data is embedded directly in the script.
+
+1. Open Foundry VTT → Macro Hotbar → New Macro
+2. Set type to **Script**
+3. Paste and click **Execute**
+4. All actors are created at once in your Actors tab
+
+#### Fantasy Grounds Unity — FGU XML
+Click **FGU XML** to download a `batch-fgu-import.xml` file containing all creatures in `<npclist>` format. Import via FGU's module system.
+
+#### Other Options
+- **Download Macro**: saves the Foundry macro as a `.js` file
+- **JSON**: raw actor array for manual use
+- Per-creature **JSON** and **FGU** copy buttons are available on each result card
+
+---
+
 ## Using the Field Editor
 
 ### Opening the Editor

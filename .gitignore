@@ -6,6 +6,9 @@ dist/
 # Separate projects — tracked in their own repos
 audio-transcriber/
 
-# Test case JSON files — kept local only, not pushed to online repo
-# Folder structure and READMEs are still committed; only the JSON payloads are excluded
+# Test case files — kept local only, not pushed to online repo
+# Folder structure (.gitkeep) and READMEs are still committed; payloads are excluded
 test-cases/**/*.json
+test-cases/**/*.xml
+test-cases/**/*.js
+test-cases/**/*.txt
