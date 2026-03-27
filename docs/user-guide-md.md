@@ -45,6 +45,39 @@ Click **"Download JSON"** or **"Copy JSON"**
 
 ---
 
+## AI-Enhanced Input (Phase 12/13)
+
+The parser supports four input modes selectable via tabs at the top of the input panel.
+
+### Settings — API Key
+Click the **⚙ API** button in the top-right nav bar to open Settings. Paste your Anthropic API key (from console.anthropic.com). The key is stored in your browser's localStorage only — never shared or logged. The button shows **API ✓** in green when a key is saved.
+
+### Text Mode
+Original mode — paste any stat block text directly. Works with GM Binder, Homebrewery, and any site where you can copy text.
+
+### Image Mode
+Drag or click to upload a screenshot of any stat block. Claude reads the image and extracts the text automatically, then parses it. The extracted text is shown in an editable box so you can correct anything before re-parsing.
+
+**Best for:** D&D Beyond screenshots, scanned book pages, GM Binder exports, Roll20 monster pages.
+
+### Name Mode
+Type a monster name and select a sourcebook. Claude generates the complete stat block from its training knowledge and parses it immediately.
+
+**Best for:** Any official published monster — 2014 MM, 2024 MM, Volo's, Mordenkainen's, Fizban's, Monsters of the Multiverse.
+
+Sources available: Any sourcebook / 2024 Monster Manual / 2014 Monster Manual / Mordenkainen's Tome of Foes / Volo's Guide to Monsters / Fizban's Treasury of Dragons / Monsters of the Multiverse.
+
+### URL Mode
+Paste a URL to a stat block page. Works on static HTML sites only.
+
+**Known working:** dnd5e.wikidot.com, dandwiki.com, open5e.com
+
+**Use Image/Text/Name instead for:** D&D Beyond, GM Binder, Homebrewery, 5e.tools, Roll20 (JavaScript-rendered or bot-blocked)
+
+> **Please support the creators.** This tool is a bridge to help you use content you already own on your VTT of choice. Only import content from sourcebooks and platforms you have purchased.
+
+---
+
 ## Interface Overview
 
 ### Left Panel - Input Section

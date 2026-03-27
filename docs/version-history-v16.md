@@ -2,6 +2,40 @@
 
 ---
 
+## Version 4.3-alpha — Phase 12/13 AI-Enhanced Parsing
+**Release Date:** March 27, 2026
+**Status:** Alpha — Active Development
+**Phase:** Phase 12/13 — OCR + AI-Enhanced Parsing
+**Files:** `parser-versions/claude-api.ts` (new), `parser-versions/settings-modal.tsx` (new), `parser-versions/dnd-parser-v20-stable.tsx`, `src/App.tsx`
+
+### Major Changes
+
+#### Claude API Integration
+- New `claude-api.ts` module — isolated API layer using `@anthropic-ai/sdk` with `dangerouslyAllowBrowser: true`
+- `generateStatBlockFromName(name, source)` — generates stat block from monster name using Claude's training data
+- `extractStatBlockFromImage(dataUrl)` — OCR via Claude vision, extracts stat block from any screenshot
+- `extractStatBlockFromUrl(url)` — fetches static HTML pages, Claude extracts stat block text
+- All functions return plain text fed directly into existing `parseStatBlock()` — no separate pipeline
+- Model: `claude-3-5-sonnet-20241022` (Tier 1 compatible)
+- SaaS-ready: `getClient()` isolated so endpoint can be swapped to a backend proxy later
+
+#### Settings Modal
+- Gear icon (⚙) in top-right nav bar — shows **API ✓** green when key is saved
+- API key stored in `localStorage`, never logged or sent anywhere except Anthropic directly
+- Password-masked input, save + delete buttons, privacy notice
+- `@anthropic-ai/sdk` installed as dependency
+
+#### Four Input Modes on Parser Tab
+- **Text** — original paste mode, unchanged
+- **Image** — click or drag screenshot; Claude extracts text, auto-parses, shows editable preview
+- **URL** — static HTML sites only; known working (Wikidot, D&D Wiki, Open5e) and non-working sites (D&D Beyond, GM Binder etc.) clearly listed with recommended alternatives
+- **Name** — type any monster name + pick sourcebook; Claude generates stat block from training knowledge; most reliable for published official monsters
+
+#### Creator Disclaimer
+- Blue disclaimer on URL tab: users should only import content they own; supports Wizards of the Coast and independent creators
+
+---
+
 ## Version 4.2-alpha — Phase 11 Batch Processing
 **Release Date:** March 25, 2026
 **Status:** Alpha — Active Development

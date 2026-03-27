@@ -5,9 +5,10 @@
 //   condition immunities → senses → languages → initiative → actions → build Foundry actor JSON
 // DO NOT restructure the parseStatBlock sections without regression testing.
 
-import React, { useState } from 'react';
-import { Download, Copy, Info, FileJson, Zap, BarChart3, Edit2, Save, X, Sword } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Download, Copy, Info, FileJson, Zap, BarChart3, Edit2, Save, X, Sword, Image, Link, FileText, Loader } from 'lucide-react';
 import { toFantasyGroundsXML } from './fantasy-grounds-exporter';
+import { extractStatBlockFromImage, extractStatBlockFromUrl, generateStatBlockFromName, hasApiKey } from './claude-api';
 
 // ─── Pure Helpers ──────────────────────────────────────────────────────────────
 const mod = (s) => Math.floor((s - 10) / 2);
@@ -1195,6 +1196,63 @@ export default function StatBlockParser() {
   const [showEditor, setShowEditor] = useState(false);
   const [editField, setEditField]   = useState(null);
   const [editValue, setEditValue]   = useState('');
+  const [inputMode, setInputMode]   = useState<'text' | 'image' | 'url' | 'name'>('text');
+  const [urlInput, setUrlInput]     = useState('');
+  const [nameInput, setNameInput]   = useState('');
+  const [nameSource, setNameSource] = useState('any');
+  const [aiLoading, setAiLoading]   = useState(false);
+  const [aiError, setAiError]       = useState('');
+  const fileInputRef                = useRef<HTMLInputElement>(null);
+
+  const handleImageFile = async (file: File) => {
+    setAiError('');
+    setAiLoading(true);
+    try {
+      const dataUrl = await new Promise<string>((res, rej) => {
+        const reader = new FileReader();
+        reader.onload  = () => res(reader.result as string);
+        reader.onerror = rej;
+        reader.readAsDataURL(file);
+      });
+      const text = await extractStatBlockFromImage(dataUrl);
+      setInput(text);
+      runParse(text);
+    } catch (e: any) {
+      setAiError(e.message ?? 'Image extraction failed.');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleUrlExtract = async () => {
+    if (!urlInput.trim()) return;
+    setAiError('');
+    setAiLoading(true);
+    try {
+      const text = await extractStatBlockFromUrl(urlInput.trim());
+      setInput(text);
+      runParse(text);
+    } catch (e: any) {
+      setAiError(e.message ?? 'URL extraction failed.');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleNameGenerate = async () => {
+    if (!nameInput.trim()) return;
+    setAiError('');
+    setAiLoading(true);
+    try {
+      const text = await generateStatBlockFromName(nameInput.trim(), nameSource);
+      setInput(text);
+      runParse(text);
+    } catch (e: any) {
+      setAiError(e.message ?? 'Name generation failed.');
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const startEdit = (name) => { setEditField(name); setEditValue(parseStats?.fields.find(f => f.name === name)?.value ?? ''); };
   const saveEdit  = () => {
@@ -1220,19 +1278,171 @@ export default function StatBlockParser() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-8 flex items-center gap-3">
           <h1 className="text-4xl font-bold text-white">D&D Stat Block Converter</h1>
-          <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1"><Sword size={14} /> v4.2-alpha</span>
+          <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1"><Sword size={14} /> v4.3-alpha</span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Panel */}
           <div className="space-y-4">
             <div className="bg-slate-800 rounded-lg p-5 border border-purple-500/30">
-              <label className="block text-white font-semibold mb-3">Paste Stat Block</label>
-              <textarea value={input} onChange={e => setInput(e.target.value)} placeholder="Paste D&D 5e stat block here..."
-                className="w-full h-56 bg-slate-700 text-white rounded p-3 text-sm font-mono border border-purple-400/30 focus:border-purple-400 focus:outline-none resize-none" />
-              <button onClick={() => runParse(input)} className="mt-3 w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2">
-                <Zap size={16} /> Parse Stat Block
-              </button>
+              {/* Mode tabs */}
+              <div className="flex gap-1 mb-4">
+                {([['text','Text', FileText], ['image','Image', Image], ['url','URL', Link], ['name','Name', Zap]] as const).map(([mode, label, Icon]) => (
+                  <button key={mode} onClick={() => { setInputMode(mode); setAiError(''); }}
+                    className={`flex items-center gap-1 px-3 py-1.5 rounded text-xs font-semibold transition ${
+                      inputMode === mode ? 'bg-purple-600 text-white' : 'bg-slate-700 text-slate-400 hover:text-white'
+                    }`}>
+                    <Icon size={12} />{label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Text mode */}
+              {inputMode === 'text' && (
+                <>
+                  <textarea value={input} onChange={e => setInput(e.target.value)} placeholder="Paste D&D 5e stat block here..."
+                    className="w-full h-56 bg-slate-700 text-white rounded p-3 text-sm font-mono border border-purple-400/30 focus:border-purple-400 focus:outline-none resize-none" />
+                  <button onClick={() => runParse(input)} className="mt-3 w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2">
+                    <Zap size={16} /> Parse Stat Block
+                  </button>
+                </>
+              )}
+
+              {/* Image mode */}
+              {inputMode === 'image' && (
+                <>
+                  <input ref={fileInputRef} type="file" accept="image/*" className="hidden"
+                    onChange={e => e.target.files?.[0] && handleImageFile(e.target.files[0])} />
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    onDragOver={e => e.preventDefault()}
+                    onDrop={e => { e.preventDefault(); e.dataTransfer.files?.[0] && handleImageFile(e.dataTransfer.files[0]); }}
+                    className="w-full h-56 border-2 border-dashed border-purple-400/40 hover:border-purple-400 rounded flex flex-col items-center justify-center gap-3 cursor-pointer transition text-slate-400 hover:text-white"
+                  >
+                    {aiLoading
+                      ? <><Loader size={28} className="animate-spin text-purple-400" /><span className="text-sm">Extracting with Claude...</span></>
+                      : <><Image size={28} /><span className="text-sm">Click or drag an image here</span><span className="text-xs text-slate-500">PNG, JPG, WEBP — screenshot of any stat block</span></>
+                    }
+                  </div>
+                  {!hasApiKey() && <p className="text-yellow-400 text-xs mt-2">⚠ No API key — open Settings (⚙) to add one.</p>}
+                </>
+              )}
+
+              {/* URL mode */}
+              {inputMode === 'url' && (
+                <>
+                  <div className="space-y-3">
+                    <input type="url" value={urlInput} onChange={e => setUrlInput(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleUrlExtract()}
+                      placeholder="https://dnd5e.wikidot.com/monster:goblin"
+                      className="w-full bg-slate-700 text-white rounded p-3 text-sm border border-purple-400/30 focus:border-purple-400 focus:outline-none" />
+                    <button onClick={handleUrlExtract} disabled={aiLoading || !urlInput.trim()}
+                      className="w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2">
+                      {aiLoading ? <><Loader size={16} className="animate-spin" /> Fetching...</> : <><Link size={16} /> Extract from URL</>}
+                    </button>
+
+                    {/* Known working sites */}
+                    <div className="bg-slate-700/50 rounded p-3 space-y-1.5">
+                      <p className="text-slate-300 text-xs font-semibold mb-2">Known working sites (static HTML):</p>
+                      {[
+                        ['dnd5e.wikidot.com', 'Large SRD + community monster index'],
+                        ['dandwiki.com', 'Community homebrew & SRD monsters'],
+                        ['open5e.com', 'Open SRD monsters with clean formatting'],
+                      ].map(([site, desc]) => (
+                        <div key={site} className="flex items-start gap-2">
+                          <span className="text-green-400 text-xs mt-0.5">✓</span>
+                          <div>
+                            <span className="text-green-300 text-xs font-mono">{site}</span>
+                            <span className="text-slate-500 text-xs"> — {desc}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Non-working sites */}
+                    <div className="bg-slate-700/50 rounded p-3 space-y-1.5">
+                      <p className="text-slate-300 text-xs font-semibold mb-2">Use Image, Text, or Name mode instead:</p>
+                      {[
+                        ['D&D Beyond', 'JavaScript app + bot blocking'],
+                        ['GM Binder / Homebrewery', 'JavaScript rendered — use Image mode'],
+                        ['5e.tools', 'Data loaded dynamically — use Name mode'],
+                        ['Roll20', 'Requires login — use Image mode'],
+                      ].map(([site, reason]) => (
+                        <div key={site} className="flex items-start gap-2">
+                          <span className="text-yellow-400 text-xs mt-0.5">⚠</span>
+                          <div>
+                            <span className="text-yellow-300 text-xs font-semibold">{site}</span>
+                            <span className="text-slate-500 text-xs"> — {reason}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Disclaimer */}
+                    <div className="bg-blue-900/20 border border-blue-500/30 rounded p-3">
+                      <p className="text-blue-300 text-xs leading-relaxed">
+                        <span className="font-semibold">Please support the creators.</span> This tool is a bridge to help you use content you already own on your VTT of choice. While much of D&D 5e is open source under the SRD, please only import content from platforms and sourcebooks you have purchased. Support Wizards of the Coast, GM Binder creators, and independent publishers who make this hobby great.
+                      </p>
+                    </div>
+                  </div>
+                  {!hasApiKey() && <p className="text-yellow-400 text-xs mt-2">⚠ No API key — open Settings (⚙) to add one.</p>}
+                </>
+              )}
+
+              {/* Name mode */}
+              {inputMode === 'name' && (
+                <>
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      value={nameInput}
+                      onChange={e => setNameInput(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleNameGenerate()}
+                      placeholder="e.g. Vampire Familiar, Adult Red Dragon..."
+                      className="w-full bg-slate-700 text-white rounded p-3 text-sm border border-purple-400/30 focus:border-purple-400 focus:outline-none"
+                    />
+                    <select
+                      value={nameSource}
+                      onChange={e => setNameSource(e.target.value)}
+                      className="w-full bg-slate-700 text-white rounded p-2 text-sm border border-slate-600 focus:border-purple-400 focus:outline-none"
+                    >
+                      <option value="any">Any sourcebook</option>
+                      <option value="the 2024 Monster Manual">2024 Monster Manual</option>
+                      <option value="the 2014 Monster Manual">2014 Monster Manual</option>
+                      <option value="Mordenkainen's Tome of Foes">Mordenkainen's Tome of Foes</option>
+                      <option value="Volo's Guide to Monsters">Volo's Guide to Monsters</option>
+                      <option value="Fizban's Treasury of Dragons">Fizban's Treasury of Dragons</option>
+                      <option value="Monsters of the Multiverse">Monsters of the Multiverse</option>
+                    </select>
+                    <button
+                      onClick={handleNameGenerate}
+                      disabled={aiLoading || !nameInput.trim()}
+                      className="w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2"
+                    >
+                      {aiLoading
+                        ? <><Loader size={16} className="animate-spin" /> Generating...</>
+                        : <><Zap size={16} /> Generate Stat Block</>}
+                    </button>
+                    <p className="text-slate-500 text-xs">Uses Claude's knowledge of published sourcebooks. Works best for official monsters.</p>
+                  </div>
+                  {!hasApiKey() && <p className="text-yellow-400 text-xs mt-2">⚠ No API key — open Settings (⚙) to add one.</p>}
+                </>
+              )}
+
+              {/* AI error */}
+              {aiError && <div className="mt-3 text-red-300 text-xs bg-red-900/20 rounded px-3 py-2">{aiError}</div>}
+
+              {/* Extracted text preview (image/url/name modes) */}
+              {inputMode !== 'text' && input && (
+                <div className="mt-3">
+                  <div className="text-slate-400 text-xs mb-1">Extracted text — edit if needed then re-parse:</div>
+                  <textarea value={input} onChange={e => setInput(e.target.value)}
+                    className="w-full h-32 bg-slate-700 text-white rounded p-2 text-xs font-mono border border-slate-600 focus:outline-none resize-none" />
+                  <button onClick={() => runParse(input)} className="mt-2 w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2">
+                    <Zap size={16} /> Re-parse
+                  </button>
+                </div>
+              )}
             </div>
 
             {errors.length > 0 && <div className="space-y-2">{errors.map((e, i) => <Alert key={i} msg={e} color="bg-red-900/30 border border-red-600 text-red-200" />)}</div>}
