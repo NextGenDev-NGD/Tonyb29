@@ -12,3 +12,10 @@ test-cases/**/*.json
 test-cases/**/*.xml
 test-cases/**/*.js
 test-cases/**/*.txt
+
+# Campaign source documents — kept local only
+campaign/**/*.txt
+campaign/**/*.md
+campaign/**/*.pdf
+campaign/**/*.docx
+campaign/**/*.json
