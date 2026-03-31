@@ -30,16 +30,17 @@ function getClient(): Anthropic {
 }
 
 // Generate a stat block from a monster name using Claude's training knowledge
-export async function generateStatBlockFromName(name: string, source: string): Promise<string> {
+export async function generateStatBlockFromName(name: string, source: string, context?: string): Promise<string> {
   const client = getClient();
   const sourceHint = source !== 'any' ? ` from ${source}` : '';
+  const contextHint = context?.trim() ? ` Additional context: ${context.trim()}.` : '';
 
   const msg = await client.messages.create({
     model: MODEL,
     max_tokens: 2048,
     messages: [{
       role: 'user',
-      content: `Generate the complete D&D 5e stat block for "${name}"${sourceHint}. Output ONLY the raw stat block text in standard format — name, size/type/alignment, Armor Class, Hit Points, Speed, ability scores, saving throws (if any), skills (if any), damage immunities/resistances/vulnerabilities (if any), senses, languages, Challenge rating, traits, actions, bonus actions (if any), reactions (if any), legendary actions (if any). Do not use markdown, bullet points, or any formatting beyond standard stat block plain text. Do not add any commentary before or after.`,
+      content: `Generate the complete D&D 5e stat block for "${name}"${sourceHint}.${contextHint} Output ONLY the raw stat block text in standard format — name, size/type/alignment, Armor Class, Hit Points, Speed, ability scores, saving throws (if any), skills (if any), damage immunities/resistances/vulnerabilities (if any), senses, languages, Challenge rating, traits, actions, bonus actions (if any), reactions (if any), legendary actions (if any). Do not use markdown, bullet points, or any formatting beyond standard stat block plain text. Do not add any commentary before or after.`,
     }],
   });
 
