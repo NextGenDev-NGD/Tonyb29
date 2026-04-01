@@ -1179,54 +1179,70 @@ export function buildStep3Macro(continentName: string): string {
   const npcs = NPCS.filter(n => n.continent === continentName)
   const actors = npcs.map(n => {
     const bio = `${n.bio}<p><em>Appearance:</em> ${n.appearance}</p><p><em>Relationships:</em> ${n.relationships}</p>`
-    const folderRef = n.subfolder
-      ? `af(${JSON.stringify(n.subfolder)})?.id ?? folder.id`
-      : 'folder.id'
-    return `    {
-      name: ${JSON.stringify(n.name)}, type: 'npc', folder: ${folderRef},
-      img: ${JSON.stringify(n.img)},
+    return {
+      name: n.name, type: 'npc', img: n.img,
+      _subfolder: n.subfolder ?? null,
       system: { details: {
-        biography: { value: ${JSON.stringify(bio)} },
-        alignment: ${JSON.stringify(n.alignment)},
-        race: ${JSON.stringify(n.race)},
-        type: { value: ${JSON.stringify(n.creatureType)}, subtype: '' },
-        cr: ${n.cr}
-      }}
-    }`
-  }).join(',\n')
+        biography: { value: bio },
+        alignment: n.alignment,
+        race: n.race,
+        type: { value: n.creatureType, subtype: '' },
+        cr: n.cr,
+      }},
+    }
+  })
 
-  return `(async () => {
+  return `// Step 3 — ${continentName} NPC Actors — update-in-place safe
+(async () => {
   const af = name => game.folders.find(f => f.name === name && f.type === 'Actor');
   const folder = af(${JSON.stringify(continentName)});
   if (!folder) { ui.notifications.error(${JSON.stringify(`'${continentName}' folder not found — run Step 1 first.`)}); return; }
-  await Actor.create([
-${actors}
-  ]);
-  ui.notifications.info(${JSON.stringify(`✅ ${continentName}: ${npcs.length} NPC actors created!`)});
+  const allActors = ${JSON.stringify(actors, null, 2)};
+  let updated = 0, created = 0;
+  for (const a of allActors) {
+    const { _subfolder, ...actorData } = a;
+    const folderId = _subfolder ? (af(_subfolder)?.id ?? folder.id) : folder.id;
+    const existing = game.actors.getName(actorData.name);
+    if (existing) {
+      await existing.update({ system: actorData.system, img: actorData.img });
+      updated++;
+    } else {
+      await Actor.create({ ...actorData, folder: folderId });
+      created++;
+    }
+  }
+  ui.notifications.info(${JSON.stringify(`✅ ${continentName}: `) + '`${updated} updated, ${created} created.`'});
 })();`
 }
 
 export function buildStep4Macro(): string {
-  const actors = CREATURES.map(c => {
-    return `    {
-      name: ${JSON.stringify(c.name)}, type: 'npc', folder: folder.id,
-      img: ${JSON.stringify(c.img)},
-      system: { details: {
-        biography: { value: ${JSON.stringify(c.bio)} },
-        alignment: ${JSON.stringify(c.alignment)},
-        type: { value: ${JSON.stringify(c.creatureType)}, subtype: '' },
-        cr: ${c.cr}
-      }}
-    }`
-  }).join(',\n')
+  const actors = CREATURES.map(c => ({
+    name: c.name, type: 'npc', img: c.img,
+    system: { details: {
+      biography: { value: c.bio },
+      alignment: c.alignment,
+      type: { value: c.creatureType, subtype: '' },
+      cr: c.cr,
+    }},
+  }))
 
-  return `(async () => {
+  return `// Step 4 — Creature Actors (stubs with bios) — update-in-place safe
+(async () => {
   const af = name => game.folders.find(f => f.name === name && f.type === 'Actor');
   const folder = af('Eldoria — Creatures');
   if (!folder) { ui.notifications.error('Eldoria — Creatures folder not found — run Step 1 first.'); return; }
-  await Actor.create([
-${actors}
-  ]);
-  ui.notifications.info('✅ Eldoria: ${CREATURES.length} creature actors created!');
+  const allActors = ${JSON.stringify(actors, null, 2)};
+  let updated = 0, created = 0;
+  for (const a of allActors) {
+    const existing = game.actors.getName(a.name);
+    if (existing) {
+      await existing.update({ system: a.system, img: a.img });
+      updated++;
+    } else {
+      await Actor.create({ ...a, folder: folder.id });
+      created++;
+    }
+  }
+  ui.notifications.info(\`✅ Eldoria creatures: \${updated} updated, \${created} created.\`);
 })();`
 }

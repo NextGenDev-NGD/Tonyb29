@@ -204,16 +204,30 @@ function buildStep4StatsMacro(): string {
     }`)
   }
 
-  return `// Step 4 — Creature Actors (${coverageCount}/${CREATURES.length} with full stat blocks)
+  return `// Step 4 — Creature Actors (${coverageCount}/${CREATURES.length} with full stat blocks) — update-in-place safe
 (async () => {
   const af = name => game.folders.find(f => f.name === name && f.type === 'Actor');
   const folder = af('Eldoria — Creatures');
   if (!folder) { ui.notifications.error('Eldoria — Creatures folder not found — run Step 1 first.'); return; }
-  const actors = [
+  const allActors = [
 ${actorLines.join(',\n')}
-  ].map(a => ({ ...a, folder: folder.id }));
-  await Actor.create(actors);
-  ui.notifications.info('✅ Eldoria: ${CREATURES.length} creature actors created (${coverageCount} with full stat blocks)!');
+  ];
+  let updated = 0, created = 0;
+  for (const raw of allActors) {
+    const { items = [], ...actorData } = raw;
+    const existing = game.actors.getName(actorData.name);
+    if (existing) {
+      await existing.update({ system: actorData.system, img: actorData.img });
+      const oldIds = existing.items.map(i => i.id);
+      if (oldIds.length) await existing.deleteEmbeddedDocuments("Item", oldIds);
+      if (items.length) await existing.createEmbeddedDocuments("Item", items);
+      updated++;
+    } else {
+      await Actor.create({ ...actorData, items, folder: folder.id });
+      created++;
+    }
+  }
+  ui.notifications.info(\`✅ Eldoria creatures: \${updated} updated, \${created} created.\`);
 })();`
 }
 

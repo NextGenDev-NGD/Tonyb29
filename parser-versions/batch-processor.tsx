@@ -309,9 +309,20 @@ export default function BatchProcessor() {
                     type="text"
                     value={context}
                     onChange={e => setContext(e.target.value)}
-                    placeholder="e.g. Eldoria campaign, D&D 5e 2024, CR 12-15 continental leaders"
+                    placeholder="e.g. Eldoria homebrew, CR 12, shadow magic theme, warlock multiclass"
                     className="w-full bg-slate-700 text-white rounded p-2 text-sm border border-violet-400/20 focus:border-violet-400 focus:outline-none"
                   />
+                  <div className="text-slate-500 text-xs mt-1.5 space-y-0.5">
+                    <p>Tips — what Claude uses to shape the stat block:</p>
+                    <ul className="list-disc list-inside space-y-0.5 pl-1">
+                      <li><span className="text-slate-400">CR</span> — most important; e.g. <em>CR 5</em>, <em>CR 1/2</em></li>
+                      <li><span className="text-slate-400">Race / creature type</span> — e.g. <em>half-elf</em>, <em>undead</em>, <em>construct</em></li>
+                      <li><span className="text-slate-400">Class / role</span> — e.g. <em>paladin</em>, <em>assassin rogue</em>, <em>war cleric</em></li>
+                      <li><span className="text-slate-400">Theme / abilities</span> — e.g. <em>fire magic</em>, <em>shadow teleport</em>, <em>pack tactics</em></li>
+                      <li><span className="text-slate-400">Setting</span> — e.g. <em>homebrew campaign</em>, <em>D&amp;D 5e 2024</em></li>
+                    </ul>
+                    <p className="text-slate-600 pt-0.5">The parser handles: ability scores, AC, HP, saves, skills, resistances/immunities, speeds, senses, spellcasting with full spell lists, traits, actions, bonus actions, reactions, and legendary actions.</p>
+                  </div>
                 </div>
 
                 <div>
@@ -489,6 +500,28 @@ export default function BatchProcessor() {
                     )}
                   </div>
                 </div>
+
+                {/* Stat summary */}
+                {r.actor && !r.errors.length && (() => {
+                  const sys = r.actor.system
+                  const parts: string[] = []
+                  const cr = sys?.details?.cr
+                  if (cr !== undefined && cr !== null) parts.push(`CR ${cr < 1 && cr > 0 ? `1/${Math.round(1/cr)}` : cr}`)
+                  const hp = sys?.attributes?.hp?.value
+                  if (hp) parts.push(`HP ${hp}`)
+                  const ac = sys?.attributes?.ac?.flat
+                  if (ac) parts.push(`AC ${ac}`)
+                  const walk = sys?.attributes?.movement?.walk
+                  if (walk) parts.push(`Speed ${walk} ft.`)
+                  const spellLvl = sys?.attributes?.spell?.level
+                  if (spellLvl) parts.push(`Caster Lvl ${spellLvl}`)
+                  const size = sys?.traits?.size
+                  const type = sys?.details?.type?.value
+                  if (size || type) parts.push([size, type].filter(Boolean).join(' '))
+                  return parts.length ? (
+                    <div className="text-slate-400 text-xs mt-1 font-mono">{parts.join(' · ')}</div>
+                  ) : null
+                })()}
 
                 {/* Errors */}
                 {r.errors.map((e, i) => (
