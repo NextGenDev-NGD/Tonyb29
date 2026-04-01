@@ -164,6 +164,59 @@ function StepCard({ step, title, description, macro, id, accent, copied, onCopy 
 
 // ─── HELPERS ─────────────────────────────────────────────────
 
+// Build Step 4 macro with pre-parsed stat blocks embedded.
+// Creatures with statText get full actor JSON; others get bio stubs.
+function buildStep4StatsMacro(): string {
+  const actorLines: string[] = []
+  const coverageCount = CREATURES.filter(c => c.statText).length
+
+  for (const c of CREATURES) {
+    if (c.statText) {
+      const { actor, errors } = parseStatBlock(c.statText)
+      if (!errors.length && actor) {
+        // Embed full actor data — override name from CREATURES (may differ slightly from parsed)
+        const data = {
+          ...actor,
+          name: c.name,
+          img: c.img,
+          system: {
+            ...actor.system,
+            details: {
+              ...actor.system.details,
+              biography: { value: c.bio },
+            },
+          },
+        }
+        actorLines.push(`    ${JSON.stringify(data)}`)
+        continue
+      }
+    }
+    // Fallback: stub
+    actorLines.push(`    {
+      name: ${JSON.stringify(c.name)}, type: 'npc', folder: folder.id,
+      img: ${JSON.stringify(c.img)},
+      system: { details: {
+        biography: { value: ${JSON.stringify(c.bio)} },
+        alignment: ${JSON.stringify(c.alignment)},
+        type: { value: ${JSON.stringify(c.creatureType)}, subtype: '' },
+        cr: ${c.cr}
+      }}
+    }`)
+  }
+
+  return `// Step 4 — Creature Actors (${coverageCount}/${CREATURES.length} with full stat blocks)
+(async () => {
+  const af = name => game.folders.find(f => f.name === name && f.type === 'Actor');
+  const folder = af('Eldoria — Creatures');
+  if (!folder) { ui.notifications.error('Eldoria — Creatures folder not found — run Step 1 first.'); return; }
+  const actors = [
+${actorLines.join(',\n')}
+  ].map(a => ({ ...a, folder: folder.id }));
+  await Actor.create(actors);
+  ui.notifications.info('✅ Eldoria: ${CREATURES.length} creature actors created (${coverageCount} with full stat blocks)!');
+})();`
+}
+
 function buildNpcContext(npc: typeof NPCS[0]): string {
   const bioText = npc.bio
     .replace(/<[^>]+>/g, ' ')
@@ -328,8 +381,8 @@ export default function CampaignBuilder() {
             <li>Open a Foundry macro (Ctrl+M), paste <strong>Step 1</strong>, and run it to create all folders</li>
             <li>Paste and run <strong>Step 2</strong> to create all journal entries with world lore</li>
             <li>Paste and run each <strong>Step 3</strong> continent macro to create NPC leader actors</li>
-            <li>Paste and run <strong>Step 4</strong> to create all creature actors</li>
-            <li>Use <strong>Step 5</strong> below to generate full stat blocks via AI, then run the macro to update each actor</li>
+            <li>Paste and run <strong>Step 4</strong> to create all creature actors — uses "Copy Macro" button for full stat blocks, "Stubs only" for bio-only actors</li>
+            <li>Use <strong>Step 5</strong> below to generate full NPC stat blocks via AI, then run the macro to update each leader actor</li>
           </ol>
           <div style={{ ...S.muted, marginTop: 8 }}>⚠ Run steps in order — Steps 2–5 look up folders and actors by name from prior steps.</div>
         </div>
@@ -375,12 +428,39 @@ export default function CampaignBuilder() {
         </div>
 
         {/* Step 4 */}
-        <StepCard
-          step="Step 4" accent="#f87171"
-          title="Create Creature Actors"
-          description={`Creates all ${CREATURES.length} creature actors (Shadow Cult enemies, Ragorans, Drazahl) in the Eldoria — Creatures folder.`}
-          macro={buildStep4Macro()} id="step4" copied={copied} onCopy={copy}
-        />
+        {(() => {
+          const statCount = CREATURES.filter(c => c.statText).length
+          const fullMacro = buildStep4StatsMacro()
+          return (
+            <div style={S.cardAccent('#f87171')}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <span style={S.tag('#f87171')}>Step 4</span>
+                    <span style={{ ...S.h2, marginBottom: 0 }}>Create Creature Actors</span>
+                    <span style={{ ...S.tag('#b91c1c'), fontSize: 10 }}>Phase 14c</span>
+                  </div>
+                  <div style={S.muted}>
+                    Creates all {CREATURES.length} creature actors (Shadow Cult enemies, Ragorans, Drazahl) in the Eldoria — Creatures folder.
+                    <span style={{ color: '#fca5a5', marginLeft: 6 }}>
+                      {statCount}/{CREATURES.length} have full stat blocks embedded.
+                    </span>
+                  </div>
+                </div>
+                <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
+                  <CopyButton text={fullMacro} id="step4-stats" copied={copied} onCopy={copy} />
+                  <button
+                    onClick={() => copy(buildStep4Macro(), 'step4-stubs')}
+                    style={{ ...S.copyBtn(copied === 'step4-stubs'), fontSize: 11 }}
+                  >
+                    {copied === 'step4-stubs' ? <Check size={12} /> : <Copy size={12} />}
+                    {copied === 'step4-stubs' ? 'Copied!' : 'Stubs only'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )
+        })()}
 
         {/* Step 5 — AI Stat Block Generation */}
         <div style={S.cardAccent('#8b5cf6')}>

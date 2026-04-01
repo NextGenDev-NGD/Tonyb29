@@ -34,6 +34,7 @@ export interface CreatureDef {
   alignment: string
   bio: string
   img: string
+  statText?: string  // raw stat block text — when present, Step 4 builds a fully-statted actor
 }
 
 export interface ContinentDef {
@@ -514,25 +515,455 @@ export const NPCS: NpcDef[] = [
 // ─── CREATURE DATA ───────────────────────────────────────────
 
 export const CREATURES: CreatureDef[] = [
-  { name: 'Corrupted Villager',        cr: 0.25, creatureType: 'humanoid',  alignment: 'neutral',      bio: '<p>Once a normal civilian, now glassy-eyed and twisted with minor shadow corruption from Ragolyte exposure. Moves erratically, mutters in unknown tongues. The earliest and most common sign of spreading corruption.</p>',                                                                                                      img: A + 'Corrupted Villager.png' },
-  { name: 'Corrupted Villager (Male)', cr: 0.25, creatureType: 'humanoid',  alignment: 'neutral',      bio: '<p>Male variant of the corrupted civilian — same shadow transformation, black veins spreading across pale skin, void eyes, jerky puppet-like movements.</p>',                                                                                                                                                             img: A + 'Male corrupted villager.png' },
-  { name: 'Shadow Rat',                cr: 0.5,  creatureType: 'beast',     alignment: 'neutral',      bio: '<p>A mangy rat cloaked in wisps of shadow, eyes like glowing coals, an unnatural twitch in its gait. Clusters near corrupted Ragolyte nodes.</p>',                                                                                                                                                                       img: A + 'Shadow Rat.png' },
-  { name: 'Shadow Acolyte',            cr: 1,    creatureType: 'humanoid',  alignment: 'neutral evil', bio: '<p>A robed cultist who has fully embraced shadow corruption. Face hidden under a dark hood, faint glowing purple eyes visible through darkness. Wields minor void magic and whispers curses. Serves Drazahl\'s Shadow Cult.</p>',                                                                                           img: A + 'Shadow Acolyte.png' },
-  { name: 'Shadow Stalker',            cr: 1,    creatureType: 'undead',    alignment: 'neutral evil', bio: '<p>A lean humanoid shadowy figure with elongated limbs and sunken eyes glowing faintly white. Moves unnaturally, blends seamlessly with darkness. Silent hunter and infiltrator.</p>',                                                                                                                                    img: A + 'Shadow Stalker.png' },
-  { name: 'Shadow Hound',              cr: 2,    creatureType: 'beast',     alignment: 'neutral evil', bio: '<p>A sleek pitch-black canine with glowing violet eyes and smoky tendrils trailing its body. Its fangs drip with shadow essence. Hunts in packs near corrupted zones.</p>',                                                                                                                                              img: A + 'Shadow Hound.png' },
-  { name: 'Corrupted Miner',           cr: 3,    creatureType: 'humanoid',  alignment: 'chaotic evil', bio: '<p>A once-honest Ragolyte miner twisted by overexposure — black veins webbing their skin, eyes void, mining tools warped into weapons. Capable of entering a destructive corruption frenzy.</p>',                                                                                                                        img: A + 'Corrupted Miner.png' },
-  { name: 'Corrupted Brute',           cr: 3,    creatureType: 'humanoid',  alignment: 'chaotic evil', bio: '<p>A massive humanoid mutated by shadow energy, muscles bulging unnaturally, skin cracked with void-infused veins. Pure destructive force with little intelligence remaining.</p>',                                                                                                                                      img: A + 'Brute.png' },
-  { name: 'Shadow Beast',              cr: 5,    creatureType: 'beast',     alignment: 'neutral evil', bio: '<p>A large monstrous shadow creature of indeterminate form. Dangerous, aggressive, and drawn to areas of heavy corruption.</p>',                                                                                                                                                                                          img: A + 'Shadow Beast.png' },
-  { name: 'Shadow Elemental',          cr: 5,    creatureType: 'elemental', alignment: 'neutral evil', bio: '<p>A massive swirling entity of pure shadow and darkness whose form shifts constantly between humanoid and monstrous. Its presence chills the air. The Shadow Elemental at Node S-07 was the party\'s first major encounter — guarding the tampered node.</p>',                                                          img: A + 'Shadow Elemental.png' },
-  { name: 'Shadow Miner Foreman',      cr: 5,    creatureType: 'humanoid',  alignment: 'chaotic evil', bio: '<p>A large hunched figure with mining gear physically melded into its flesh, veins glowing with corrupted Ragolyte, voice dripping with malice. Commands lesser corrupted creatures in the mines.</p>',                                                                                                                   img: A + 'Shadow Miner Forman.png' },
-  { name: 'Ragoran Skirmisher',           cr: 1,    creatureType: 'humanoid', alignment: 'neutral', bio: '<p>A small nimble vulpine Ragoran in patchwork armour with sharp teeth and hardened claws. Scout and skirmisher of the Ragoran civilization. Moves through mine tunnels with extraordinary speed. The Ragorans are an independent trading civilization with natural Ragolyte resistance.</p>',                                                                                                           img: A + 'Ragoran Skirmisher.png' },
-  { name: 'Ragoran Tunnel Guard',        cr: 2,    creatureType: 'humanoid', alignment: 'neutral', bio: '<p>A stout, heavily armored Ragoran wielding a heavy pickaxe and a shield forged from Ragolyte-infused metal. Fur matted with soot and ore dust, it holds chokepoints and tunnel entrances with relentless discipline. The backbone of Ragoran mine defense.</p>',                                                                                                                                      img: '' },
-  { name: 'Ragoran Fireforger',          cr: 3,    creatureType: 'humanoid', alignment: 'neutral', bio: '<p>Soot-covered and flame-scarred, this veteran Ragoran wields a Ragolyte-forged hammer with practiced ease. Its body has developed natural resistance to flame and heat through years of working the forge-mines. Used as both artillery and frontline support in Ragoran defense.</p>',                                                                                                                img: '' },
-  { name: 'Ragoran Shadowstalker',       cr: 4,    creatureType: 'humanoid', alignment: 'neutral', bio: '<p>A cloaked Ragoran assassin that blends seamlessly into darkness, shadow-slicked fur absorbing light. Moves in near-total silence and strikes with twin obsidian daggers. Its eyes shimmer faintly with void energy — a side effect of deep Ragolyte exposure that grants it heightened perception in darkness.</p>',                                                                              img: '' },
-  { name: 'Ragoran Foreman',             cr: 5,    creatureType: 'humanoid', alignment: 'neutral', bio: '<p>Larger than a typical Ragoran, this commanding figure wears a mechanized exo-harness that amplifies its strength and carries a massive double-headed drill. Its booming voice echoes through the mine tunnels as it directs lesser Ragorans. A Foreman\'s word is law in the mines.</p>',                                                                                                        img: '' },
-  { name: 'Ragoran Mine Sovereign',      cr: 8,    creatureType: 'humanoid', alignment: 'lawful neutral', bio: '<p>The ruling authority of a Ragoran mine network, clad in ceremonial armor etched with glowing Ragolyte runes. The Mine Sovereign commands with telepathic influence over other Ragorans, coordinating defense and trade across vast underground territories. Rarely encountered on the surface.</p>',                                                                                    img: '' },
-  { name: 'Ragoran Technomantic Warrior', cr: 6,   creatureType: 'humanoid', alignment: 'neutral', bio: '<p>An elite Ragoran warrior garbed in sleek technomantic armor threaded with Ragolyte conduits. Wields twin Ragolyte blades that crackle with arcane energy and moves with lightning-fast precision. Represents the cutting edge of Ragoran military development — the fusion of their natural resilience with Cogorian technomantic techniques.</p>',                                            img: '' },
-  { name: 'Drazahl, The Corruptor',    cr: 9,    creatureType: 'humanoid',  alignment: 'chaotic evil', bio: '<p><strong>High Priest Drazahl, Shadowbinder</strong> — leader of the Shadow Cult and first major boss of the Gathering Darkness campaign arc. Tall and gaunt, cloaked in robes that shift like living shadows, a bone-like mask bearing glowing violet runes, skeletal clawed hands dripping dark mist, an obsidian-and-Ragolyte staff pulsing with a corrupted crystal.</p><p>Drazahl works toward the awakening of an ancient Shadow God sealed beneath Eldoria. Before his defeat he will reveal that someone powerful is quietly aiding the cult from within the political structure.</p><p><strong>Key abilities:</strong> Darkness, Shadow Blade, Spirit Guardians (shadow-themed), Aura of Corruption (DC 15 Wis, 1d10 necrotic/turn), Fiendish Step (teleport 60ft, recharge 5-6).</p>', img: A + 'Drazahl, The Corruptor.png' },
+  {
+    name: 'Corrupted Villager', cr: 0.5, creatureType: 'humanoid', alignment: 'chaotic evil',
+    bio: '<p>Once a normal civilian, now glassy-eyed and twisted with minor shadow corruption from Ragolyte exposure. Moves erratically, mutters in unknown tongues. The earliest and most common sign of spreading corruption.</p>',
+    img: A + 'Corrupted Villager.png',
+    statText: `Corrupted Villager
+Medium humanoid (any race), chaotic evil
+Armor Class: 12
+Hit Points: 22 (3d8 + 9)
+Speed: 30 ft.
+STR 13 (+1), DEX 14 (+2), CON 12 (+1), INT 10 (+0), WIS 8 (-1), CHA 6 (-2)
+Saving Throws: Con +3
+Skills: Perception +2
+Damage Resistances: Necrotic
+Senses: Darkvision 60 ft., passive Perception 12
+Languages: Common
+Challenge: 1/2 (100 XP)
+Traits:
+Shadow Corruption. When the villager dies, its body erupts into shadowy tendrils. All creatures within 5 feet must make a DC 12 Dexterity saving throw or take 5 (2d4) necrotic damage.
+Actions:
+Shadow Strike. Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 7 (1d8 + 3) slashing damage plus 3 (1d6) necrotic damage.`,
+  },
+  {
+    name: 'Corrupted Villager (Male)', cr: 0.5, creatureType: 'humanoid', alignment: 'chaotic evil',
+    bio: '<p>Male variant of the corrupted civilian — same shadow transformation, black veins spreading across pale skin, void eyes, jerky puppet-like movements.</p>',
+    img: A + 'Male corrupted villager.png',
+    statText: `Corrupted Villager (Male)
+Medium humanoid (any race), chaotic evil
+Armor Class: 12
+Hit Points: 22 (3d8 + 9)
+Speed: 30 ft.
+STR 13 (+1), DEX 14 (+2), CON 12 (+1), INT 10 (+0), WIS 8 (-1), CHA 6 (-2)
+Saving Throws: Con +3
+Skills: Perception +2
+Damage Resistances: Necrotic
+Senses: Darkvision 60 ft., passive Perception 12
+Languages: Common
+Challenge: 1/2 (100 XP)
+Traits:
+Shadow Corruption. When this villager dies, its body erupts into shadowy tendrils. All creatures within 5 feet must make a DC 12 Dexterity saving throw or take 5 (2d4) necrotic damage.
+Actions:
+Shadow Strike. Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 7 (1d8 + 3) slashing damage plus 3 (1d6) necrotic damage.`,
+  },
+  {
+    name: 'Shadow Rat', cr: 0.5, creatureType: 'beast', alignment: 'neutral evil',
+    bio: '<p>A mangy rat cloaked in wisps of shadow, eyes like glowing coals, an unnatural twitch in its gait. Clusters near corrupted Ragolyte nodes.</p>',
+    img: A + 'Shadow Rat.png',
+    statText: `Shadow Rat
+Small beast (shadow-infused), neutral evil
+Armor Class: 13 (natural armor)
+Hit Points: 22 (4d6 + 8)
+Speed: 30 ft., climb 20 ft.
+STR 8 (-1), DEX 16 (+3), CON 14 (+2), INT 2 (-4), WIS 12 (+1), CHA 5 (-3)
+Skills: Stealth +5, Perception +3
+Damage Resistances: Necrotic, Psychic
+Damage Vulnerabilities: Radiant
+Senses: Darkvision 60 ft., passive Perception 13
+Languages: --
+Challenge: 1/2 (100 XP)
+Traits:
+Shadow Blend. While in dim light or darkness, the Shadow Rat can take the Hide action as a bonus action.
+Swarm Tactics. The Shadow Rat has advantage on attack rolls against a creature if at least one of the rat's allies is within 5 feet of the creature and not incapacitated.
+Actions:
+Bite. Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 7 (1d8 + 3) piercing damage plus 3 (1d6) necrotic damage.
+Dark Skitter (Recharge 5-6). The Shadow Rat teleports up to 20 feet to an unoccupied space it can see in dim light or darkness. When it teleports, it leaves behind a 5-foot-radius cloud of darkness until the start of its next turn.`,
+  },
+  {
+    name: 'Shadow Acolyte', cr: 1, creatureType: 'humanoid', alignment: 'neutral evil',
+    bio: '<p>A robed cultist who has fully embraced shadow corruption. Face hidden under a dark hood, faint glowing purple eyes visible through darkness. Wields minor void magic and whispers curses. Serves Drazahl\'s Shadow Cult.</p>',
+    img: A + 'Shadow Acolyte.png',
+    statText: `Shadow Acolyte
+Medium humanoid (any race), neutral evil
+Armor Class: 12 (leather armor)
+Hit Points: 27 (5d8 + 5)
+Speed: 30 ft.
+STR 10 (+0), DEX 12 (+1), CON 12 (+1), INT 10 (+0), WIS 14 (+2), CHA 11 (+0)
+Saving Throws: Wis +4
+Skills: Arcana +2, Religion +2
+Damage Resistances: Necrotic
+Senses: Darkvision 60 ft., passive Perception 12
+Languages: Common, Abyssal
+Challenge: 1 (200 XP)
+Spellcasting. The acolyte is a 2nd-level spellcaster. Spellcasting ability is Wisdom (spell save DC 12, +4 to hit). Cantrips (at will): Sacred Flame, Thaumaturgy. 1st level (3 slots): Inflict Wounds, Shield of Faith.
+Actions:
+Shadow Blade. Melee Weapon Attack: +3 to hit, reach 5 ft., one target. Hit: 5 (1d8 + 1) piercing damage plus 3 (1d6) necrotic damage.`,
+  },
+  {
+    name: 'Shadow Stalker', cr: 1, creatureType: 'fiend', alignment: 'chaotic evil',
+    bio: '<p>A lean humanoid shadowy figure with elongated limbs and sunken eyes glowing faintly white. Moves unnaturally, blends seamlessly with darkness. Silent hunter and infiltrator.</p>',
+    img: A + 'Shadow Stalker.png',
+    statText: `Shadow Stalker
+Medium fiend, chaotic evil
+Armor Class: 12
+Hit Points: 27 (5d8 + 5)
+Speed: 30 ft.
+STR 12 (+1), DEX 14 (+2), CON 12 (+1), INT 10 (+0), WIS 12 (+1), CHA 10 (+0)
+Skills: Stealth +4, Perception +3
+Damage Resistances: Necrotic, Cold; Bludgeoning, Piercing, and Slashing from Nonmagical Attacks
+Damage Immunities: Psychic
+Condition Immunities: Frightened, Charmed
+Senses: Darkvision 120 ft., passive Perception 13
+Languages: Common, Abyssal
+Challenge: 1 (200 XP)
+Traits:
+Shadow Stealth. While in dim light or darkness, the Stalker can take the Hide action as a bonus action.
+Actions:
+Shadow Blade. Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 8 (2d6 + 1) slashing damage plus 4 (1d8) necrotic damage.`,
+  },
+  {
+    name: 'Shadow Hound', cr: 2, creatureType: 'monstrosity', alignment: 'chaotic evil',
+    bio: '<p>A sleek pitch-black canine with glowing violet eyes and smoky tendrils trailing its body. Its fangs drip with shadow essence. Hunts in packs near corrupted zones.</p>',
+    img: A + 'Shadow Hound.png',
+    statText: `Shadow Hound
+Medium monstrosity, chaotic evil
+Armor Class: 13 (natural armor)
+Hit Points: 37 (5d8 + 10)
+Speed: 40 ft.
+STR 14 (+2), DEX 14 (+2), CON 14 (+2), INT 6 (-2), WIS 12 (+1), CHA 6 (-2)
+Skills: Perception +4, Stealth +4
+Damage Resistances: Necrotic; Bludgeoning, Piercing, and Slashing from Nonmagical Attacks
+Damage Immunities: Psychic
+Condition Immunities: Frightened, Charmed
+Senses: Darkvision 60 ft., passive Perception 14
+Languages: understands Abyssal but can't speak
+Challenge: 2 (450 XP)
+Traits:
+Ethereal Tracker. The Shadow Hound can sense creatures within 60 feet that are invisible or on the Ethereal Plane.
+Pack Tactics. The hound has advantage on attack rolls against a creature if at least one of the hound's allies is within 5 feet of the creature and the ally isn't incapacitated.
+Actions:
+Bite. Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 9 (2d6 + 2) piercing damage plus 4 (1d8) necrotic damage.
+Bonus Actions:
+Shadow Leap (Recharge 6). The hound teleports up to 30 feet to an unoccupied space it can see in dim light or darkness.`,
+  },
+  {
+    name: 'Corrupted Miner', cr: 3, creatureType: 'humanoid', alignment: 'chaotic evil',
+    bio: '<p>A once-honest Ragolyte miner twisted by overexposure — black veins webbing their skin, eyes void, mining tools warped into weapons. Capable of entering a destructive corruption frenzy.</p>',
+    img: A + 'Corrupted Miner.png',
+    statText: `Corrupted Miner
+Medium humanoid (any race), chaotic evil
+Armor Class: 13 (natural armor)
+Hit Points: 52 (8d8 + 16)
+Speed: 30 ft.
+STR 17 (+3), DEX 10 (+0), CON 15 (+2), INT 6 (-2), WIS 8 (-1), CHA 5 (-3)
+Saving Throws: Str +5, Con +4
+Skills: Athletics +5
+Damage Resistances: Necrotic; Bludgeoning, Piercing, and Slashing from Nonmagical Attacks
+Senses: Darkvision 60 ft., passive Perception 9
+Languages: Common
+Challenge: 3 (700 XP)
+Traits:
+Corruption Frenzy. When the miner drops below half its hit points, it gains advantage on melee attack rolls but suffers disadvantage on Wisdom saving throws.
+Actions:
+Multiattack. The miner makes two melee attacks.
+Corrupted Pickaxe. Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 10 (2d6 + 3) piercing damage plus 4 (1d8) necrotic damage.`,
+  },
+  {
+    name: 'Corrupted Brute', cr: 2, creatureType: 'humanoid', alignment: 'chaotic evil',
+    bio: '<p>A massive humanoid mutated by shadow energy, muscles bulging unnaturally, skin cracked with void-infused veins. Pure destructive force with little intelligence remaining.</p>',
+    img: A + 'Brute.png',
+    statText: `Corrupted Brute
+Large humanoid (any race), chaotic evil
+Armor Class: 15 (natural armor)
+Hit Points: 57 (6d10 + 18)
+Speed: 30 ft.
+STR 18 (+4), DEX 10 (+0), CON 16 (+3), INT 8 (-1), WIS 10 (+0), CHA 6 (-2)
+Saving Throws: Str +6, Con +5
+Skills: Athletics +6
+Damage Resistances: Necrotic; Bludgeoning, Piercing, and Slashing from Nonmagical Attacks
+Senses: Darkvision 60 ft., passive Perception 10
+Languages: Common
+Challenge: 2 (450 XP)
+Traits:
+Corrupted Resilience. The brute has advantage on saving throws against being charmed or frightened.
+Frenzied Rage (Recharges after a Short Rest). When the brute drops below half its hit points, it can enter a frenzy. For 1 minute, it gains resistance to all damage but suffers disadvantage on Wisdom saving throws.
+Actions:
+Multiattack. The brute makes two melee attacks.
+Crushing Slam. Melee Weapon Attack: +6 to hit, reach 10 ft., one target. Hit: 14 (2d8 + 4) bludgeoning damage.`,
+  },
+  {
+    name: 'Shadow Beast', cr: 5, creatureType: 'monstrosity', alignment: 'neutral evil',
+    bio: '<p>A large monstrous shadow creature of indeterminate form. Dangerous, aggressive, and drawn to areas of heavy corruption.</p>',
+    img: A + 'Shadow Beast.png',
+    statText: `Shadow Beast
+Large monstrosity, neutral evil
+Armor Class: 14 (natural armor)
+Hit Points: 102 (12d10 + 36)
+Speed: 40 ft.
+STR 20 (+5), DEX 14 (+2), CON 16 (+3), INT 4 (-3), WIS 12 (+1), CHA 6 (-2)
+Damage Resistances: Necrotic, Cold; Bludgeoning, Piercing, and Slashing from Nonmagical Attacks
+Damage Immunities: Psychic
+Condition Immunities: Frightened
+Senses: Darkvision 60 ft., passive Perception 11
+Languages: --
+Challenge: 5 (1800 XP)
+Traits:
+Shadow Hide. While in dim light or darkness, the Shadow Beast can take the Hide action as a bonus action.
+Rend. When the Shadow Beast hits a creature with a claw attack, the target must succeed on a DC 14 Strength saving throw or be knocked prone.
+Actions:
+Multiattack. The Shadow Beast makes two claw attacks.
+Claw. Melee Weapon Attack: +7 to hit, reach 10 ft., one target. Hit: 14 (2d8 + 5) slashing damage plus 9 (2d8) necrotic damage.`,
+  },
+  {
+    name: 'Shadow Elemental', cr: 5, creatureType: 'elemental', alignment: 'chaotic evil',
+    bio: '<p>A massive swirling entity of pure shadow and darkness whose form shifts constantly between humanoid and monstrous. Its presence chills the air. The Shadow Elemental at Node S-07 was the party\'s first major encounter — guarding the tampered node.</p>',
+    img: A + 'Shadow Elemental.png',
+    statText: `Shadow Elemental
+Large elemental, chaotic evil
+Armor Class: 14
+Hit Points: 102 (12d10 + 36)
+Speed: 40 ft.
+STR 18 (+4), DEX 14 (+2), CON 16 (+3), INT 6 (-2), WIS 12 (+1), CHA 8 (-1)
+Damage Resistances: Acid, Cold, Fire, Lightning, Thunder; Bludgeoning, Piercing, and Slashing from Nonmagical Attacks
+Damage Immunities: Necrotic, Psychic, Poison
+Condition Immunities: Exhaustion, Grappled, Paralyzed, Petrified, Poisoned, Prone, Restrained, Unconscious
+Senses: Darkvision 60 ft., passive Perception 11
+Languages: understands Primordial and Abyssal but can't speak
+Challenge: 5 (1800 XP)
+Traits:
+Shadowy Form. The Shadow Elemental can move through a space as narrow as 1 inch wide without squeezing.
+Aura of Darkness. A 20-foot radius around the Shadow Elemental is considered magical darkness. Creatures with darkvision cannot see through this darkness, but creatures with truesight can.
+Actions:
+Multiattack. The elemental makes two Shadow Slam attacks.
+Shadow Slam. Melee Weapon Attack: +7 to hit, reach 10 ft., one target. Hit: 13 (2d8 + 4) bludgeoning damage plus 7 (2d6) necrotic damage.
+Dark Pulse (Recharge 5-6). Each creature within 30 feet must make a DC 14 Constitution saving throw, taking 27 (5d10) necrotic damage on a failed save, or half as much on a success.`,
+  },
+  {
+    name: 'Shadow Miner Foreman', cr: 5, creatureType: 'humanoid', alignment: 'chaotic evil',
+    bio: '<p>A large hunched figure with mining gear physically melded into its flesh, veins glowing with corrupted Ragolyte, voice dripping with malice. Commands lesser corrupted creatures in the mines.</p>',
+    img: A + 'Shadow Miner Forman.png',
+    statText: `Shadow Miner Foreman
+Medium humanoid (shadow-infused), neutral evil
+Armor Class: 16 (natural armor)
+Hit Points: 85 (10d8 + 40)
+Speed: 30 ft.
+STR 16 (+3), DEX 14 (+2), CON 18 (+4), INT 10 (+0), WIS 12 (+1), CHA 12 (+1)
+Saving Throws: Str +6, Con +7
+Skills: Athletics +6, Intimidation +4, Perception +4
+Damage Resistances: Necrotic, Psychic
+Damage Vulnerabilities: Radiant
+Condition Immunities: Frightened
+Senses: Darkvision 60 ft., passive Perception 14
+Languages: Common, Dwarvish
+Challenge: 5 (1800 XP)
+Traits:
+Aura of Shadows (Recharge 6). The Shadow Miner Foreman emits a 10-foot-radius aura of darkness for 1 minute. Creatures other than shadow-infused creatures in the area have disadvantage on attack rolls and saving throws.
+Corrupted Resolve. When the Shadow Miner Foreman drops to 0 hit points, it can make a DC 14 Constitution saving throw. On a success, it regains 10 hit points and immediately takes its turn. This ability can only be used once per long rest.
+Mining Mastery. The Foreman's melee weapon attacks deal an extra 3 (1d6) damage if the weapon is made of metal.
+Actions:
+Multiattack. The Shadow Miner Foreman makes two pickaxe attacks.
+Pickaxe Smash. Melee Weapon Attack: +6 to hit, reach 5 ft., one target. Hit: 11 (2d6 + 3) piercing damage plus 4 (1d8) necrotic damage.
+Shadow Strike (Recharge 5-6). The Foreman slams their pickaxe into the ground, releasing a shockwave of shadow energy. Each creature in a 15-foot cone must make a DC 14 Dexterity saving throw, taking 18 (4d8) necrotic damage on a failed save or half as much on a success.
+Reactions:
+Defensive Retreat. When hit by an attack, the Foreman can move up to half its speed without provoking opportunity attacks.`,
+  },
+  {
+    name: 'Ragoran Skirmisher', cr: 1, creatureType: 'humanoid', alignment: 'neutral',
+    bio: '<p>A small nimble vulpine Ragoran in patchwork armour with sharp teeth and hardened claws. Scout and skirmisher of the Ragoran civilization. Moves through mine tunnels with extraordinary speed. The Ragorans are an independent trading civilization with natural Ragolyte resistance.</p>',
+    img: A + 'Ragoran Skirmisher.png',
+    statText: `Ragoran Skirmisher
+Small humanoid (Ragoran), neutral
+Armor Class: 14 (leather armor)
+Hit Points: 27 (5d6 + 10)
+Speed: 40 ft.
+STR 10 (+0), DEX 16 (+3), CON 14 (+2), INT 10 (+0), WIS 12 (+1), CHA 8 (-1)
+Skills: Stealth +5, Perception +3, Acrobatics +5
+Senses: Darkvision 60 ft., passive Perception 13
+Languages: Ragoran, Common
+Challenge: 1 (200 XP)
+Traits:
+Innate Cunning. The Ragoran has advantage on saving throws against being frightened or charmed.
+Burrow Adaptation. While underground, the Ragoran can use the Hide action as a bonus action.
+Pack Tactics. The Ragoran has advantage on attack rolls against a creature if at least one of its allies is within 5 feet of the creature and the ally isn't incapacitated.
+Actions:
+Dagger. Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 6 (1d6 + 3) piercing damage.
+Shortbow. Ranged Weapon Attack: +5 to hit, range 80/320 ft., one target. Hit: 6 (1d6 + 3) piercing damage.
+Bonus Actions:
+Cunning Dash (Recharge 5-6). The Ragoran Skirmisher moves up to its speed without provoking opportunity attacks.`,
+  },
+  {
+    name: 'Ragoran Tunnel Guard', cr: 2, creatureType: 'humanoid', alignment: 'neutral',
+    bio: '<p>A stout, heavily armored Ragoran wielding a heavy pickaxe and a shield forged from Ragolyte-infused metal. Fur matted with soot and ore dust, it holds chokepoints and tunnel entrances with relentless discipline. The backbone of Ragoran mine defense.</p>',
+    img: '',
+    statText: `Ragoran Tunnel Guard
+Small humanoid (Ragoran), neutral
+Armor Class: 17 (chain mail, shield)
+Hit Points: 45 (6d8 + 18)
+Speed: 25 ft.
+STR 18 (+4), DEX 10 (+0), CON 16 (+3), INT 10 (+0), WIS 12 (+1), CHA 8 (-1)
+Saving Throws: Str +6, Con +5
+Skills: Athletics +6, Perception +3
+Senses: Darkvision 60 ft., passive Perception 13
+Languages: Ragoran, Common
+Challenge: 2 (450 XP)
+Traits:
+Innate Cunning. The Ragoran has advantage on saving throws against being frightened or charmed.
+Burrow Adaptation. While underground, the Ragoran can use the Hide action as a bonus action.
+Defender Aura. Allies within 10 feet of the Tunnel Guard gain a +1 bonus to AC.
+Actions:
+Pickaxe. Melee Weapon Attack: +6 to hit, reach 5 ft., one target. Hit: 9 (1d8 + 4) piercing damage.
+Shield Bash. Melee Weapon Attack: +6 to hit, reach 5 ft., one target. Hit: 7 (1d6 + 4) bludgeoning damage. If the target is Medium or smaller, it must succeed on a DC 14 Strength saving throw or be knocked prone.`,
+  },
+  {
+    name: 'Ragoran Fireforger', cr: 3, creatureType: 'humanoid', alignment: 'neutral',
+    bio: '<p>Soot-covered and flame-scarred, this veteran Ragoran wields a Ragolyte-forged hammer with practiced ease. Its body has developed natural resistance to flame and heat through years of working the forge-mines. Used as both artillery and frontline support in Ragoran defense.</p>',
+    img: '',
+    statText: `Ragoran Fireforger
+Small humanoid (Ragoran), neutral
+Armor Class: 16 (technomantic breastplate)
+Hit Points: 52 (7d8 + 21)
+Speed: 30 ft.
+STR 10 (+0), DEX 12 (+1), CON 16 (+3), INT 16 (+3), WIS 12 (+1), CHA 10 (+0)
+Skills: Arcana +5, Perception +3
+Damage Resistances: Lightning, Fire
+Senses: Darkvision 60 ft., passive Perception 13
+Languages: Ragoran, Common
+Challenge: 3 (700 XP)
+Traits:
+Innate Cunning. The Ragoran has advantage on saving throws against being frightened or charmed.
+Technomantic Resistance. The Fireforger has resistance to lightning and fire damage.
+Actions:
+Flamethrower Gauntlet. Each creature in a 15-foot cone must make a DC 13 Dexterity saving throw, taking 10 (3d6) fire damage on a failed save or half as much on a success.
+Ragolyte Grenade (Recharge 5-6). Ranged attack, range 30 ft. Each creature within 10 feet of the target point must make a DC 13 Dexterity saving throw, taking 14 (4d6) fire damage on a failed save or half as much on a success.
+Bonus Actions:
+Repair Drone. One ally within 10 feet regains 7 (2d6) hit points.`,
+  },
+  {
+    name: 'Ragoran Shadowstalker', cr: 4, creatureType: 'humanoid', alignment: 'neutral',
+    bio: '<p>A cloaked Ragoran assassin that blends seamlessly into darkness, shadow-slicked fur absorbing light. Moves in near-total silence and strikes with twin obsidian daggers. Its eyes shimmer faintly with void energy — a side effect of deep Ragolyte exposure that grants it heightened perception in darkness.</p>',
+    img: '',
+    statText: `Ragoran Shadowstalker
+Small humanoid (Ragoran), neutral
+Armor Class: 15 (leather armor)
+Hit Points: 68 (8d8 + 32)
+Speed: 35 ft.
+STR 10 (+0), DEX 20 (+5), CON 18 (+4), INT 12 (+1), WIS 12 (+1), CHA 10 (+0)
+Skills: Stealth +9, Perception +5, Acrobatics +7
+Senses: Darkvision 120 ft., passive Perception 15
+Languages: Ragoran, Common
+Challenge: 4 (1100 XP)
+Traits:
+Innate Cunning. The Ragoran has advantage on saving throws against being frightened or charmed.
+Ambusher. The Ragoran Shadowstalker has advantage on attack rolls against creatures that have not yet taken a turn in combat.
+Burrow Adaptation. While underground, the Ragoran can use the Hide action as a bonus action.
+Actions:
+Shadow Dagger. Melee Weapon Attack: +7 to hit, reach 5 ft., one target. Hit: 12 (2d6 + 5) piercing damage. If attacking from stealth, the target also takes 14 (4d6) extra piercing damage.
+Smoke Bomb (Recharge 4-6). The area within 10 feet of the Shadowstalker is heavily obscured for 1 minute.
+Bonus Actions:
+Shadow Step. The Ragoran teleports up to 30 feet to an unoccupied space it can see in dim light or darkness.`,
+  },
+  {
+    name: 'Ragoran Foreman', cr: 5, creatureType: 'humanoid', alignment: 'neutral',
+    bio: '<p>Larger than a typical Ragoran, this commanding figure wears a mechanized exo-harness that amplifies its strength and carries a massive double-headed drill. Its booming voice echoes through the mine tunnels as it directs lesser Ragorans. A Foreman\'s word is law in the mines.</p>',
+    img: '',
+    statText: `Ragoran Foreman
+Small humanoid (Ragoran), neutral
+Armor Class: 17 (half plate)
+Hit Points: 85 (10d8 + 40)
+Speed: 30 ft.
+STR 20 (+5), DEX 10 (+0), CON 18 (+4), INT 12 (+1), WIS 14 (+2), CHA 14 (+2)
+Saving Throws: Str +8, Con +7
+Skills: Athletics +8, Intimidation +5, Perception +5
+Senses: Darkvision 60 ft., passive Perception 15
+Languages: Ragoran, Common, Dwarvish
+Challenge: 5 (1800 XP)
+Traits:
+Innate Cunning. The Ragoran has advantage on saving throws against being frightened or charmed.
+Leadership Aura. Allies within 10 feet of the Foreman gain a +2 bonus to attack rolls.
+Indomitable (1/Day). If the Foreman fails a saving throw, it can choose to succeed instead.
+Actions:
+Multiattack. The Foreman makes two War Pick attacks.
+War Pick. Melee Weapon Attack: +8 to hit, reach 5 ft., one target. Hit: 14 (2d8 + 5) piercing damage.
+Commanding Shout (Recharge 5-6). Up to 3 allies within 30 feet can each make one weapon attack as a reaction.`,
+  },
+  {
+    name: 'Ragoran Technomantic Warrior', cr: 6, creatureType: 'humanoid', alignment: 'neutral',
+    bio: '<p>An elite Ragoran warrior garbed in sleek technomantic armor threaded with Ragolyte conduits. Wields twin Ragolyte blades that crackle with arcane energy and moves with lightning-fast precision. Represents the cutting edge of Ragoran military development — the fusion of their natural resilience with Cogorian technomantic techniques.</p>',
+    img: '',
+    statText: `Ragoran Technomantic Warrior
+Small humanoid (Ragoran), neutral
+Armor Class: 17 (technomantic plate)
+Hit Points: 91 (14d8 + 28)
+Speed: 30 ft.
+STR 14 (+2), DEX 20 (+5), CON 14 (+2), INT 16 (+3), WIS 12 (+1), CHA 10 (+0)
+Saving Throws: Dex +8, Int +6
+Skills: Arcana +6, Stealth +8, Acrobatics +8
+Damage Resistances: Lightning
+Senses: Darkvision 60 ft., passive Perception 11
+Languages: Ragoran, Common
+Challenge: 6 (2300 XP)
+Traits:
+Innate Cunning. The Ragoran has advantage on saving throws against being frightened or charmed.
+Technomantic Strike. The warrior's weapon attacks deal an additional 7 (2d6) lightning damage (included in the attacks).
+Arcane Deflection. When the warrior is hit by an attack, it can use its reaction to gain a +3 bonus to AC until the start of its next turn, potentially causing the attack to miss.
+Actions:
+Multiattack. The Technomantic Warrior makes two Ragolyte Blade attacks.
+Ragolyte Blade. Melee Weapon Attack: +8 to hit, reach 5 ft., one target. Hit: 10 (1d8 + 5) slashing damage plus 7 (2d6) lightning damage.
+Arcane Burst (Recharge 5-6). Each creature in a 30-foot radius must make a DC 14 Dexterity saving throw, taking 21 (6d6) force damage on a failed save or half as much on a success.`,
+  },
+  {
+    name: 'Ragoran Mine Sovereign', cr: 8, creatureType: 'humanoid', alignment: 'lawful neutral',
+    bio: '<p>The ruling authority of a Ragoran mine network, clad in ceremonial armor etched with glowing Ragolyte runes. The Mine Sovereign commands with telepathic influence over other Ragorans, coordinating defense and trade across vast underground territories. Rarely encountered on the surface.</p>',
+    img: '',
+    statText: `Ragoran Mine Sovereign
+Small humanoid (Ragoran), lawful neutral
+Armor Class: 18 (full plate)
+Hit Points: 150 (20d8 + 60)
+Speed: 30 ft.
+STR 22 (+6), DEX 10 (+0), CON 16 (+3), INT 16 (+3), WIS 14 (+2), CHA 16 (+3)
+Saving Throws: Str +9, Con +6, Int +6, Wis +5
+Skills: Athletics +9, Arcana +6, History +6, Intimidation +6, Perception +5
+Damage Resistances: Radiant
+Senses: Darkvision 120 ft., passive Perception 15
+Languages: Ragoran, Common, Dwarvish, Elvish
+Challenge: 8 (3900 XP)
+Traits:
+Innate Cunning. The Ragoran has advantage on saving throws against being frightened or charmed.
+Mine Sovereign's Command. Once per turn, the Sovereign can command one ally to take one action as a reaction.
+Technomantic Aura. Enemies within 10 feet of the Sovereign have disadvantage on saving throws against being charmed or frightened.
+Legendary Resistance (2/Day). If the Sovereign fails a saving throw, it can choose to succeed instead.
+Actions:
+Multiattack. The Mine Sovereign makes two Ragolyte Blade attacks.
+Ragolyte Blade. Melee Weapon Attack: +9 to hit, reach 5 ft., one target. Hit: 20 (4d6 + 6) radiant damage.
+Arcane Burst (Recharge 5-6). Each creature in a 30-foot radius must make a DC 16 Dexterity saving throw, taking 28 (6d6 + 6) force damage on a failed save or half as much on a success.
+Mine Collapse (1/Day). All creatures in a 20-foot radius must make a DC 16 Dexterity saving throw or take 36 (8d8) bludgeoning damage and become restrained. A restrained creature can use an action to make a DC 16 Strength (Athletics) check to free itself.`,
+  },
+  {
+    name: 'Drazahl, The Corruptor', cr: 8, creatureType: 'humanoid', alignment: 'chaotic evil',
+    bio: '<p><strong>High Priest Drazahl, Shadowbinder</strong> — leader of the Shadow Cult and first major boss of the Gathering Darkness campaign arc. Tall and gaunt, cloaked in robes that shift like living shadows, a bone-like mask bearing glowing violet runes, skeletal clawed hands dripping dark mist, an obsidian-and-Ragolyte staff pulsing with a corrupted crystal.</p><p>Drazahl works toward the awakening of an ancient Shadow God sealed beneath Eldoria. Before his defeat he will reveal that someone powerful is quietly aiding the cult from within the political structure.</p><p><strong>Key abilities:</strong> Darkness, Shadow Blade, Spirit Guardians (shadow-themed), Aura of Corruption (DC 15 Wis, 1d10 necrotic/turn), Fiendish Step (teleport 60ft, recharge 5-6).</p>',
+    img: A + 'Drazahl, The Corruptor.png',
+    statText: `Drazahl, The Corruptor
+Medium humanoid (tiefling), chaotic evil
+Armor Class: 16 (Unarmored Defense)
+Hit Points: 120 (16d8 + 48)
+Speed: 40 ft.
+STR 12 (+1), DEX 16 (+3), CON 16 (+3), INT 14 (+2), WIS 12 (+1), CHA 18 (+4)
+Saving Throws: Dex +6, Con +6, Cha +7
+Skills: Arcana +5, Deception +7, Insight +4, Persuasion +7
+Damage Resistances: Fire, Necrotic; Bludgeoning, Piercing, and Slashing from Nonmagical Attacks
+Senses: Darkvision 60 ft., passive Perception 11
+Languages: Common, Infernal
+Challenge: 8 (3900 XP)
+Spellcasting. Drazahl is a spellcaster. Spellcasting ability is Charisma (spell save DC 15, +7 to hit). Cantrips (at will): Eldritch Blast, Minor Illusion, Thaumaturgy. 1st level (4 slots): Hex, Shield. 2nd level (3 slots): Mirror Image, Misty Step. 3rd level (3 slots): Counterspell, Hunger of Hadar. 4th level (3 slots): Blight, Greater Invisibility. 5th level (2 slots): Cloudkill.
+Traits:
+Aura of Corruption. Creatures within 10 feet of Drazahl must make a DC 15 Wisdom saving throw at the start of their turn or take 5 (1d10) necrotic damage.
+Actions:
+Multiattack. Drazahl makes two Eldritch Blast attacks or one melee attack with his corrupted dagger.
+Corrupted Dagger. Melee Weapon Attack: +6 to hit, reach 5 ft., one target. Hit: 12 (2d8 + 3) piercing damage plus 9 (2d8) necrotic damage.
+Bonus Actions:
+Fiendish Step (Recharge 5-6). Drazahl teleports up to 60 feet to an unoccupied space he can see, leaving a cloud of smoke behind. Creatures within 5 feet of the space he leaves must make a DC 15 Dexterity saving throw or take 9 (2d8) necrotic damage.`,
+  },
 ]
 
 // ─── CONTINENT DEFINITIONS ───────────────────────────────────
