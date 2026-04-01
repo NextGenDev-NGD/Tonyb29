@@ -782,10 +782,7 @@ export default function ClassImporter() {
                   <span className="text-violet-300 font-semibold text-sm whitespace-nowrap">AI Class Assistant</span>
                   <span className="bg-violet-900 text-violet-300 text-xs px-2 py-0.5 rounded-full whitespace-nowrap">Phase 16</span>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="text-slate-500 text-xs whitespace-nowrap">Paste any description → get template</span>
-                  {aiOpen ? <ChevronDown size={14} className="text-slate-400 flex-shrink-0" /> : <ChevronRight size={14} className="text-slate-400 flex-shrink-0" />}
-                </div>
+                {aiOpen ? <ChevronDown size={14} className="text-slate-400 flex-shrink-0" /> : <ChevronRight size={14} className="text-slate-400 flex-shrink-0" />}
               </button>
 
               {/* Expanded body */}
