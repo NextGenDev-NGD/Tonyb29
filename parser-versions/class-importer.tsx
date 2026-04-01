@@ -3,7 +3,8 @@
 // Phase 9
 
 import React, { useState } from 'react';
-import { Download, Copy, Info, Zap, Package, BookOpen, FileJson } from 'lucide-react';
+import { Download, Copy, Info, Zap, Package, BookOpen, FileJson, Sparkles, ChevronDown, ChevronRight, CheckCircle, AlertTriangle } from 'lucide-react';
+import { generateClassTemplate, hasApiKey } from './claude-api';
 
 // ─── Pure Helpers ─────────────────────────────────────────────────────────────
 const _djb2 = (s: string) => {
@@ -548,6 +549,30 @@ export default function ClassImporter() {
   const [copiedM, setCopiedM]       = useState(false);
   const [building, setBuilding]     = useState(false);
 
+  // AI Class Assistant panel
+  const [aiOpen, setAiOpen]           = useState(false);
+  const [aiDesc, setAiDesc]           = useState('');
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiError, setAiError]         = useState<string | null>(null);
+  const [aiSuccess, setAiSuccess]     = useState(false);
+
+  const generateFromDesc = async () => {
+    if (!aiDesc.trim()) return;
+    setAiGenerating(true);
+    setAiError(null);
+    setAiSuccess(false);
+    try {
+      const result = await generateClassTemplate(aiDesc);
+      setInput(result);
+      setAiSuccess(true);
+      setTimeout(() => setAiSuccess(false), 4000);
+    } catch (err: any) {
+      setAiError(err.message ?? 'Generation failed — check your API key and try again.');
+    } finally {
+      setAiGenerating(false);
+    }
+  };
+
   const buildClass = () => {
     setBuilding(true);
     setErrors([]); setWarnings([]); setBundle(null); setMacroItems(null); setSummary(null);
@@ -744,6 +769,93 @@ export default function ClassImporter() {
 
           {/* ── Left: Input ─────────────────────────────────────────────── */}
           <div className="space-y-4">
+
+            {/* AI Class Assistant — collapsible */}
+            <div className="bg-slate-800 rounded-lg border border-violet-500/40 overflow-hidden">
+              {/* Header toggle */}
+              <button
+                onClick={() => setAiOpen(o => !o)}
+                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-700/50 transition"
+              >
+                <div className="flex items-center gap-2">
+                  <Sparkles size={15} className="text-violet-400" />
+                  <span className="text-violet-300 font-semibold text-sm">AI Class Assistant</span>
+                  <span className="bg-violet-900 text-violet-300 text-xs px-2 py-0.5 rounded-full">Phase 16</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-slate-500 text-xs">Paste any description → get template</span>
+                  {aiOpen ? <ChevronDown size={14} className="text-slate-400" /> : <ChevronRight size={14} className="text-slate-400" />}
+                </div>
+              </button>
+
+              {/* Expanded body */}
+              {aiOpen && (
+                <div className="px-4 pb-4 border-t border-violet-500/20 space-y-3 pt-3">
+                  <p className="text-slate-400 text-xs leading-relaxed">
+                    Paste any class description — a wiki page, homebrew notes, ChatGPT output, or a PDF text dump.
+                    Claude will convert it into the Class Importer format automatically.
+                    Review and edit the result before building.
+                  </p>
+
+                  {/* What works well callout */}
+                  <div className="bg-slate-700/50 rounded p-3 text-xs text-slate-400 space-y-1">
+                    <div className="text-slate-300 font-semibold mb-1">What to include for best results:</div>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
+                      <div><span className="text-violet-400">Class name & flavour</span> — theme, fantasy archetype</div>
+                      <div><span className="text-violet-400">Hit die & saves</span> — d8, Constitution + Wisdom etc.</div>
+                      <div><span className="text-violet-400">Proficiencies</span> — armor, weapons, skills</div>
+                      <div><span className="text-violet-400">Spellcasting</span> — ability, progression (or none)</div>
+                      <div><span className="text-violet-400">Resource name & scale</span> — e.g. "Power Charges, 3 at 1st"</div>
+                      <div><span className="text-violet-400">Feature list</span> — names and brief descriptions by level</div>
+                      <div><span className="text-violet-400">Subclass concept</span> — names or themes (Claude invents if absent)</div>
+                      <div><span className="text-violet-400">ASI levels</span> — defaults to 4/8/12/16/19 if not stated</div>
+                    </div>
+                    <div className="text-slate-500 pt-1">
+                      The more detail you provide, the closer the output will be to your vision. Vague descriptions still work — Claude fills gaps logically.
+                    </div>
+                  </div>
+
+                  <textarea
+                    value={aiDesc}
+                    onChange={e => setAiDesc(e.target.value)}
+                    placeholder={"Paste your class description here…\n\nExample: The Warden is a d10 martial class that bonds with a spirit animal. Wisdom saves. Medium armor and shields. Martial weapons. 3 from Athletics, Nature, Perception, Survival, Animal Handling. No spellcasting. Resource: Spirit Tokens (3 at 1, scaling to 8 at 20). Subclasses at level 3: Bear Totem (tankier, resistances), Wolf Totem (pack tactics, flanking bonuses), Eagle Totem (mobility, flying). Features include Spirit Strike, Primal Sense, Totem Shift..."}
+                    className="w-full h-40 bg-slate-700 text-white rounded p-3 text-xs font-mono border border-violet-400/20 focus:border-violet-400 focus:outline-none resize-none"
+                  />
+
+                  {!hasApiKey() && (
+                    <div className="flex items-center gap-2 text-yellow-300 text-xs bg-yellow-900/30 border border-yellow-600/30 rounded px-3 py-2">
+                      <AlertTriangle size={13} />
+                      No API key configured — open Settings (⚙) in the parser tool to add your Claude key.
+                    </div>
+                  )}
+
+                  {aiError && (
+                    <div className="flex items-start gap-2 text-red-300 text-xs bg-red-900/20 border border-red-600/30 rounded px-3 py-2">
+                      <AlertTriangle size={13} className="mt-0.5 flex-shrink-0" />
+                      {aiError}
+                    </div>
+                  )}
+
+                  {aiSuccess && (
+                    <div className="flex items-center gap-2 text-green-300 text-xs bg-green-900/20 border border-green-600/30 rounded px-3 py-2">
+                      <CheckCircle size={13} />
+                      Template generated — review and edit in the Class Definition box below, then click Build Class.
+                    </div>
+                  )}
+
+                  <button
+                    onClick={generateFromDesc}
+                    disabled={aiGenerating || !aiDesc.trim() || !hasApiKey()}
+                    className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded transition text-sm"
+                  >
+                    <Sparkles size={14} className={aiGenerating ? 'animate-pulse' : ''} />
+                    {aiGenerating ? 'Generating template…' : 'Generate Template'}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Class Definition textarea */}
             <div className="bg-slate-800 rounded-lg p-5 border border-indigo-500/30">
               <label className="block text-white font-semibold mb-1">Class Definition</label>
               <p className="text-slate-400 text-xs mb-3">
