@@ -1,6 +1,7 @@
 // campaign-builder-data.ts
-// All campaign world data for Eldoria (Gathering Darkness).
-// Pre-baked from the ChatGPT session log + confirmed decisions.
+// Schema types, Eldoria world data, and generic macro builders.
+// Phase 15: macro builders now accept a CampaignPreset — no hardcoded campaign names.
+// Eldoria data remains here for now; Phase 15b will move it to campaign-eldoria-preset.ts.
 
 // ─── TYPES ──────────────────────────────────────────────────
 
@@ -54,6 +55,22 @@ export interface JournalDef {
   name: string
   folder: string
   pages: JournalPageDef[]
+}
+
+// A self-contained campaign definition — all data needed to run Steps 1–5.
+// Pass an instance to each macro builder; they no longer read global constants.
+export interface CampaignPreset {
+  id: string                     // unique key, e.g. 'eldoria'
+  name: string                   // display name, e.g. "Eldoria: Echoes of the Aether"
+  description: string            // one-liner shown in UI, e.g. "D&D 5e · 7 Continents · 28 NPCs"
+  rootJournalFolderName: string  // Step 2 checks this folder exists (confirms Step 1 ran)
+  creatureFolderName: string     // Step 4 target folder, e.g. "Eldoria — Creatures"
+  journalFolders: FolderSpec[]
+  actorFolders: FolderSpec[]
+  npcs: NpcDef[]
+  creatures: CreatureDef[]
+  continents: ContinentDef[]
+  journals: JournalDef[]
 }
 
 // ─── FOLDERS ────────────────────────────────────────────────
@@ -1136,14 +1153,14 @@ export const ALL_JOURNALS: JournalDef[] = [
 
 // ─── MACRO GENERATORS ────────────────────────────────────────
 
-export function buildStep1Macro(): string {
-  const jLines = JOURNAL_FOLDERS.map(f => {
+export function buildStep1Macro(preset: CampaignPreset): string {
+  const jLines = preset.journalFolders.map(f => {
     const parent = f.parentName ? `, folder: f[${JSON.stringify(f.parentName)}].id` : ''
     const color  = f.color ? `, color: ${JSON.stringify(f.color)}` : ''
     return `  f[${JSON.stringify(f.name)}] = await Folder.create({ name: ${JSON.stringify(f.name)}, type: 'JournalEntry'${color}${parent} });`
   }).join('\n')
 
-  const aLines = ACTOR_FOLDERS.map(f => {
+  const aLines = preset.actorFolders.map(f => {
     const parent = f.parentName ? `, folder: f[${JSON.stringify(f.parentName)}].id` : ''
     const color  = f.color ? `, color: ${JSON.stringify(f.color)}` : ''
     return `  f[${JSON.stringify(f.name)}] = await Folder.create({ name: ${JSON.stringify(f.name)}, type: 'Actor'${color}${parent} });`
@@ -1155,12 +1172,12 @@ export function buildStep1Macro(): string {
 ${jLines}
   // ── Actor Folders ──
 ${aLines}
-  ui.notifications.info('✅ Eldoria: All folders created successfully!');
+  ui.notifications.info(${JSON.stringify(`✅ ${preset.name}: All folders created!`)});
 })();`
 }
 
-export function buildStep2Macro(): string {
-  const entries = ALL_JOURNALS.map(j => {
+export function buildStep2Macro(preset: CampaignPreset): string {
+  const entries = preset.journals.map(j => {
     const pages = j.pages.map(p =>
       `    { name: ${JSON.stringify(p.name)}, type: 'text', text: { content: ${JSON.stringify(p.html)}, format: 1 } }`
     ).join(',\n')
@@ -1169,14 +1186,14 @@ export function buildStep2Macro(): string {
 
   return `(async () => {
   const jf = name => game.folders.find(f => f.name === name && f.type === 'JournalEntry')?.id;
-  if (!jf('World Lore')) { ui.notifications.error('Run Step 1 first — folders not found.'); return; }
+  if (!jf(${JSON.stringify(preset.rootJournalFolderName)})) { ui.notifications.error('Run Step 1 first — folders not found.'); return; }
 ${entries}
-  ui.notifications.info('✅ Eldoria: All journal entries created!');
+  ui.notifications.info(${JSON.stringify(`✅ ${preset.name}: All journal entries created!`)});
 })();`
 }
 
-export function buildStep3Macro(continentName: string): string {
-  const npcs = NPCS.filter(n => n.continent === continentName)
+export function buildStep3Macro(continentName: string, preset: CampaignPreset): string {
+  const npcs = preset.npcs.filter(n => n.continent === continentName)
   const actors = npcs.map(n => {
     const bio = `${n.bio}<p><em>Appearance:</em> ${n.appearance}</p><p><em>Relationships:</em> ${n.relationships}</p>`
     return {
@@ -1215,8 +1232,8 @@ export function buildStep3Macro(continentName: string): string {
 })();`
 }
 
-export function buildStep4Macro(): string {
-  const actors = CREATURES.map(c => ({
+export function buildStep4Macro(preset: CampaignPreset): string {
+  const actors = preset.creatures.map(c => ({
     name: c.name, type: 'npc', img: c.img,
     system: { details: {
       biography: { value: c.bio },
@@ -1229,8 +1246,8 @@ export function buildStep4Macro(): string {
   return `// Step 4 — Creature Actors (stubs with bios) — update-in-place safe
 (async () => {
   const af = name => game.folders.find(f => f.name === name && f.type === 'Actor');
-  const folder = af('Eldoria — Creatures');
-  if (!folder) { ui.notifications.error('Eldoria — Creatures folder not found — run Step 1 first.'); return; }
+  const folder = af(${JSON.stringify(preset.creatureFolderName)});
+  if (!folder) { ui.notifications.error(${JSON.stringify(`${preset.creatureFolderName} folder not found — run Step 1 first.`)}); return; }
   const allActors = ${JSON.stringify(actors, null, 2)};
   let updated = 0, created = 0;
   for (const a of allActors) {
@@ -1243,6 +1260,6 @@ export function buildStep4Macro(): string {
       created++;
     }
   }
-  ui.notifications.info(\`✅ Eldoria creatures: \${updated} updated, \${created} created.\`);
+  ui.notifications.info(\`✅ ${preset.name} creatures: \${updated} updated, \${created} created.\`);
 })();`
 }

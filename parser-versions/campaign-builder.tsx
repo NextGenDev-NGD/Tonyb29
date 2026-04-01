@@ -1,10 +1,13 @@
-// campaign-builder.tsx — Eldoria Campaign Builder tab
+// campaign-builder.tsx — Generic Campaign Builder tab (Phase 15)
+// Loads a CampaignPreset — currently defaults to ELDORIA_PRESET.
+// Future: preset picker, blank campaign mode, AI-assisted campaign input.
 import { useState, useRef } from 'react'
 import { Copy, Check, ChevronDown, ChevronRight, BookOpen, Users, Swords, Map as MapIcon, Sparkles, RefreshCw, X, CheckCircle, XCircle, AlertTriangle } from 'lucide-react'
 import {
-  CONTINENTS, NPCS, CREATURES, JOURNAL_FOLDERS, ACTOR_FOLDERS,
+  CampaignPreset, NpcDef,
   buildStep1Macro, buildStep2Macro, buildStep3Macro, buildStep4Macro,
 } from './campaign-builder-data'
+import { ELDORIA_PRESET } from './campaign-eldoria-preset'
 import { generateStatBlockFromName, hasApiKey } from './claude-api'
 import { parseStatBlock } from './dnd-parser-v20-stable'
 
@@ -68,30 +71,30 @@ function TreeItem({ label, dim }: { label: string; dim?: string }) {
   )
 }
 
-function Sidebar() {
+function Sidebar({ preset }: { preset: CampaignPreset }) {
   return (
     <div style={S.sidebar}>
       <div style={{ padding: '8px 16px 12px', borderBottom: '1px solid #334155', marginBottom: 8 }}>
-        <div style={{ color: '#a78bfa', fontWeight: 700, fontSize: 14 }}>Eldoria Campaign</div>
-        <div style={{ color: '#64748b', fontSize: 11 }}>Gathering Darkness</div>
+        <div style={{ color: '#a78bfa', fontWeight: 700, fontSize: 14 }}>{preset.name}</div>
+        <div style={{ color: '#64748b', fontSize: 11 }}>{preset.description}</div>
       </div>
 
       <TreeSection label="Journal Folders" icon={<BookOpen size={12} />}>
-        {JOURNAL_FOLDERS.map(f => (
+        {preset.journalFolders.map(f => (
           <TreeItem key={f.name} label={f.name} dim={f.parentName ? '↳' : undefined} />
         ))}
       </TreeSection>
 
       <TreeSection label="Actor Folders" icon={<Users size={12} />}>
-        {ACTOR_FOLDERS.map(f => (
+        {preset.actorFolders.map(f => (
           <TreeItem key={f.name} label={f.name} dim={f.parentName ? '↳' : undefined} />
         ))}
       </TreeSection>
 
       <TreeSection label="NPCs" icon={<Users size={12} />}>
-        {CONTINENTS.map(c => (
+        {preset.continents.map(c => (
           <TreeSection key={c.name} label={c.name} icon={null}>
-            {NPCS.filter(n => n.continent === c.name).map(n => (
+            {preset.npcs.filter(n => n.continent === c.name).map(n => (
               <TreeItem key={n.name} label={n.name.split(' ').slice(-1)[0]} dim={`CR${n.cr}`} />
             ))}
           </TreeSection>
@@ -99,25 +102,21 @@ function Sidebar() {
       </TreeSection>
 
       <TreeSection label="Creatures" icon={<Swords size={12} />}>
-        {CREATURES.map(c => (
+        {preset.creatures.map(c => (
           <TreeItem key={c.name} label={c.name} dim={`CR${c.cr}`} />
         ))}
       </TreeSection>
 
       <TreeSection label="Journals" icon={<MapIcon size={12} />}>
-        <TreeItem label="World Overview" />
-        {CONTINENTS.map(c => <TreeItem key={c.name} label={c.name} />)}
-        <TreeItem label="The Ragorans" />
-        <TreeItem label="Shadow Cult" />
-        <TreeItem label="LUKAS (GM Only)" />
-        <TreeItem label="Campaign Overview" />
-        <TreeItem label="Node Investigation" />
+        {preset.journals.map(j => (
+          <TreeItem key={j.name} label={j.name} />
+        ))}
       </TreeSection>
 
       <div style={{ padding: '12px 16px 0', borderTop: '1px solid #334155', marginTop: 8 }}>
         <div style={{ color: '#64748b', fontSize: 11 }}>
-          {NPCS.length} NPCs · {CREATURES.length} creatures<br />
-          {CONTINENTS.length} continents · 5 factions
+          {preset.npcs.length} NPCs · {preset.creatures.length} creatures<br />
+          {preset.continents.length} continents · {preset.journals.length} journals
         </div>
       </div>
     </div>
@@ -166,11 +165,11 @@ function StepCard({ step, title, description, macro, id, accent, copied, onCopy 
 
 // Build Step 4 macro with pre-parsed stat blocks embedded.
 // Creatures with statText get full actor JSON; others get bio stubs.
-function buildStep4StatsMacro(): string {
+function buildStep4StatsMacro(preset: CampaignPreset): string {
   const actorLines: string[] = []
-  const coverageCount = CREATURES.filter(c => c.statText).length
+  const coverageCount = preset.creatures.filter(c => c.statText).length
 
-  for (const c of CREATURES) {
+  for (const c of preset.creatures) {
     if (c.statText) {
       const { actor, errors } = parseStatBlock(c.statText)
       if (!errors.length && actor) {
@@ -204,11 +203,13 @@ function buildStep4StatsMacro(): string {
     }`)
   }
 
-  return `// Step 4 — Creature Actors (${coverageCount}/${CREATURES.length} with full stat blocks) — update-in-place safe
+  const folderName = preset.creatureFolderName
+  const campaignName = preset.name
+  return `// Step 4 — Creature Actors (${coverageCount}/${preset.creatures.length} with full stat blocks) — update-in-place safe
 (async () => {
   const af = name => game.folders.find(f => f.name === name && f.type === 'Actor');
-  const folder = af('Eldoria — Creatures');
-  if (!folder) { ui.notifications.error('Eldoria — Creatures folder not found — run Step 1 first.'); return; }
+  const folder = af(${JSON.stringify(folderName)});
+  if (!folder) { ui.notifications.error(${JSON.stringify(`${folderName} folder not found — run Step 1 first.`)}); return; }
   const allActors = [
 ${actorLines.join(',\n')}
   ];
@@ -227,11 +228,11 @@ ${actorLines.join(',\n')}
       created++;
     }
   }
-  ui.notifications.info(\`✅ Eldoria creatures: \${updated} updated, \${created} created.\`);
+  ui.notifications.info(\`✅ ${campaignName} creatures: \${updated} updated, \${created} created.\`);
 })();`
 }
 
-function buildNpcContext(npc: typeof NPCS[0]): string {
+function buildNpcContext(npc: NpcDef): string {
   const bioText = npc.bio
     .replace(/<[^>]+>/g, ' ')
     .replace(/\s+/g, ' ')
@@ -273,6 +274,7 @@ function buildStep5Macro(results: NpcResult[]): string {
 // ─── MAIN COMPONENT ──────────────────────────────────────────
 
 export default function CampaignBuilder() {
+  const [preset] = useState<CampaignPreset>(ELDORIA_PRESET)
   const [copied, setCopied] = useState<string | null>(null)
 
   // Step 5 — NPC stat block generation
@@ -311,11 +313,11 @@ export default function CampaignBuilder() {
   const generateAllNpcs = async () => {
     cancelledRef.current = false
     setGenerating(true)
-    setNpcResults(NPCS.map(n => ({ name: n.name, status: 'pending', accuracy: null, errors: [], actor: null })))
+    setNpcResults(preset.npcs.map(n => ({ name: n.name, status: 'pending', accuracy: null, errors: [], actor: null })))
 
-    for (let i = 0; i < NPCS.length; i++) {
+    for (let i = 0; i < preset.npcs.length; i++) {
       if (cancelledRef.current) break
-      const npc = NPCS[i]
+      const npc = preset.npcs[i]
       setGenCurrent(i + 1)
       setGenCurrentName(npc.name)
       setNpcResults(prev => prev.map(r => r.name === npc.name ? { ...r, status: 'generating' } : r))
@@ -343,7 +345,7 @@ export default function CampaignBuilder() {
   }
 
   const rerollNpc = async (npcName: string) => {
-    const npc = NPCS.find(n => n.name === npcName)
+    const npc = preset.npcs.find(n => n.name === npcName)
     if (!npc) return
     setRerolling(npcName)
     setNpcResults(prev => prev.map(r => r.name === npcName ? { ...r, status: 'generating', errors: [] } : r))
@@ -384,9 +386,23 @@ export default function CampaignBuilder() {
 
   return (
     <div style={S.page}>
-      <Sidebar />
+      <Sidebar preset={preset} />
 
       <div style={S.main}>
+        {/* Campaign header banner */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, gap: 12 }}>
+          <div>
+            <div style={{ color: '#a78bfa', fontWeight: 700, fontSize: 20, lineHeight: 1.2 }}>{preset.name}</div>
+            <div style={{ color: '#64748b', fontSize: 13, marginTop: 2 }}>{preset.description}</div>
+          </div>
+          <div style={{ display: 'flex', gap: 16, fontSize: 12, color: '#475569', flexShrink: 0 }}>
+            <span><span style={{ color: '#94a3b8', fontWeight: 600 }}>{preset.npcs.length}</span> NPCs</span>
+            <span><span style={{ color: '#94a3b8', fontWeight: 600 }}>{preset.creatures.length}</span> Creatures</span>
+            <span><span style={{ color: '#94a3b8', fontWeight: 600 }}>{preset.continents.length}</span> Continents</span>
+            <span><span style={{ color: '#94a3b8', fontWeight: 600 }}>{preset.journals.length}</span> Journals</span>
+          </div>
+        </div>
+
         {/* Instructions */}
         <div style={{ ...S.cardAccent('#065f46'), background: '#052e1620', marginBottom: 24 }}>
           <div style={{ ...S.h2, color: '#86efac', marginBottom: 8 }}>How to Import into Foundry VTT</div>
@@ -405,8 +421,8 @@ export default function CampaignBuilder() {
         <StepCard
           step="Step 1" accent="#22c55e"
           title="Create Folder Structure"
-          description={`Creates ${JOURNAL_FOLDERS.length} journal folders and ${ACTOR_FOLDERS.length} actor folders in Foundry.`}
-          macro={buildStep1Macro()} id="step1" copied={copied} onCopy={copy}
+          description={`Creates ${preset.journalFolders.length} journal folders and ${preset.actorFolders.length} actor folders in Foundry.`}
+          macro={buildStep1Macro(preset)} id="step1" copied={copied} onCopy={copy}
         />
 
         {/* Step 2 */}
@@ -414,7 +430,7 @@ export default function CampaignBuilder() {
           step="Step 2" accent="#38bdf8"
           title="Create Journal Entries"
           description="Creates World Overview (5 pages), 7 continent journals (3 pages each), faction journals (Ragorans, Shadow Cult, LUKAS), and plot journals."
-          macro={buildStep2Macro()} id="step2" copied={copied} onCopy={copy}
+          macro={buildStep2Macro(preset)} id="step2" copied={copied} onCopy={copy}
         />
 
         {/* Step 3 — per continent */}
@@ -425,8 +441,8 @@ export default function CampaignBuilder() {
             Run the macro for each continent separately.
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 10 }}>
-            {CONTINENTS.map(c => {
-              const npcs = NPCS.filter(n => n.continent === c.name)
+            {preset.continents.map(c => {
+              const npcs = preset.npcs.filter(n => n.continent === c.name)
               const id = `step3-${c.name}`
               return (
                 <div key={c.name} style={{ background: '#0f172a', borderRadius: 6, padding: 14, border: '1px solid #334155' }}>
@@ -434,7 +450,7 @@ export default function CampaignBuilder() {
                   <div style={{ ...S.muted, marginBottom: 10 }}>
                     {npcs.map(n => n.name.split(' ').slice(-1)[0]).join(' · ')} ({npcs.length} actors)
                   </div>
-                  <CopyButton text={buildStep3Macro(c.name)} id={id} copied={copied} onCopy={copy} />
+                  <CopyButton text={buildStep3Macro(c.name, preset)} id={id} copied={copied} onCopy={copy} />
                 </div>
               )
             })}
@@ -443,8 +459,8 @@ export default function CampaignBuilder() {
 
         {/* Step 4 */}
         {(() => {
-          const statCount = CREATURES.filter(c => c.statText).length
-          const fullMacro = buildStep4StatsMacro()
+          const statCount = preset.creatures.filter(c => c.statText).length
+          const fullMacro = buildStep4StatsMacro(preset)
           return (
             <div style={S.cardAccent('#f87171')}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
@@ -455,16 +471,16 @@ export default function CampaignBuilder() {
                     <span style={{ ...S.tag('#b91c1c'), fontSize: 10 }}>Phase 14c</span>
                   </div>
                   <div style={S.muted}>
-                    Creates all {CREATURES.length} creature actors (Shadow Cult enemies, Ragorans, Drazahl) in the Eldoria — Creatures folder.
+                    Creates all {preset.creatures.length} creature actors in the {preset.creatureFolderName} folder.
                     <span style={{ color: '#fca5a5', marginLeft: 6 }}>
-                      {statCount}/{CREATURES.length} have full stat blocks embedded.
+                      {statCount}/{preset.creatures.length} have full stat blocks embedded.
                     </span>
                   </div>
                 </div>
                 <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
                   <CopyButton text={fullMacro} id="step4-stats" copied={copied} onCopy={copy} />
                   <button
-                    onClick={() => copy(buildStep4Macro(), 'step4-stubs')}
+                    onClick={() => copy(buildStep4Macro(preset), 'step4-stubs')}
                     style={{ ...S.copyBtn(copied === 'step4-stubs'), fontSize: 11 }}
                   >
                     {copied === 'step4-stubs' ? <Check size={12} /> : <Copy size={12} />}
@@ -484,7 +500,7 @@ export default function CampaignBuilder() {
             <span style={{ ...S.tag('#6d28d9'), fontSize: 10 }}>AI · Phase 14</span>
           </div>
           <div style={{ ...S.muted, marginBottom: 16 }}>
-            Uses Claude AI to generate a full D&D 5e stat block for each of the {NPCS.length} NPC leaders using their race, class, CR, and biography as context.
+            Uses Claude AI to generate a full D&D 5e stat block for each of the {preset.npcs.length} NPC leaders using their race, class, CR, and biography as context.
             Run the resulting macro to patch existing actor stubs from Steps 3 with full stat blocks.
           </div>
 
@@ -499,7 +515,7 @@ export default function CampaignBuilder() {
             <div style={{ marginBottom: 12 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                 <span style={{ ...S.muted, color: '#a78bfa' }}>
-                  Generating {genCurrent} of {NPCS.length} — <strong style={{ color: '#c4b5fd' }}>{genCurrentName}</strong>
+                  Generating {genCurrent} of {preset.npcs.length} — <strong style={{ color: '#c4b5fd' }}>{genCurrentName}</strong>
                 </span>
                 <button
                   onClick={() => { cancelledRef.current = true }}
@@ -509,7 +525,7 @@ export default function CampaignBuilder() {
                 </button>
               </div>
               <div style={{ background: '#1e293b', borderRadius: 4, height: 6 }}>
-                <div style={{ background: '#7c3aed', height: 6, borderRadius: 4, width: `${(genCurrent / NPCS.length) * 100}%`, transition: 'width 0.3s' }} />
+                <div style={{ background: '#7c3aed', height: 6, borderRadius: 4, width: `${(genCurrent / preset.npcs.length) * 100}%`, transition: 'width 0.3s' }} />
               </div>
             </div>
           )}
@@ -528,7 +544,7 @@ export default function CampaignBuilder() {
               }}
             >
               <Sparkles size={14} />
-              {generating ? `Generating ${genCurrent}/${NPCS.length}…` : `Generate All ${NPCS.length} NPCs`}
+              {generating ? `Generating ${genCurrent}/${preset.npcs.length}…` : `Generate All ${preset.npcs.length} NPCs`}
             </button>
 
             {step5Ready && (
@@ -560,9 +576,9 @@ export default function CampaignBuilder() {
           )}
 
           {/* NPC result grid — grouped by continent */}
-          {npcResults.length > 0 && CONTINENTS.map(c => {
+          {npcResults.length > 0 && preset.continents.map(c => {
             const continentNpcs = npcResults.filter(r => {
-              const npc = NPCS.find(n => n.name === r.name)
+              const npc = preset.npcs.find(n => n.name === r.name)
               return npc?.continent === c.name
             })
             if (!continentNpcs.length) return null
