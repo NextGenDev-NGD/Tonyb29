@@ -775,14 +775,23 @@ export default function ClassImporter() {
               {/* Header toggle */}
               <button
                 onClick={() => setAiOpen(o => !o)}
-                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-700/50 transition"
+                className="w-full flex items-start justify-between px-4 py-3 text-left hover:bg-slate-700/50 transition"
               >
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <Sparkles size={15} className="text-violet-400" />
-                  <span className="text-violet-300 font-semibold text-sm whitespace-nowrap">AI Class Assistant</span>
-                  <span className="bg-violet-900 text-violet-300 text-xs px-2 py-0.5 rounded-full whitespace-nowrap">Phase 16</span>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Sparkles size={15} className="text-violet-400 flex-shrink-0" />
+                    <span className="text-violet-300 font-semibold text-sm whitespace-nowrap">AI Class Assistant</span>
+                    <span className="bg-violet-900 text-violet-300 text-xs px-2 py-0.5 rounded-full whitespace-nowrap">Phase 16</span>
+                  </div>
+                  {!aiOpen && (
+                    <p className="text-slate-500 text-xs mt-1 pl-0.5">
+                      Paste any class description — Claude generates a ready-to-use template. Click to expand.
+                    </p>
+                  )}
                 </div>
-                {aiOpen ? <ChevronDown size={14} className="text-slate-400 flex-shrink-0" /> : <ChevronRight size={14} className="text-slate-400 flex-shrink-0" />}
+                {aiOpen
+                  ? <ChevronDown size={14} className="text-slate-400 flex-shrink-0 mt-0.5" />
+                  : <ChevronRight size={14} className="text-slate-400 flex-shrink-0 mt-0.5" />}
               </button>
 
               {/* Expanded body */}
