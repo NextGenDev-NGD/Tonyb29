@@ -1297,6 +1297,15 @@ export default function StatBlockParser({ onSendToEncounter }: { onSendToEncount
         <div className="mb-8 flex items-center gap-3">
           <h1 className="text-4xl font-bold text-white">D&D Stat Block Converter</h1>
           <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1"><Sword size={14} /> v4.3-alpha</span>
+          {(input || output) && (
+            <button
+              onClick={() => { setInput(''); setOutput(null); setErrors([]); setWarnings([]); setParseStats(null); setShowEditor(false); setAiError(''); setUrlInput(''); setNameInput(''); setCustomName(''); setCustomCR('1'); setCustomCtx(''); }}
+              className="ml-auto flex items-center gap-1 bg-slate-700 hover:bg-red-900 text-slate-400 hover:text-red-300 text-xs font-semibold px-3 py-1.5 rounded transition"
+              title="Clear input and results"
+            >
+              <X size={13} /> Reset
+            </button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

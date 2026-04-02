@@ -3,7 +3,7 @@
 // Phase 9
 
 import React, { useState } from 'react';
-import { Download, Copy, Info, Zap, Package, BookOpen, FileJson, Sparkles, ChevronDown, ChevronRight, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Download, Copy, Info, Zap, Package, BookOpen, FileJson, Sparkles, ChevronDown, ChevronRight, CheckCircle, AlertTriangle, X } from 'lucide-react';
 import { generateClassTemplate, hasApiKey } from './claude-api';
 
 // ─── Pure Helpers ─────────────────────────────────────────────────────────────
@@ -763,6 +763,15 @@ export default function ClassImporter() {
         <div className="mb-8 flex items-center gap-3">
           <h1 className="text-4xl font-bold text-white">Custom Class Importer</h1>
           <span className="bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-bold">Phase 9</span>
+          {(input || bundle) && (
+            <button
+              onClick={() => { setInput(''); setBundle(null); setMacroItems([]); setSummary(null); setWarnings([]); setErrors([]); setAiDesc(''); setAiOpen(false); setAiError(null); setAiSuccess(false); }}
+              className="ml-auto flex items-center gap-1 bg-slate-700 hover:bg-red-900 text-slate-400 hover:text-red-300 text-xs font-semibold px-3 py-1.5 rounded transition"
+              title="Clear input and results"
+            >
+              <X size={13} /> Reset
+            </button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
