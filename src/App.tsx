@@ -3,12 +3,12 @@ import { Settings } from 'lucide-react'
 import StatBlockParser from '../parser-versions/dnd-parser-v20-stable'
 import ClassImporter from '../parser-versions/class-importer'
 import BatchProcessor from '../parser-versions/batch-processor'
-import EncounterBuilder, { Encounter } from '../parser-versions/encounter-builder'
+import EncounterBuilder, { Encounter, EncounterCreature } from '../parser-versions/encounter-builder'
 import CampaignBuilder from '../parser-versions/campaign-builder'
 import SettingsModal from '../parser-versions/settings-modal'
 import { hasApiKey } from '../parser-versions/claude-api'
 
-type Tab = 'parser' | 'encounter' | 'batch' | 'class' | 'campaign'
+type Tab = 'parser' | 'batch' | 'encounter' | 'class' | 'campaign'
 
 function uid() { return Math.random().toString(36).slice(2, 10) }
 
@@ -17,64 +17,91 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false)
   const [apiKeySet, setApiKeySet] = useState(hasApiKey())
 
-  // Encounter state — lifted here so parser can push into it
+  // Encounter state — lifted here so parser + batch can push into it
   const [encounters, setEncounters] = useState<Encounter[]>([])
-  const [sentToast, setSentToast]   = useState('')  // e.g. "Goblin added to Encounter 1"
+  const [sentToast, setSentToast]   = useState('')
 
-  const sendBatchToEncounter = (actors: any[]) => {
-    if (!actors.length) return
-    actors.forEach(actor => sendToEncounter(actor))
-  }
-
+  // Single-actor send — uses functional updater to avoid stale closure
   const sendToEncounter = (actor: any) => {
-    let target: Encounter
-    let next: Encounter[]
+    setEncounters(prev => {
+      let updated = [...prev]
+      let target: Encounter
 
-    if (encounters.length === 0) {
-      // Create the first encounter automatically
-      target = { id: uid(), name: 'Encounter 1', creatures: [] }
-      next = [target]
-    } else {
-      target = encounters[encounters.length - 1]  // add to most recent
-      next = [...encounters]
-    }
+      if (updated.length === 0) {
+        target = { id: uid(), name: 'Encounter 1', creatures: [] }
+        updated = [target]
+      } else {
+        target = updated[updated.length - 1]
+      }
 
-    // Check if creature already exists in this encounter — increment qty instead
-    const existing = target.creatures.find(c => c.actor?.name === actor?.name)
-    if (existing) {
-      next = next.map(e => e.id === target.id ? {
-        ...e,
-        creatures: e.creatures.map(c => c.id === existing.id ? { ...c, quantity: c.quantity + 1 } : c),
-      } : e)
-    } else {
-      next = next.map(e => e.id === target.id ? {
-        ...e,
-        creatures: [...e.creatures, { id: uid(), actor, quantity: 1 }],
-      } : e)
-    }
+      const idx = updated.findIndex(e => e.id === target.id)
+      const existing = updated[idx].creatures.find(c => c.actor?.name === actor?.name)
+      const creatures: EncounterCreature[] = existing
+        ? updated[idx].creatures.map(c => c.id === existing.id ? { ...c, quantity: c.quantity + 1 } : c)
+        : [...updated[idx].creatures, { id: uid(), actor, quantity: 1 }]
 
-    setEncounters(next)
-    setSentToast(`${actor?.name ?? 'Creature'} added to "${target.name}"`)
+      updated = updated.map((e, i) => i === idx ? { ...e, creatures } : e)
+      return updated
+    })
+
+    setSentToast(`${actor?.name ?? 'Creature'} added to encounter`)
     setTimeout(() => setSentToast(''), 3000)
   }
+
+  // Batch send — builds all creatures into state in a single updater call
+  const sendBatchToEncounter = (actors: any[]) => {
+    if (!actors.length) return
+
+    setEncounters(prev => {
+      let updated = [...prev]
+      let target: Encounter
+
+      if (updated.length === 0) {
+        target = { id: uid(), name: 'Encounter 1', creatures: [] }
+        updated = [target]
+      } else {
+        target = updated[updated.length - 1]
+      }
+
+      const idx = updated.findIndex(e => e.id === target.id)
+      let creatures: EncounterCreature[] = [...updated[idx].creatures]
+
+      for (const actor of actors) {
+        const existing = creatures.find(c => c.actor?.name === actor?.name)
+        if (existing) {
+          creatures = creatures.map(c => c.id === existing.id ? { ...c, quantity: c.quantity + 1 } : c)
+        } else {
+          creatures = [...creatures, { id: uid(), actor, quantity: 1 }]
+        }
+      }
+
+      updated = updated.map((e, i) => i === idx ? { ...e, creatures } : e)
+      return updated
+    })
+
+    setSentToast(`${actors.length} creature${actors.length !== 1 ? 's' : ''} added to encounter`)
+    setTimeout(() => setSentToast(''), 3000)
+  }
+
+  const totalCombatants = encounters.reduce((s, e) => s + e.creatures.reduce((ss, c) => ss + c.quantity, 0), 0)
 
   const btn = (t: Tab, label: string, active: string, inactive = '#1e293b') => (
     <button onClick={() => setTab(t)}
       style={{ padding: '6px 18px', borderRadius: 6, border: 'none', cursor: 'pointer',
         background: tab === t ? active : inactive, color: '#fff', fontWeight: 600, position: 'relative' as const }}>
       {label}
-      {/* Badge showing creature count on Encounter tab */}
-      {t === 'encounter' && encounters.reduce((s, e) => s + e.creatures.reduce((ss, c) => ss + c.quantity, 0), 0) > 0 && (
+      {t === 'encounter' && totalCombatants > 0 && (
         <span style={{
           position: 'absolute', top: -6, right: -6,
           background: '#ef4444', color: '#fff', borderRadius: 99,
           fontSize: 10, fontWeight: 700, padding: '1px 5px', lineHeight: 1.4,
-        }}>
-          {encounters.reduce((s, e) => s + e.creatures.reduce((ss, c) => ss + c.quantity, 0), 0)}
-        </span>
+        }}>{totalCombatants}</span>
       )}
     </button>
   )
+
+  // Render all tabs — use CSS display to hide inactive ones so state is preserved
+  const show = (t: Tab) => ({ display: tab === t ? '' : 'none' })
 
   return (
     <>
@@ -112,11 +139,22 @@ export default function App() {
         </div>
       )}
 
-      {tab === 'parser'    && <StatBlockParser onSendToEncounter={sendToEncounter} />}
-      {tab === 'encounter' && <EncounterBuilder encounters={encounters} onUpdate={setEncounters} />}
-      {tab === 'batch'     && <BatchProcessor onSendToEncounter={sendBatchToEncounter} />}
-      {tab === 'class'     && <ClassImporter />}
-      {tab === 'campaign'  && <CampaignBuilder />}
+      {/* All tabs stay mounted — hidden via CSS so state is preserved on tab switch */}
+      <div style={show('parser')}>
+        <StatBlockParser onSendToEncounter={sendToEncounter} />
+      </div>
+      <div style={show('batch')}>
+        <BatchProcessor onSendToEncounter={sendBatchToEncounter} />
+      </div>
+      <div style={show('encounter')}>
+        <EncounterBuilder encounters={encounters} onUpdate={setEncounters} />
+      </div>
+      <div style={show('class')}>
+        <ClassImporter />
+      </div>
+      <div style={show('campaign')}>
+        <CampaignBuilder />
+      </div>
 
       {showSettings && (
         <SettingsModal onClose={() => { setShowSettings(false); setApiKeySet(hasApiKey()) }} />
