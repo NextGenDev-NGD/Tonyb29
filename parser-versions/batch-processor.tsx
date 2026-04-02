@@ -429,6 +429,13 @@ export default function BatchProcessor({ onSendToEncounter }: { onSendToEncounte
                       <Layers size={13} /> Send to Encounter
                     </button>
                   )}
+                  <button
+                    onClick={() => { setResults([]); setInput(''); setNamesInput(''); }}
+                    className="flex items-center gap-1 bg-slate-700 hover:bg-red-900 text-slate-400 hover:text-red-300 text-xs font-semibold px-3 py-1.5 rounded transition ml-auto"
+                    title="Clear all results and inputs"
+                  >
+                    <X size={13} /> Clear All
+                  </button>
                 </div>
               </div>
             )}
