@@ -6,9 +6,9 @@
 // DO NOT restructure the parseStatBlock sections without regression testing.
 
 import React, { useState, useRef } from 'react';
-import { Download, Copy, Info, FileJson, Zap, BarChart3, Edit2, Save, X, Sword, Image, Link, FileText, Loader } from 'lucide-react';
+import { Download, Copy, Info, FileJson, Zap, BarChart3, Edit2, Save, X, Sword, Image, Link, FileText, Loader, Sparkles } from 'lucide-react';
 import { toFantasyGroundsXML } from './fantasy-grounds-exporter';
-import { extractStatBlockFromImage, extractStatBlockFromUrl, generateStatBlockFromName, hasApiKey } from './claude-api';
+import { extractStatBlockFromImage, extractStatBlockFromUrl, generateStatBlockFromName, generateCustomStatBlock, hasApiKey } from './claude-api';
 
 // ─── Pure Helpers ──────────────────────────────────────────────────────────────
 const mod = (s) => Math.floor((s - 10) / 2);
@@ -1185,7 +1185,7 @@ export function parseStatBlock(text) {
 }
 
 // ─── Main Component ────────────────────────────────────────────────────────────
-export default function StatBlockParser() {
+export default function StatBlockParser({ onSendToEncounter }: { onSendToEncounter?: (actor: any) => void } = {}) {
   const [input, setInput]           = useState('');
   const [output, setOutput]         = useState(null);
   const [errors, setErrors]         = useState([]);
@@ -1196,10 +1196,13 @@ export default function StatBlockParser() {
   const [showEditor, setShowEditor] = useState(false);
   const [editField, setEditField]   = useState(null);
   const [editValue, setEditValue]   = useState('');
-  const [inputMode, setInputMode]   = useState<'text' | 'image' | 'url' | 'name'>('text');
+  const [inputMode, setInputMode]   = useState<'text' | 'image' | 'url' | 'name' | 'custom'>('text');
   const [urlInput, setUrlInput]     = useState('');
   const [nameInput, setNameInput]   = useState('');
   const [nameSource, setNameSource] = useState('any');
+  const [customName, setCustomName] = useState('');
+  const [customCR, setCustomCR]     = useState('1');
+  const [customCtx, setCustomCtx]   = useState('');
   const [aiLoading, setAiLoading]   = useState(false);
   const [aiError, setAiError]       = useState('');
   const fileInputRef                = useRef<HTMLInputElement>(null);
@@ -1254,6 +1257,21 @@ export default function StatBlockParser() {
     }
   };
 
+  const handleCustomGenerate = async () => {
+    if (!customName.trim() || !customCR.trim()) return;
+    setAiError('');
+    setAiLoading(true);
+    try {
+      const text = await generateCustomStatBlock(customName.trim(), customCR.trim(), customCtx);
+      setInput(text);
+      runParse(text);
+    } catch (e: any) {
+      setAiError(e.message ?? 'Custom generation failed.');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   const startEdit = (name) => { setEditField(name); setEditValue(parseStats?.fields.find(f => f.name === name)?.value ?? ''); };
   const saveEdit  = () => {
     if (!editField) return;
@@ -1295,6 +1313,12 @@ export default function StatBlockParser() {
                     <Icon size={12} />{label}
                   </button>
                 ))}
+                <button onClick={() => { setInputMode('custom'); setAiError(''); }}
+                  className={`flex items-center gap-1 px-3 py-1.5 rounded text-xs font-semibold transition ${
+                    inputMode === 'custom' ? 'bg-violet-600 text-white' : 'bg-slate-700 text-violet-400 hover:text-white'
+                  }`}>
+                  <Sparkles size={12} /> AI Custom
+                </button>
               </div>
 
               {/* Text mode */}
@@ -1429,6 +1453,52 @@ export default function StatBlockParser() {
                 </>
               )}
 
+              {/* AI Custom mode */}
+              {inputMode === 'custom' && (
+                <>
+                  <div className="space-y-3">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={customName}
+                        onChange={e => setCustomName(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && handleCustomGenerate()}
+                        placeholder="Creature name — e.g. Goblin, Ancient Red Dragon..."
+                        className="flex-1 bg-slate-700 text-white rounded p-3 text-sm border border-violet-400/30 focus:border-violet-400 focus:outline-none"
+                      />
+                      <div className="flex items-center gap-2 bg-slate-700 border border-violet-400/30 rounded px-3">
+                        <span className="text-slate-400 text-xs whitespace-nowrap">CR</span>
+                        <input
+                          type="text"
+                          value={customCR}
+                          onChange={e => setCustomCR(e.target.value)}
+                          placeholder="1"
+                          className="w-16 bg-transparent text-white text-sm focus:outline-none text-center"
+                        />
+                      </div>
+                    </div>
+                    <input
+                      type="text"
+                      value={customCtx}
+                      onChange={e => setCustomCtx(e.target.value)}
+                      placeholder="Optional: theme, traits, environment — e.g. undead, frost giant chieftain, fire breath"
+                      className="w-full bg-slate-700 text-white rounded p-3 text-sm border border-violet-400/30 focus:border-violet-400 focus:outline-none"
+                    />
+                    <button
+                      onClick={handleCustomGenerate}
+                      disabled={aiLoading || !customName.trim() || !customCR.trim()}
+                      className="w-full bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2"
+                    >
+                      {aiLoading
+                        ? <><Loader size={16} className="animate-spin" /> Generating...</>
+                        : <><Sparkles size={16} /> Generate Custom Stat Block</>}
+                    </button>
+                    <p className="text-slate-500 text-xs">Builds a stat block from scratch tuned to the exact CR — not pulled from any sourcebook. Try "Beefy Goblin CR 5" or "Weakened Dragon CR 8".</p>
+                  </div>
+                  {!hasApiKey() && <p className="text-yellow-400 text-xs mt-2">⚠ No API key — open Settings (⚙) to add one.</p>}
+                </>
+              )}
+
               {/* AI error */}
               {aiError && <div className="mt-3 text-red-300 text-xs bg-red-900/20 rounded px-3 py-2">{aiError}</div>}
 
@@ -1549,6 +1619,12 @@ export default function StatBlockParser() {
                     <button onClick={() => { navigator.clipboard.writeText(JSON.stringify(output, null, 2)); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
                       className="flex-1 bg-green-600/50 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2"><Copy size={16} /> {copied ? 'Copied!' : 'Copy JSON'}</button>
                   </div>
+                  {onSendToEncounter && (
+                    <button onClick={() => onSendToEncounter(output)}
+                      className="w-full mt-2 bg-amber-700/60 hover:bg-amber-700 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2">
+                      <Sword size={15} /> Add to Encounter Builder
+                    </button>
+                  )}
                 </div>
 
                 <div className="bg-slate-800 rounded-lg p-5 border border-amber-500/30">

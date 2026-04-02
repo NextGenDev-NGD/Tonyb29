@@ -143,6 +143,24 @@ ${description.trim()}`,
   return (msg.content[0] as any).text?.trim() ?? '';
 }
 
+// Generate a CUSTOM stat block for a creature at a specific CR — not canonical, fully invented.
+// Great for reskinned variants: a CR 6 Goblin Warchief, a weakened CR 10 Ancient Dragon, etc.
+export async function generateCustomStatBlock(name: string, cr: string, context?: string): Promise<string> {
+  const client = getClient();
+  const contextHint = context?.trim() ? ` Additional context: ${context.trim()}.` : '';
+
+  const msg = await client.messages.create({
+    model: MODEL,
+    max_tokens: 2048,
+    messages: [{
+      role: 'user',
+      content: `Create a fully custom D&D 5e stat block for a creature called "${name}" built to exactly Challenge Rating ${cr}.${contextHint} Do NOT use any canonical stat block — design this creature from scratch so that its HP, AC, attack bonus, damage, and save DC all match what is appropriate for CR ${cr} according to the Dungeon Master\'s Guide monster creation guidelines. Output ONLY the raw stat block text in standard format — name, size/type/alignment, Armor Class, Hit Points, Speed, ability scores, saving throws (if any), skills (if any), damage immunities/resistances/vulnerabilities (if any), senses, languages, Challenge rating, traits, actions, bonus actions (if any), reactions (if any), legendary actions (if any). Do not use markdown, bullet points, or any formatting beyond standard stat block plain text. Do not add any commentary before or after.`,
+    }],
+  });
+
+  return (msg.content[0] as any).text?.trim() ?? '';
+}
+
 // Extract a plain-text stat block from a URL (fetches page text, sends to Claude)
 export async function extractStatBlockFromUrl(url: string): Promise<string> {
   const client = getClient();

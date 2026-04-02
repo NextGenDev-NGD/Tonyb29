@@ -35,7 +35,7 @@ type BlockResult = {
 
 type GenProgress = { current: number; total: number; currentName: string }
 
-export default function BatchProcessor() {
+export default function BatchProcessor({ onSendToEncounter }: { onSendToEncounter?: (actors: any[]) => void } = {}) {
   const [mode, setMode]           = useState<'text' | 'names'>('text')
 
   // Text mode
@@ -419,6 +419,16 @@ export default function BatchProcessor() {
                   >
                     <Download size={13} /> FGU XML
                   </button>
+                  {onSendToEncounter && (
+                    <button
+                      onClick={() => onSendToEncounter(results.filter(r => r.actor && !r.errors.length).map(r => r.actor))}
+                      disabled={!parsedCount}
+                      className="flex items-center gap-1 bg-orange-800 hover:bg-orange-700 disabled:opacity-40 text-white text-xs font-semibold px-3 py-1.5 rounded transition"
+                      title="Send all parsed creatures to the Encounter Builder"
+                    >
+                      <Layers size={13} /> Send to Encounter
+                    </button>
+                  )}
                 </div>
               </div>
             )}
