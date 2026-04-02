@@ -1317,7 +1317,7 @@ export default function StatBlockParser({ onSendToEncounter }: { onSendToEncount
                   className={`flex items-center gap-1 px-3 py-1.5 rounded text-xs font-semibold transition ${
                     inputMode === 'custom' ? 'bg-violet-600 text-white' : 'bg-slate-700 text-violet-400 hover:text-white'
                   }`}>
-                  <Sparkles size={12} /> AI Custom
+                  <Sparkles size={12} /> AI
                 </button>
               </div>
 
