@@ -105,7 +105,7 @@ export default function App() {
 
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 24px', background: '#0f172a', borderBottom: '1px solid #334155' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 24px', background: '#0f172a', borderBottom: '1px solid #334155', position: 'sticky', top: 0, zIndex: 500 }}>
         {btn('parser',    'Stat Block Parser', '#7c3aed')}
         {btn('batch',     'Batch Processor',   '#0369a1')}
         {btn('encounter', 'Encounter Builder', '#b45309')}

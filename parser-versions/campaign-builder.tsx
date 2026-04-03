@@ -870,14 +870,16 @@ export default function CampaignBuilder() {
         <div style={{ ...S.cardAccent('#065f46'), background: '#052e1620', marginBottom: 24 }}>
           <div style={{ ...S.h2, color: '#86efac', marginBottom: 8 }}>How to Import into Foundry VTT</div>
           <ol style={{ color: '#94a3b8', fontSize: 13, margin: 0, paddingLeft: 20, lineHeight: 1.8 }}>
-            <li>Upload creature/NPC portrait images to Foundry's file manager under <code style={{ color: '#a78bfa' }}>worlds/eldoria/assets/</code></li>
+            <li>Upload creature/NPC portrait images to Foundry's file manager under <code style={{ color: '#a78bfa' }}>worlds/{preset.id}/assets/</code></li>
             <li>Open a Foundry macro (Ctrl+M), paste <strong>Step 1</strong>, and run it to create all folders</li>
             <li>Paste and run <strong>Step 2</strong> to create all journal entries with world lore</li>
             <li>Paste and run each <strong>Step 3</strong> continent macro to create NPC leader actors</li>
             <li>Paste and run <strong>Step 4</strong> to create all creature actors — uses "Copy Macro" button for full stat blocks, "Stubs only" for bio-only actors</li>
             <li>Use <strong>Step 5</strong> below to generate full NPC stat blocks via AI, then run the macro to update each leader actor</li>
           </ol>
-          <div style={{ ...S.muted, marginTop: 8 }}>⚠ Run steps in order — Steps 2–5 look up folders and actors by name from prior steps.</div>
+          <div style={{ color: '#4ade80', fontSize: 12, marginTop: 10 }}>✓ All macros are <strong>update-in-place safe</strong> — re-running any step will update existing actors/folders rather than creating duplicates.</div>
+          <div style={{ color: '#fcd34d', fontSize: 12, marginTop: 6 }}>⚠ Do not rename actors or folders in Foundry after importing — macros find them by name. Rename here in the Campaign Builder instead, then re-run the relevant step.</div>
+          <div style={{ ...S.muted, marginTop: 6 }}>Run steps in order — Steps 2–5 look up folders and actors by name created in prior steps.</div>
         </div>
 
         {/* Step 1 */}
@@ -1112,10 +1114,10 @@ export default function CampaignBuilder() {
         <div style={{ ...S.card, background: '#0f172a' }}>
           <div style={S.h3}>After Import</div>
           <ul style={{ color: '#64748b', fontSize: 12, margin: 0, paddingLeft: 16, lineHeight: 1.8 }}>
-            <li>Step 5 updates existing actor stubs in-place — bios, images, and folder placement are preserved</li>
-            <li>Images show as broken until uploaded to <code style={{ color: '#a78bfa' }}>worlds/eldoria/assets/</code></li>
-            <li>Creature stat blocks from the txt file can be pasted into the Batch Processor for Foundry-ready JSON</li>
-            <li>LUKAS journal is in Factions &amp; Organizations — keep it hidden from players</li>
+            <li>All macros are update-in-place safe — re-running creates only new entries, updates existing ones</li>
+            <li>To add a new NPC: add them here → Export JSON → re-run the Step 3 macro for their continent</li>
+            <li>Never rename actors or folders in Foundry — rename them here and re-run the macro instead</li>
+            <li>Images show as broken until uploaded to <code style={{ color: '#a78bfa' }}>worlds/{preset.id}/assets/</code></li>
             <li>Use Reroll on any NPC whose stat block doesn't match expectations</li>
           </ul>
         </div>
