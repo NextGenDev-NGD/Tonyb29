@@ -2,6 +2,34 @@
 
 ---
 
+## v4.4-alpha — Phase 15c / 17 Sprint 1 (2026-04-02)
+
+### Phase 15c — AI Campaign Generator
+- **✨ AI Generate** panel in Campaign Builder: paste a plain-language campaign description, Claude generates a full `CampaignPreset` JSON (continents, NPCs, creatures, journals, folder structure)
+- `generateCampaignPreset(description)` in `claude-api.ts` — max_tokens: 8192
+- `validatePreset(obj)` — runtime field validation before loading any AI-generated or imported preset
+- Markdown fence stripping on AI output for robustness
+- **Import JSON** — load a `.json` preset file exported from a previous session
+- **Export JSON** — download current preset as `[id]-campaign-preset.json`
+- `BLANK_PRESET` added to `campaign-eldoria-preset.ts` — minimal valid starting point
+- **Reset** button — discards localStorage edits, reloads original preset
+
+### Phase 17 Sprint 1 — Campaign Editor
+- **localStorage persistence** — preset auto-saves on every change (`dnd_campaign_preset` key); survives page refresh, browser close
+- Lazy `useState` init loads from localStorage first, falls back to `ELDORIA_PRESET`
+- **Add NPC** — "+ Add NPC" button per continent in sidebar opens full form modal
+- **Edit NPC** — hover any NPC in sidebar → pencil icon → pre-filled edit form
+- **Delete NPC** — hover → trash icon → confirm dialog
+- **Add Creature** — "+ Add Creature" button at bottom of creatures section
+- **Edit / Delete Creature** — same hover icon pattern
+- `EditModal` component handles both NPC and Creature with full field forms (name, title, race, class, CR, alignment, continent selector, bio, appearance, relationships, image path, optional stat block text for creatures)
+- `ActionTreeItem` — sidebar rows with hover-reveal pencil/trash icons
+- Image path auto-generated from name slug if left blank
+- **Sticky tab bar** — `position:sticky` so tabs remain visible while scrolling any tab
+- Campaign instructions updated: green update-in-place confirmation, yellow no-rename warning, explicit add-NPC workflow in footer
+
+---
+
 ## v4.3-alpha — Phase 15b (2026-04-02)
 
 ### Encounter Builder (Phase 15b)
@@ -126,4 +154,4 @@
 ---
 
 **Last updated:** 2026-04-02
-**Current stable build:** v4.3-alpha (Phase 15b)
+**Current stable build:** v4.4-alpha (Phase 17 Sprint 1)

@@ -2,7 +2,7 @@
 
 A browser-based toolkit that converts D&D 5e stat blocks into Foundry VTT / Fantasy Grounds actor JSON, builds homebrew classes, manages encounter collections, and imports full campaign worlds — all from a single-page app with no server required.
 
-**Current version:** v4.3-alpha (Phase 15b complete)
+**Current version:** v4.4-alpha (Phase 17 Sprint 1 complete)
 **Primary target:** Foundry VTT + dnd5e system v4.0+ / v5.x
 **Secondary target:** Fantasy Grounds Unity (2024 schema)
 **Scope:** D&D 5e only — intentionally single-system
@@ -85,9 +85,21 @@ Generate Foundry macros to import a full campaign world in 5 steps.
 4. **Creature Actors** — with full embedded stat blocks parsed client-side
 5. **AI NPC Stat Blocks** — Claude generates and patches all NPC actors in-place
 
-All macros are **update-in-place safe** — re-running updates existing actors, never duplicates.
+All macros are **update-in-place safe** — re-running updates existing actors, never duplicates. Never rename actors or folders in Foundry — rename in Campaign Builder and re-run the macro.
 
-**Architecture:** generic `CampaignPreset` interface; current preset is Eldoria: Echoes of the Aether (7 continents, 28 NPC leaders, 19 creatures). Blank campaign mode planned for Phase 15c.
+**Preset Management:**
+- **✨ AI Generate** — describe your campaign in plain language; Claude generates a full preset
+- **Import JSON** — load a previously exported `.json` preset file
+- **Export JSON** — download current campaign as a `.json` backup
+- **Reset** — discard edits and reload the original preset
+
+**Campaign Editor (Phase 17):**
+- Add, edit, and delete NPCs per continent via sidebar hover icons
+- Add, edit, and delete creatures via sidebar hover icons
+- All changes auto-save to localStorage — survive page refresh and browser close
+- Export JSON regularly as a manual backup
+
+**Architecture:** generic `CampaignPreset` interface; default preset is Eldoria: Echoes of the Aether (7 continents, 28 NPC leaders, 19 creatures).
 
 ---
 
@@ -152,8 +164,10 @@ netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=3000 conne
 | 14b/c | Campaign Builder AI NPCs + creature stat blocks | ✅ Complete |
 | 15 | Generic CampaignPreset architecture | ✅ Complete |
 | 15b | Encounter Builder + AI Custom CR mode + difficulty | ✅ Complete |
+| 15c | AI Campaign Generator + Import/Export JSON | ✅ Complete |
 | 16 | AI Class Assistant | ✅ Complete |
-| 15c | Blank campaign template + user campaign input | 🔜 Next |
+| 17 Sprint 1 | Campaign editor — localStorage, add/edit/delete NPCs & creatures | ✅ Complete |
+| 17 Sprint 2 | Campaign editor — add/edit/delete continents & journals | 🔜 Next |
 | — | UI/UX design pass + color scheme | 🔜 Planned |
 | — | Hosting + account/monetization system | 🔜 Planned |
 | — | Roll20 export | Deferred |
@@ -166,5 +180,5 @@ netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=3000 conne
 - Spells not in `SPELL_META` have blank school and level 0 with a named warning
 - URL import works on static HTML only (D&D Beyond / GMBinder are JS-rendered — not supported)
 - FGU export targets 2024 schema only
-- Campaign Builder ships with Eldoria preset only — blank campaign mode in Phase 15c
+- Campaign Builder editor covers NPCs and creatures — continent and journal editing coming in Phase 17 Sprint 2
 - API key stored in `localStorage` — will move to backend proxy for hosted version
