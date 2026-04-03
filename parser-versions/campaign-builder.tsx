@@ -1,14 +1,14 @@
 // campaign-builder.tsx — Generic Campaign Builder tab (Phase 15)
 // Loads a CampaignPreset — currently defaults to ELDORIA_PRESET.
 // Future: preset picker, blank campaign mode, AI-assisted campaign input.
-import { useState, useRef } from 'react'
-import { Copy, Check, ChevronDown, ChevronRight, BookOpen, Users, Swords, Map as MapIcon, Sparkles, RefreshCw, X, CheckCircle, XCircle, AlertTriangle } from 'lucide-react'
+import React, { useState, useRef, useEffect } from 'react'
+import { Copy, Check, ChevronDown, ChevronRight, BookOpen, Users, Swords, Map as MapIcon, Sparkles, RefreshCw, X, CheckCircle, XCircle, AlertTriangle, Download, Upload, FileJson, Pencil, Trash2, Plus } from 'lucide-react'
 import {
-  CampaignPreset, NpcDef,
+  CampaignPreset, NpcDef, CreatureDef,
   buildStep1Macro, buildStep2Macro, buildStep3Macro, buildStep4Macro,
 } from './campaign-builder-data'
-import { ELDORIA_PRESET } from './campaign-eldoria-preset'
-import { generateStatBlockFromName, hasApiKey } from './claude-api'
+import { ELDORIA_PRESET, BLANK_PRESET } from './campaign-eldoria-preset'
+import { generateStatBlockFromName, generateCampaignPreset, hasApiKey } from './claude-api'
 import { parseStatBlock } from './dnd-parser-v20-stable'
 
 // ─── TYPES ───────────────────────────────────────────────────
@@ -20,6 +20,13 @@ type NpcResult = {
   errors: string[]
   actor: any
 }
+
+type EditTarget =
+  | { type: 'npc'; item: NpcDef | null; continent?: string }
+  | { type: 'creature'; item: CreatureDef | null }
+  | null
+
+const LS_KEY = 'dnd_campaign_preset'
 
 // ─── STYLES ──────────────────────────────────────────────────
 
@@ -44,6 +51,37 @@ const S = {
     display: 'inline-block', background: color + '22', color, border: `1px solid ${color}55`,
     borderRadius: 4, padding: '1px 6px', fontSize: 11, marginRight: 4,
   }),
+}
+
+// ─── EDITABLE TREE ITEM ──────────────────────────────────────
+
+function ActionTreeItem({ label, dim, onEdit, onDelete }: {
+  label: string; dim?: string
+  onEdit?: () => void; onDelete?: () => void
+}) {
+  const [hover, setHover] = useState(false)
+  return (
+    <div
+      style={{ padding: '2px 4px 2px 0', fontSize: 11, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 4 }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+    >
+      <span style={{ color: '#94a3b8' }}>· {label}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 2, opacity: hover ? 1 : 0, transition: 'opacity 0.15s', flexShrink: 0 }}>
+        {dim && <span style={{ color: '#475569', fontSize: 10 }}>{dim}</span>}
+        {onEdit && (
+          <button onClick={onEdit} title="Edit" style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: '1px 3px', display: 'flex', alignItems: 'center' }}>
+            <Pencil size={9} />
+          </button>
+        )}
+        {onDelete && (
+          <button onClick={onDelete} title="Delete" style={{ background: 'none', border: 'none', color: '#991b1b', cursor: 'pointer', padding: '1px 3px', display: 'flex', alignItems: 'center' }}>
+            <Trash2 size={9} />
+          </button>
+        )}
+      </div>
+    </div>
+  )
 }
 
 // ─── SIDEBAR ─────────────────────────────────────────────────
@@ -71,7 +109,15 @@ function TreeItem({ label, dim }: { label: string; dim?: string }) {
   )
 }
 
-function Sidebar({ preset }: { preset: CampaignPreset }) {
+function Sidebar({ preset, onEditNpc, onDeleteNpc, onAddNpc, onEditCreature, onDeleteCreature, onAddCreature }: {
+  preset: CampaignPreset
+  onEditNpc?: (npc: NpcDef) => void
+  onDeleteNpc?: (name: string) => void
+  onAddNpc?: (continent: string) => void
+  onEditCreature?: (c: CreatureDef) => void
+  onDeleteCreature?: (name: string) => void
+  onAddCreature?: () => void
+}) {
   return (
     <div style={S.sidebar}>
       <div style={{ padding: '8px 16px 12px', borderBottom: '1px solid #334155', marginBottom: 8 }}>
@@ -95,16 +141,44 @@ function Sidebar({ preset }: { preset: CampaignPreset }) {
         {preset.continents.map(c => (
           <TreeSection key={c.name} label={c.name} icon={null}>
             {preset.npcs.filter(n => n.continent === c.name).map(n => (
-              <TreeItem key={n.name} label={n.name.split(' ').slice(-1)[0]} dim={`CR${n.cr}`} />
+              <ActionTreeItem
+                key={n.name}
+                label={n.name.split(' ').slice(-1)[0]}
+                dim={`CR${n.cr}`}
+                onEdit={onEditNpc ? () => onEditNpc(n) : undefined}
+                onDelete={onDeleteNpc ? () => onDeleteNpc(n.name) : undefined}
+              />
             ))}
+            {onAddNpc && (
+              <button
+                onClick={() => onAddNpc(c.name)}
+                style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'none', border: 'none', color: '#475569', cursor: 'pointer', fontSize: 10, padding: '3px 0 3px 4px', width: '100%' }}
+              >
+                <Plus size={9} /> Add NPC
+              </button>
+            )}
           </TreeSection>
         ))}
       </TreeSection>
 
       <TreeSection label="Creatures" icon={<Swords size={12} />}>
         {preset.creatures.map(c => (
-          <TreeItem key={c.name} label={c.name} dim={`CR${c.cr}`} />
+          <ActionTreeItem
+            key={c.name}
+            label={c.name}
+            dim={`CR${c.cr}`}
+            onEdit={onEditCreature ? () => onEditCreature(c) : undefined}
+            onDelete={onDeleteCreature ? () => onDeleteCreature(c.name) : undefined}
+          />
         ))}
+        {onAddCreature && (
+          <button
+            onClick={onAddCreature}
+            style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'none', border: 'none', color: '#475569', cursor: 'pointer', fontSize: 10, padding: '3px 0 3px 4px', width: '100%' }}
+          >
+            <Plus size={9} /> Add Creature
+          </button>
+        )}
       </TreeSection>
 
       <TreeSection label="Journals" icon={<MapIcon size={12} />}>
@@ -273,9 +347,292 @@ function buildStep5Macro(results: NpcResult[]): string {
 
 // ─── MAIN COMPONENT ──────────────────────────────────────────
 
+// ─── EDIT MODAL ──────────────────────────────────────────────
+
+function EditModal({ target, preset, onSave, onClose }: {
+  target: NonNullable<EditTarget>
+  preset: CampaignPreset
+  onSave: (type: 'npc' | 'creature', item: NpcDef | CreatureDef, originalName?: string) => void
+  onClose: () => void
+}) {
+  const isNpc = target.type === 'npc'
+  const existingNpc = isNpc ? target.item as NpcDef | null : null
+  const existingCreature = !isNpc ? target.item as CreatureDef | null : null
+
+  const [name, setName]             = useState(existingNpc?.name ?? '')
+  const [title, setTitle]           = useState(existingNpc?.title ?? '')
+  const [race, setRace]             = useState(existingNpc?.race ?? '')
+  const [cls, setCls]               = useState(existingNpc?.cls ?? '')
+  const [alignment, setAlignment]   = useState(existingNpc?.alignment ?? 'neutral good')
+  const [cr, setCr]                 = useState(String(existingNpc?.cr ?? 1))
+  const [continent, setContinent]   = useState(
+    existingNpc?.continent ?? (isNpc && (target as any).continent) ?? preset.continents[0]?.name ?? ''
+  )
+  const [bio, setBio]               = useState(existingNpc?.bio ?? '')
+  const [appearance, setAppearance] = useState(existingNpc?.appearance ?? '')
+  const [relationships, setRelationships] = useState(existingNpc?.relationships ?? '')
+  const [img, setImg]               = useState(existingNpc?.img ?? '')
+
+  const [cName, setCName]           = useState(existingCreature?.name ?? '')
+  const [cCr, setCCr]               = useState(String(existingCreature?.cr ?? 1))
+  const [cType, setCType]           = useState(existingCreature?.creatureType ?? 'beast')
+  const [cAlign, setCAlign]         = useState(existingCreature?.alignment ?? 'unaligned')
+  const [cBio, setCBio]             = useState(existingCreature?.bio ?? '')
+  const [cImg, setCImg]             = useState(existingCreature?.img ?? '')
+  const [cStat, setCStat]           = useState(existingCreature?.statText ?? '')
+
+  const originalName = target.item?.name
+  const ALIGNMENTS   = ['lawful good','neutral good','chaotic good','lawful neutral','true neutral','chaotic neutral','lawful evil','neutral evil','chaotic evil','unaligned']
+
+  const F = {
+    field:  { width: '100%', background: '#0f172a', color: '#e2e8f0', border: '1px solid #334155', borderRadius: 6, padding: '7px 10px', fontSize: 13, fontFamily: 'monospace', boxSizing: 'border-box' as const },
+    label:  { color: '#94a3b8', fontSize: 12, display: 'block' as const, marginBottom: 4 },
+    group:  { marginBottom: 12 },
+    grid2:  { display: 'grid' as const, gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 },
+    grid3:  { display: 'grid' as const, gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 12 },
+  }
+
+  const autoImg = (n: string) => `worlds/${preset.id}/assets/${n.toLowerCase().replace(/\s+/g, '-')}.png`
+
+  const handleSave = () => {
+    if (isNpc) {
+      if (!name.trim()) return
+      const npc: NpcDef = {
+        name: name.trim(), title: title.trim(), race: race.trim(), cls: cls.trim(),
+        alignment, cr: parseFloat(cr) || 1, creatureType: 'humanoid', continent,
+        bio: bio.trim(), appearance: appearance.trim(), relationships: relationships.trim(),
+        img: img.trim() || autoImg(name.trim()),
+      }
+      onSave('npc', npc, originalName)
+    } else {
+      if (!cName.trim()) return
+      const creature: CreatureDef = {
+        name: cName.trim(), cr: parseFloat(cCr) || 1, creatureType: cType.trim(),
+        alignment: cAlign, bio: cBio.trim(),
+        img: cImg.trim() || autoImg(cName.trim()),
+        ...(cStat.trim() ? { statText: cStat.trim() } : {}),
+      }
+      onSave('creature', creature, originalName)
+    }
+  }
+
+  const modalTitle = isNpc ? (target.item ? 'Edit NPC' : 'Add NPC') : (target.item ? 'Edit Creature' : 'Add Creature')
+  const canSave = isNpc ? !!name.trim() : !!cName.trim()
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: '#00000099', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 10, padding: 24, width: '100%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto' as const }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <span style={{ color: '#f1f5f9', fontWeight: 700, fontSize: 16 }}>{modalTitle}</span>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: 4 }}><X size={18} /></button>
+        </div>
+
+        {isNpc ? (
+          <>
+            <div style={F.grid2}>
+              <div style={F.group}><span style={F.label}>Name *</span><input style={F.field} value={name} onChange={e => setName(e.target.value)} placeholder="Full name" /></div>
+              <div style={F.group}><span style={F.label}>Title</span><input style={F.field} value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. High Priest" /></div>
+            </div>
+            <div style={F.grid3}>
+              <div style={F.group}><span style={F.label}>Race</span><input style={F.field} value={race} onChange={e => setRace(e.target.value)} placeholder="Human" /></div>
+              <div style={F.group}><span style={F.label}>Class</span><input style={F.field} value={cls} onChange={e => setCls(e.target.value)} placeholder="Wizard" /></div>
+              <div style={F.group}><span style={F.label}>CR</span><input style={F.field} type="number" min="0" max="30" step="0.125" value={cr} onChange={e => setCr(e.target.value)} /></div>
+            </div>
+            <div style={F.grid2}>
+              <div style={F.group}>
+                <span style={F.label}>Alignment</span>
+                <select style={F.field} value={alignment} onChange={e => setAlignment(e.target.value)}>
+                  {ALIGNMENTS.map(a => <option key={a} value={a}>{a}</option>)}
+                </select>
+              </div>
+              <div style={F.group}>
+                <span style={F.label}>Continent</span>
+                <select style={F.field} value={continent} onChange={e => setContinent(e.target.value)}>
+                  {preset.continents.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
+                </select>
+              </div>
+            </div>
+            <div style={F.group}><span style={F.label}>Bio (HTML, e.g. &lt;p&gt;...&lt;/p&gt;)</span><textarea style={{ ...F.field, resize: 'vertical' as const }} rows={3} value={bio} onChange={e => setBio(e.target.value)} /></div>
+            <div style={F.group}><span style={F.label}>Appearance (1 sentence)</span><input style={F.field} value={appearance} onChange={e => setAppearance(e.target.value)} /></div>
+            <div style={F.group}><span style={F.label}>Relationships (1 sentence)</span><input style={F.field} value={relationships} onChange={e => setRelationships(e.target.value)} /></div>
+            <div style={{ ...F.group, marginBottom: 20 }}><span style={F.label}>Image path (blank = auto)</span><input style={F.field} value={img} onChange={e => setImg(e.target.value)} placeholder={autoImg(name || 'name')} /></div>
+          </>
+        ) : (
+          <>
+            <div style={{ display: 'grid' as const, gridTemplateColumns: '2fr 1fr', gap: 10, marginBottom: 12 }}>
+              <div style={F.group}><span style={F.label}>Name *</span><input style={F.field} value={cName} onChange={e => setCName(e.target.value)} /></div>
+              <div style={F.group}><span style={F.label}>CR</span><input style={F.field} type="number" min="0" max="30" step="0.125" value={cCr} onChange={e => setCCr(e.target.value)} /></div>
+            </div>
+            <div style={F.grid2}>
+              <div style={F.group}><span style={F.label}>Creature Type</span><input style={F.field} value={cType} onChange={e => setCType(e.target.value)} placeholder="beast" /></div>
+              <div style={F.group}>
+                <span style={F.label}>Alignment</span>
+                <select style={F.field} value={cAlign} onChange={e => setCAlign(e.target.value)}>
+                  {ALIGNMENTS.map(a => <option key={a} value={a}>{a}</option>)}
+                </select>
+              </div>
+            </div>
+            <div style={F.group}><span style={F.label}>Bio</span><textarea style={{ ...F.field, resize: 'vertical' as const }} rows={3} value={cBio} onChange={e => setCBio(e.target.value)} /></div>
+            <div style={F.group}><span style={F.label}>Image path (blank = auto)</span><input style={F.field} value={cImg} onChange={e => setCImg(e.target.value)} placeholder={autoImg(cName || 'name')} /></div>
+            <div style={{ ...F.group, marginBottom: 20 }}>
+              <span style={F.label}>Stat Block text (optional — enables full actor in Step 4)</span>
+              <textarea style={{ ...F.field, resize: 'vertical' as const }} rows={6} value={cStat} onChange={e => setCStat(e.target.value)} placeholder="Paste raw D&D 5e stat block text here..." />
+            </div>
+          </>
+        )}
+
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+          <button onClick={onClose} style={{ background: 'none', border: '1px solid #334155', color: '#94a3b8', borderRadius: 6, padding: '7px 16px', cursor: 'pointer', fontSize: 13 }}>
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={!canSave}
+            style={{ background: '#7c3aed', color: '#fff', border: 'none', borderRadius: 6, padding: '7px 20px', cursor: canSave ? 'pointer' : 'not-allowed', fontSize: 13, fontWeight: 600, opacity: canSave ? 1 : 0.5 }}
+          >
+            {target.item ? 'Save Changes' : 'Add'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── PRESET VALIDATION ───────────────────────────────────────
+
+function validatePreset(obj: any): string | null {
+  const req = ['id','name','description','rootJournalFolderName','creatureFolderName',
+               'journalFolders','actorFolders','npcs','creatures','continents','journals']
+  for (const k of req) if (!(k in obj)) return `Missing required field: "${k}"`
+  if (!Array.isArray(obj.npcs))      return '"npcs" must be an array'
+  if (!Array.isArray(obj.creatures)) return '"creatures" must be an array'
+  if (!Array.isArray(obj.continents))return '"continents" must be an array'
+  if (!Array.isArray(obj.journals))  return '"journals" must be an array'
+  return null
+}
+
+// ─── MAIN COMPONENT ──────────────────────────────────────────
+
 export default function CampaignBuilder() {
-  const [preset] = useState<CampaignPreset>(ELDORIA_PRESET)
+  const [preset, setPreset] = useState<CampaignPreset>(() => {
+    try {
+      const saved = localStorage.getItem(LS_KEY)
+      if (saved) {
+        const obj = JSON.parse(saved)
+        if (validatePreset(obj) === null) return obj as CampaignPreset
+      }
+    } catch {}
+    return ELDORIA_PRESET
+  })
   const [copied, setCopied] = useState<string | null>(null)
+
+  // Auto-save to localStorage whenever preset changes
+  useEffect(() => {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(preset)) } catch {}
+  }, [preset])
+
+  // Edit modal
+  const [editTarget, setEditTarget] = useState<EditTarget>(null)
+
+  const handleSaveNpc = (npc: NpcDef, originalName?: string) => {
+    setPreset(p => ({
+      ...p,
+      npcs: originalName
+        ? p.npcs.map(n => n.name === originalName ? npc : n)
+        : [...p.npcs, npc],
+    }))
+    setEditTarget(null)
+  }
+
+  const handleDeleteNpc = (name: string) => {
+    if (!confirm(`Delete NPC "${name}"? This cannot be undone.`)) return
+    setPreset(p => ({ ...p, npcs: p.npcs.filter(n => n.name !== name) }))
+    setNpcResults(prev => prev.filter(r => r.name !== name))
+  }
+
+  const handleSaveCreature = (creature: CreatureDef, originalName?: string) => {
+    setPreset(p => ({
+      ...p,
+      creatures: originalName
+        ? p.creatures.map(c => c.name === originalName ? creature : c)
+        : [...p.creatures, creature],
+    }))
+    setEditTarget(null)
+  }
+
+  const handleDeleteCreature = (name: string) => {
+    if (!confirm(`Delete creature "${name}"? This cannot be undone.`)) return
+    setPreset(p => ({ ...p, creatures: p.creatures.filter(c => c.name !== name) }))
+  }
+
+  const handleModalSave = (type: 'npc' | 'creature', item: NpcDef | CreatureDef, originalName?: string) => {
+    if (type === 'npc') handleSaveNpc(item as NpcDef, originalName)
+    else handleSaveCreature(item as CreatureDef, originalName)
+  }
+
+  // Preset management
+  const [aiOpen, setAiOpen]           = useState(false)
+  const [aiDesc, setAiDesc]           = useState('')
+  const [aiGenerating, setAiGenerating] = useState(false)
+  const [aiError, setAiError]         = useState('')
+  const [importError, setImportError] = useState('')
+  const fileInputRef                  = useRef<HTMLInputElement>(null)
+
+  const loadPreset = (p: CampaignPreset) => {
+    setPreset(p)
+    setNpcResults([])
+    setCopied(null)
+    setAiOpen(false)
+    setAiError('')
+    setImportError('')
+  }
+
+  const handleAiGenerate = async () => {
+    if (!aiDesc.trim()) return
+    setAiGenerating(true)
+    setAiError('')
+    try {
+      const json = await generateCampaignPreset(aiDesc)
+      // Strip markdown fences if Claude wrapped it anyway
+      const clean = json.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
+      const obj = JSON.parse(clean)
+      const err = validatePreset(obj)
+      if (err) { setAiError(`Generated JSON is invalid: ${err}`); return }
+      loadPreset(obj as CampaignPreset)
+    } catch (e: any) {
+      setAiError(e.message?.includes('JSON') ? 'Claude returned malformed JSON — try rephrasing your description.' : (e.message ?? 'Generation failed.'))
+    } finally {
+      setAiGenerating(false)
+    }
+  }
+
+  const handleExport = () => {
+    const blob = new Blob([JSON.stringify(preset, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${preset.id}-campaign-preset.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      try {
+        const obj = JSON.parse(reader.result as string)
+        const err = validatePreset(obj)
+        if (err) { setImportError(err); return }
+        loadPreset(obj as CampaignPreset)
+      } catch {
+        setImportError('Could not parse file — must be valid JSON.')
+      }
+    }
+    reader.readAsText(file)
+    e.target.value = ''
+  }
 
   // Step 5 — NPC stat block generation
   const [npcResults, setNpcResults]     = useState<NpcResult[]>([])
@@ -386,7 +743,19 @@ export default function CampaignBuilder() {
 
   return (
     <div style={S.page}>
-      <Sidebar preset={preset} />
+      <Sidebar
+        preset={preset}
+        onEditNpc={npc => setEditTarget({ type: 'npc', item: npc })}
+        onDeleteNpc={handleDeleteNpc}
+        onAddNpc={continent => setEditTarget({ type: 'npc', item: null, continent })}
+        onEditCreature={c => setEditTarget({ type: 'creature', item: c })}
+        onDeleteCreature={handleDeleteCreature}
+        onAddCreature={() => setEditTarget({ type: 'creature', item: null })}
+      />
+
+      {editTarget && (
+        <EditModal target={editTarget} preset={preset} onSave={handleModalSave} onClose={() => setEditTarget(null)} />
+      )}
 
       <div style={S.main}>
         {/* Campaign header banner */}
@@ -401,6 +770,100 @@ export default function CampaignBuilder() {
             <span><span style={{ color: '#94a3b8', fontWeight: 600 }}>{preset.continents.length}</span> Continents</span>
             <span><span style={{ color: '#94a3b8', fontWeight: 600 }}>{preset.journals.length}</span> Journals</span>
           </div>
+        </div>
+
+        {/* Preset Management Panel */}
+        <div style={{ ...S.card, marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={S.h2}>Campaign Preset</span>
+              <span style={S.tag('#a78bfa')}>{preset.id}</span>
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {preset.id !== 'eldoria' && (
+                <button
+                  onClick={() => loadPreset(ELDORIA_PRESET)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#1e3a5f', color: '#7dd3fc', border: '1px solid #1d4ed8', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12 }}
+                >
+                  Load Demo (Eldoria)
+                </button>
+              )}
+              <button
+                onClick={() => { if (confirm('Reset campaign to defaults? All unsaved edits will be lost.')) loadPreset(preset.id === 'eldoria' ? ELDORIA_PRESET : BLANK_PRESET) }}
+                style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#0f172a', color: '#64748b', border: '1px solid #1e293b', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12 }}
+                title="Discard all edits and reload the original preset"
+              >
+                Reset
+              </button>
+              <button
+                onClick={() => { setAiOpen(o => !o); setAiError('') }}
+                style={{ display: 'flex', alignItems: 'center', gap: 5, background: aiOpen ? '#4c1d95' : '#2e1065', color: '#c4b5fd', border: '1px solid #6d28d9', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12 }}
+              >
+                <Sparkles size={12} />
+                {aiOpen ? 'Close AI Generator' : 'AI Generate'}
+              </button>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#0f172a', color: '#94a3b8', border: '1px solid #334155', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12 }}
+              >
+                <Upload size={12} />
+                Import JSON
+              </button>
+              <button
+                onClick={handleExport}
+                style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#0f172a', color: '#94a3b8', border: '1px solid #334155', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12 }}
+              >
+                <Download size={12} />
+                Export JSON
+              </button>
+              <input ref={fileInputRef} type="file" accept=".json" style={{ display: 'none' }} onChange={handleImportFile} />
+            </div>
+          </div>
+
+          {importError && (
+            <div style={{ color: '#f87171', background: '#7f1d1d20', border: '1px solid #7f1d1d', borderRadius: 6, padding: '7px 12px', fontSize: 12, marginTop: 10 }}>
+              ✗ {importError}
+            </div>
+          )}
+
+          {aiOpen && (
+            <div style={{ borderTop: '1px solid #334155', paddingTop: 16, marginTop: 14 }}>
+              <div style={{ ...S.muted, marginBottom: 10 }}>
+                Describe your campaign setting — genre, tone, geography, factions, key themes. Claude generates a complete preset with continents, NPCs, creatures, and journals.
+              </div>
+              <textarea
+                value={aiDesc}
+                onChange={e => setAiDesc(e.target.value)}
+                placeholder="e.g. A grimdark steampunk world with three warring city-states, clockwork constructs as enemies, and noble houses vying for magical fuel sources..."
+                rows={5}
+                style={{ width: '100%', background: '#0f172a', color: '#e2e8f0', border: '1px solid #334155', borderRadius: 6, padding: '8px 12px', fontSize: 13, fontFamily: 'monospace', resize: 'vertical', boxSizing: 'border-box' as const }}
+              />
+              {aiError && (
+                <div style={{ color: '#f87171', background: '#7f1d1d20', border: '1px solid #7f1d1d', borderRadius: 6, padding: '7px 12px', fontSize: 12, marginTop: 8 }}>
+                  ✗ {aiError}
+                </div>
+              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10 }}>
+                <button
+                  onClick={handleAiGenerate}
+                  disabled={aiGenerating || !aiDesc.trim() || !hasApiKey()}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    background: aiGenerating ? '#4c1d95' : '#7c3aed',
+                    color: '#fff', border: 'none', borderRadius: 6,
+                    padding: '7px 18px', cursor: aiGenerating ? 'not-allowed' : 'pointer',
+                    fontSize: 13, fontWeight: 600, opacity: (!aiDesc.trim() || !hasApiKey()) ? 0.5 : 1,
+                  }}
+                >
+                  <Sparkles size={14} />
+                  {aiGenerating ? 'Generating…' : 'Generate Campaign'}
+                </button>
+                {!hasApiKey() && (
+                  <span style={{ color: '#fcd34d', fontSize: 12 }}>⚠ API key required — open Settings (⚙)</span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Instructions */}
