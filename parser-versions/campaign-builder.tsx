@@ -534,7 +534,7 @@ function EditModal({ target, preset, onSave, onClose }: {
             <div style={F.group}><span style={F.label}>Relationships (1 sentence)</span><input style={F.field} value={relationships} onChange={e => setRelationships(e.target.value)} /></div>
             <div style={{ ...F.group, marginBottom: 20 }}><span style={F.label}>Image path (blank = auto)</span><input style={F.field} value={img} onChange={e => setImg(e.target.value)} placeholder={autoImg(name || 'name')} /></div>
           </>
-        ) : (
+        ) : isCreature ? (
           <>
             <div style={{ display: 'grid' as const, gridTemplateColumns: '2fr 1fr', gap: 10, marginBottom: 12 }}>
               <div style={F.group}><span style={F.label}>Name *</span><input style={F.field} value={cName} onChange={e => setCName(e.target.value)} /></div>
