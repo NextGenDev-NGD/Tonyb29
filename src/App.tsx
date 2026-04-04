@@ -5,10 +5,11 @@ import ClassImporter from '../parser-versions/class-importer'
 import BatchProcessor from '../parser-versions/batch-processor'
 import EncounterBuilder, { Encounter, EncounterCreature } from '../parser-versions/encounter-builder'
 import CampaignBuilder from '../parser-versions/campaign-builder'
+import MagicItemCreator from '../parser-versions/magic-item-creator'
 import SettingsModal from '../parser-versions/settings-modal'
 import { hasApiKey } from '../parser-versions/claude-api'
 
-type Tab = 'parser' | 'batch' | 'encounter' | 'class' | 'campaign'
+type Tab = 'parser' | 'batch' | 'encounter' | 'class' | 'campaign' | 'items'
 
 function uid() { return Math.random().toString(36).slice(2, 10) }
 
@@ -111,6 +112,7 @@ export default function App() {
         {btn('encounter', 'Encounter Builder', '#b45309')}
         {btn('class',     'Class Importer',    '#4338ca')}
         {btn('campaign',  'Campaign Builder',  '#065f46')}
+        {btn('items',     '✦ Magic Items',     '#be185d')}
         <div style={{ marginLeft: 'auto' }}>
           <button
             onClick={() => setShowSettings(true)}
@@ -154,6 +156,9 @@ export default function App() {
       </div>
       <div style={show('campaign')}>
         <CampaignBuilder />
+      </div>
+      <div style={show('items')}>
+        <MagicItemCreator />
       </div>
 
       {showSettings && (

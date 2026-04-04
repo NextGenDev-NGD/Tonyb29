@@ -74,6 +74,77 @@ export async function extractStatBlockFromImage(dataUrl: string): Promise<string
   return (msg.content[0] as any).text?.trim() ?? '';
 }
 
+// Generate a full CampaignPreset JSON object from a plain-language campaign description
+export async function generateCampaignPreset(description: string): Promise<string> {
+  const client = getClient();
+
+  const msg = await client.messages.create({
+    model: MODEL,
+    max_tokens: 8192,
+    messages: [{
+      role: 'user',
+      content: `You are a D&D 5e campaign designer. Generate a complete CampaignPreset JSON object for the campaign described below.
+
+OUTPUT: A single valid JSON object. No markdown fences, no commentary, no explanation — only raw JSON.
+
+SCHEMA (all fields required unless marked optional):
+{
+  "id": string,                    // lowercase slug, hyphens only
+  "name": string,                  // display name
+  "description": string,           // one-liner: genre · N continents · N NPCs
+  "rootJournalFolderName": string, // top-level journal folder name
+  "creatureFolderName": string,    // actor folder name for creatures
+
+  "journalFolders": [{ "name": string, "type": "JournalEntry", "parentName": string (optional), "color": string }],
+  "actorFolders":  [{ "name": string, "type": "Actor",         "parentName": string (optional), "color": string }],
+
+  "continents": [{
+    "name": string, "theme": string, "geography": string,
+    "culture": string, "locations": string[]
+  }],
+
+  "npcs": [{
+    "name": string, "title": string, "race": string, "cls": string,
+    "alignment": string, "cr": number, "creatureType": "humanoid",
+    "continent": string,      // must exactly match a continent name
+    "bio": string,            // <p>2-3 sentences HTML</p>
+    "appearance": string,     // 1 sentence plain text
+    "relationships": string,  // 1 sentence plain text
+    "img": string             // "worlds/[id]/assets/[name-slug].png"
+  }],
+
+  "creatures": [{
+    "name": string, "cr": number, "creatureType": string,
+    "alignment": string, "bio": string,
+    "img": string             // "worlds/[id]/assets/[name-slug].png"
+  }],
+
+  "journals": [{
+    "name": string,
+    "folder": string,         // must match a journalFolder name
+    "pages": [{ "name": string, "html": string }]
+  }]
+}
+
+RULES:
+- 2-4 continents/regions, each with 3-5 locations
+- 2-3 NPC leaders per continent (rulers, faction heads, key figures)
+- 4-8 unique creatures fitting the setting
+- Journals: one "World Overview" + one per continent (each with 2-3 pages)
+- NPC cr: 1-10 range typical; alignment in "lawful good" format
+- Use thematic hex colors for folders (e.g. "#4a1d96" for arcane, "#1e3a5f" for ocean)
+- img paths: "worlds/[id]/assets/[name-slug].png"
+- Keep bio/html concise — 2-4 sentences per field
+- Journal html: use <p> and <h2> tags, 3-5 sentences per page
+
+CAMPAIGN DESCRIPTION:
+${description.trim()}`,
+    }],
+  });
+
+  return (msg.content[0] as any).text?.trim() ?? '';
+}
+
 // Convert freeform class description into the Class Importer template format
 export async function generateClassTemplate(description: string): Promise<string> {
   const client = getClient();
@@ -159,6 +230,88 @@ export async function generateCustomStatBlock(name: string, cr: string, context?
   });
 
   return (msg.content[0] as any).text?.trim() ?? '';
+}
+
+// Generate a structured magic item spec JSON from a description or hints
+export async function generateMagicItemSpec(
+  description: string,
+  hints?: {
+    name?: string
+    itemType?: string
+    baseWeapon?: string
+    baseArmor?: string
+    consumableType?: string
+    rarity?: string
+    attunement?: string
+    charges?: number | null
+    recharge?: string | null
+  }
+): Promise<string> {
+  const client = getClient()
+  const hintLines = hints ? [
+    hints.name        ? `- Name hint: "${hints.name}"` : '',
+    hints.itemType    ? `- Item type: ${hints.itemType}` : '',
+    hints.baseWeapon  ? `- Base weapon: ${hints.baseWeapon}` : '',
+    hints.baseArmor   ? `- Base armor: ${hints.baseArmor}` : '',
+    hints.consumableType ? `- Consumable type: ${hints.consumableType}` : '',
+    hints.rarity      ? `- Rarity: ${hints.rarity}` : '',
+    hints.attunement  ? `- Attunement: ${hints.attunement}` : '',
+    hints.charges != null ? `- Charges: ${hints.charges}` : '',
+    hints.recharge    ? `- Recharge: ${hints.recharge}` : '',
+  ].filter(Boolean).join('\n') : ''
+
+  const msg = await client.messages.create({
+    model: MODEL,
+    max_tokens: 1024,
+    messages: [{
+      role: 'user',
+      content: `You are a D&D 5e magic item designer. Generate a magic item specification as a single JSON object. No markdown fences, no commentary — raw JSON only.
+
+SCHEMA (include all fields; use null for unused optional fields):
+{
+  "name": string,
+  "itemType": "weapon" | "armor" | "wondrous" | "consumable",
+  "rarity": "" | "common" | "uncommon" | "rare" | "veryRare" | "legendary" | "artifact",
+  "attunement": "" | "optional" | "required",
+  "description": string,
+
+  "baseWeapon": string | null,
+  "attackBonus": number | null,
+  "extraDamageParts": [{"number": number, "denomination": number, "types": [string]}] | null,
+
+  "baseArmor": string | null,
+  "magicalBonus": number | null,
+
+  "consumableType": string | null,
+  "healingFormula": {"number": number, "denomination": number, "bonus": string} | null,
+
+  "charges": number | null,
+  "recharge": "dawn" | "dusk" | "lr" | "sr" | "formula" | null,
+  "rechargeFormula": string | null,
+
+  "extraProperties": string[]
+}
+
+RULES:
+- rarity: use "veryRare" (camelCase) not "very rare"
+- attunement: "required" for rare+ magic weapons/armor, "optional" for utility wondrous items, "" for common/simple
+- Do NOT include "mgc" in extraProperties — it is added automatically
+- attackBonus: 0 if no attack bonus, 1/2/3 for +1/+2/+3 weapons
+- extraDamageParts: [] if no extra damage
+- description: 2–3 sentence flavor + mechanical summary as HTML with <p> tags
+- baseWeapon must be one of: longsword, shortsword, greatsword, greataxe, handaxe, dagger, rapier, mace, quarterstaff, warhammer, battleaxe, spear, flail, glaive, halberd, maul, whip, longbow, shortbow, handcrossbow, heavycrossbow, lighthammer, trident
+- baseArmor must be one of: leather, studdedleather, hide, chainshirt, scalemail, breastplate, halfplate, ringmail, chainmail, splint, plate, shield
+- healingFormula: only for healing potions/items; null otherwise
+- charges: null for passive unlimited-use items
+- extraProperties: weapon properties beyond mgc — e.g. ["fin"] for finesse, ["ada"] for adamantine
+
+${hintLines ? `USER HINTS (respect these unless they conflict with good design):\n${hintLines}\n` : ''}
+ITEM DESCRIPTION:
+${description.trim()}`,
+    }],
+  })
+
+  return (msg.content[0] as any).text?.trim() ?? ''
 }
 
 // Extract a plain-text stat block from a URL (fetches page text, sends to Claude)

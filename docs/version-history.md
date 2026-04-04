@@ -2,6 +2,29 @@
 
 ---
 
+## v4.6-alpha — Phase 18 (2026-04-03)
+
+### Magic Item Creator — Tab 6
+- New **✦ Magic Items** tab (rose/pink color) added to main nav
+- **Three input modes:**
+  - **Text** — paste any item description; Claude extracts structured spec and builds JSON
+  - **✨ AI Generate** — fill hints (name, type, rarity, attunement, charges) + describe the idea; Claude designs the full item
+  - **Builder** — structured form with direct field control; no API call, instant output
+- **Weapon support:** 23 base weapons (longsword → heavy crossbow); attack bonus (+0/+1/+2/+3); extra damage parts (add/remove rows per damage type); all intrinsic properties auto-applied (finesse, reach, thrown, versatile, heavy, two-handed, etc.); ranged weapons get range 80/320 ft + `rwak` attack type
+- **Armor support:** 13 base armors (leather → plate + shield); magical bonus (+0/+1/+2/+3) maps to `armor.magicalBonus`; stealth disadvantage flag auto-applied for applicable armors
+- **Wondrous items:** rings, cloaks, amulets, boots, misc — all use `type: "equipment"` + `type.value: "trinket"`
+- **Consumables:** potion/scroll/wand/rod/ammunition/poison with optional healing activity (configurable dice + bonus); `autoDestroy: true` on single-use items
+- **Charges + recharge:** dawn, dusk, long rest, short rest, custom formula (1d6+N)
+- **Attunement:** none / optional / required (string format per v4+ schema)
+- **Rarity:** all rarities including `veryRare` (camelCase)
+- **Output panel:** item preview with rarity badge, JSON display, Foundry macro
+  - Macro: creates item in "Magic Items" folder (auto-created), update-in-place safe
+  - Optional actor name field → macro gives item directly to named PC actor instead
+- `generateMagicItemSpec()` added to `claude-api.ts` — takes description + optional hints, returns structured spec JSON
+- ID generation uses same djb2 hash as parser/class-importer — consistent 16-char IDs
+
+---
+
 ## v4.5-alpha — Phase 17 Sprint 2 (2026-04-03)
 
 ### Campaign Editor — Continents & Journals
@@ -167,4 +190,4 @@
 ---
 
 **Last updated:** 2026-04-03
-**Current stable build:** v4.5-alpha (Phase 17 Sprint 2)
+**Current stable build:** v4.6-alpha (Phase 18)

@@ -2,7 +2,7 @@
 
 A browser-based toolkit that converts D&D 5e stat blocks into Foundry VTT / Fantasy Grounds actor JSON, builds homebrew classes, manages encounter collections, and imports full campaign worlds — all from a single-page app with no server required.
 
-**Current version:** v4.5-alpha (Phase 17 Sprint 2 complete)
+**Current version:** v4.6-alpha (Phase 18 complete)
 **Primary target:** Foundry VTT + dnd5e system v4.0+ / v5.x
 **Secondary target:** Fantasy Grounds Unity (2024 schema)
 **Scope:** D&D 5e only — intentionally single-system
@@ -76,6 +76,28 @@ Paste a structured class template and get a self-contained Foundry macro that cr
 
 ---
 
+### Tab 6 — Magic Item Creator
+Create Foundry-ready magic item JSON in three modes.
+
+**Input modes:**
+- **Text** — paste any item description (sourcebook, homebrew, freeform); Claude extracts all fields
+- **✨ AI Generate** — describe your idea + pick base type/rarity/attunement; Claude designs the full item
+- **Builder** — structured form with direct field control; no API call needed
+
+**What gets built:**
+- Magic weapons — base weapon (23 types), attack bonus, extra damage types (fire/cold/etc.), all intrinsic properties (finesse/reach/thrown/etc.)
+- Magic armor — base armor (13 types), magical bonus (+1/+2/+3), stealth disadvantage auto-applied
+- Wondrous items — rings, cloaks, amulets, boots, miscellaneous (type: trinket)
+- Consumables — potions, scrolls, wands, rods, ammunition with optional healing activity
+- Charges + recharge (dawn/dusk/long rest/short rest/custom formula)
+- Attunement (none/optional/required), rarity, HTML description
+
+**Export:**
+- Copy JSON / Download JSON — Foundry dnd5e v4+ item JSON
+- Copy Macro / Download Macro — creates item in "Magic Items" folder, or gives directly to a named PC actor (update-in-place safe)
+
+---
+
 ### Tab 5 — Campaign Builder
 Generate Foundry macros to import a full campaign world in 5 steps.
 
@@ -130,7 +152,7 @@ netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=3000 conne
 ```
 /
 ├── src/
-│   └── App.tsx                          # Tab host — all 5 tabs, encounter state, callbacks
+│   └── App.tsx                          # Tab host — all 6 tabs, encounter state, callbacks
 ├── parser-versions/
 │   ├── dnd-parser-v20-stable.tsx        # Core parser + StatBlockParser component
 │   ├── class-importer.tsx               # Class Importer + AI Class Assistant
@@ -139,6 +161,7 @@ netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=3000 conne
 │   ├── campaign-builder.tsx             # Campaign Builder UI
 │   ├── campaign-builder-data.ts         # CampaignPreset interface + Eldoria data + macro builders
 │   ├── campaign-eldoria-preset.ts       # ELDORIA_PRESET thin wrapper
+│   ├── magic-item-creator.tsx           # Magic Item Creator — Tab 6
 │   ├── claude-api.ts                    # Anthropic SDK — all AI calls isolated here
 │   ├── fantasy-grounds-exporter.ts      # FGU 2024 XML formatter
 │   └── settings-modal.tsx              # API key management
@@ -168,7 +191,7 @@ netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=3000 conne
 | 16 | AI Class Assistant | ✅ Complete |
 | 17 Sprint 1 | Campaign editor — localStorage, add/edit/delete NPCs & creatures | ✅ Complete |
 | 17 Sprint 2 | Campaign editor — add/edit/delete continents & journals | ✅ Complete |
-| 18 | Magic Item Creator — Tab 6 | 🔜 Next |
+| 18 | Magic Item Creator — Tab 6 | ✅ Complete |
 | — | UI/UX design pass + color scheme | 🔜 Planned |
 | — | Hosting + account/monetization system | 🔜 Planned |
 | — | Roll20 export | Deferred |
