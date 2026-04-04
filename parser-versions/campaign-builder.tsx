@@ -4,7 +4,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Copy, Check, ChevronDown, ChevronRight, BookOpen, Users, Swords, Map as MapIcon, Sparkles, RefreshCw, X, CheckCircle, XCircle, AlertTriangle, Download, Upload, FileJson, Pencil, Trash2, Plus } from 'lucide-react'
 import {
-  CampaignPreset, NpcDef, CreatureDef,
+  CampaignPreset, NpcDef, CreatureDef, ContinentDef, JournalDef, JournalPageDef,
   buildStep1Macro, buildStep2Macro, buildStep3Macro, buildStep4Macro,
 } from './campaign-builder-data'
 import { ELDORIA_PRESET, BLANK_PRESET } from './campaign-eldoria-preset'
@@ -22,8 +22,10 @@ type NpcResult = {
 }
 
 type EditTarget =
-  | { type: 'npc'; item: NpcDef | null; continent?: string }
-  | { type: 'creature'; item: CreatureDef | null }
+  | { type: 'npc';       item: NpcDef | null;       continent?: string }
+  | { type: 'creature';  item: CreatureDef | null }
+  | { type: 'continent'; item: ContinentDef | null }
+  | { type: 'journal';   item: JournalDef | null }
   | null
 
 const LS_KEY = 'dnd_campaign_preset'
@@ -109,7 +111,7 @@ function TreeItem({ label, dim }: { label: string; dim?: string }) {
   )
 }
 
-function Sidebar({ preset, onEditNpc, onDeleteNpc, onAddNpc, onEditCreature, onDeleteCreature, onAddCreature }: {
+function Sidebar({ preset, onEditNpc, onDeleteNpc, onAddNpc, onEditCreature, onDeleteCreature, onAddCreature, onEditContinent, onDeleteContinent, onAddContinent, onEditJournal, onDeleteJournal, onAddJournal }: {
   preset: CampaignPreset
   onEditNpc?: (npc: NpcDef) => void
   onDeleteNpc?: (name: string) => void
@@ -117,6 +119,12 @@ function Sidebar({ preset, onEditNpc, onDeleteNpc, onAddNpc, onEditCreature, onD
   onEditCreature?: (c: CreatureDef) => void
   onDeleteCreature?: (name: string) => void
   onAddCreature?: () => void
+  onEditContinent?: (c: ContinentDef) => void
+  onDeleteContinent?: (name: string) => void
+  onAddContinent?: () => void
+  onEditJournal?: (j: JournalDef) => void
+  onDeleteJournal?: (name: string) => void
+  onAddJournal?: () => void
 }) {
   return (
     <div style={S.sidebar}>
@@ -135,6 +143,23 @@ function Sidebar({ preset, onEditNpc, onDeleteNpc, onAddNpc, onEditCreature, onD
         {preset.actorFolders.map(f => (
           <TreeItem key={f.name} label={f.name} dim={f.parentName ? '↳' : undefined} />
         ))}
+      </TreeSection>
+
+      <TreeSection label="Continents" icon={<MapIcon size={12} />}>
+        {preset.continents.map(c => (
+          <ActionTreeItem
+            key={c.name}
+            label={c.name}
+            dim={c.theme.split(' ')[0]}
+            onEdit={onEditContinent ? () => onEditContinent(c) : undefined}
+            onDelete={onDeleteContinent ? () => onDeleteContinent(c.name) : undefined}
+          />
+        ))}
+        {onAddContinent && (
+          <button onClick={onAddContinent} style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'none', border: 'none', color: '#475569', cursor: 'pointer', fontSize: 10, padding: '3px 0 3px 4px', width: '100%' }}>
+            <Plus size={9} /> Add Continent
+          </button>
+        )}
       </TreeSection>
 
       <TreeSection label="NPCs" icon={<Users size={12} />}>
@@ -181,10 +206,21 @@ function Sidebar({ preset, onEditNpc, onDeleteNpc, onAddNpc, onEditCreature, onD
         )}
       </TreeSection>
 
-      <TreeSection label="Journals" icon={<MapIcon size={12} />}>
+      <TreeSection label="Journals" icon={<BookOpen size={12} />}>
         {preset.journals.map(j => (
-          <TreeItem key={j.name} label={j.name} />
+          <ActionTreeItem
+            key={j.name}
+            label={j.name}
+            dim={`${j.pages.length}p`}
+            onEdit={onEditJournal ? () => onEditJournal(j) : undefined}
+            onDelete={onDeleteJournal ? () => onDeleteJournal(j.name) : undefined}
+          />
         ))}
+        {onAddJournal && (
+          <button onClick={onAddJournal} style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'none', border: 'none', color: '#475569', cursor: 'pointer', fontSize: 10, padding: '3px 0 3px 4px', width: '100%' }}>
+            <Plus size={9} /> Add Journal
+          </button>
+        )}
       </TreeSection>
 
       <div style={{ padding: '12px 16px 0', borderTop: '1px solid #334155', marginTop: 8 }}>
@@ -352,12 +388,17 @@ function buildStep5Macro(results: NpcResult[]): string {
 function EditModal({ target, preset, onSave, onClose }: {
   target: NonNullable<EditTarget>
   preset: CampaignPreset
-  onSave: (type: 'npc' | 'creature', item: NpcDef | CreatureDef, originalName?: string) => void
+  onSave: (type: 'npc' | 'creature' | 'continent' | 'journal', item: NpcDef | CreatureDef | ContinentDef | JournalDef, originalName?: string) => void
   onClose: () => void
 }) {
-  const isNpc = target.type === 'npc'
-  const existingNpc = isNpc ? target.item as NpcDef | null : null
-  const existingCreature = !isNpc ? target.item as CreatureDef | null : null
+  const isNpc       = target.type === 'npc'
+  const isCreature  = target.type === 'creature'
+  const isContinent = target.type === 'continent'
+  const isJournal   = target.type === 'journal'
+  const existingNpc       = isNpc       ? target.item as NpcDef | null       : null
+  const existingCreature  = isCreature  ? target.item as CreatureDef | null  : null
+  const existingContinent = isContinent ? target.item as ContinentDef | null : null
+  const existingJournal   = isJournal   ? target.item as JournalDef | null   : null
 
   const [name, setName]             = useState(existingNpc?.name ?? '')
   const [title, setTitle]           = useState(existingNpc?.title ?? '')
@@ -380,6 +421,19 @@ function EditModal({ target, preset, onSave, onClose }: {
   const [cBio, setCBio]             = useState(existingCreature?.bio ?? '')
   const [cImg, setCImg]             = useState(existingCreature?.img ?? '')
   const [cStat, setCStat]           = useState(existingCreature?.statText ?? '')
+
+  // Continent state
+  const [ctName, setCtName]         = useState(existingContinent?.name ?? '')
+  const [ctTheme, setCtTheme]       = useState(existingContinent?.theme ?? '')
+  const [ctGeo, setCtGeo]           = useState(existingContinent?.geography ?? '')
+  const [ctCulture, setCtCulture]   = useState(existingContinent?.culture ?? '')
+  // locations stored as newline-separated text for easy editing
+  const [ctLocs, setCtLocs]         = useState((existingContinent?.locations ?? []).join('\n'))
+
+  // Journal state
+  const [jName, setJName]           = useState(existingJournal?.name ?? '')
+  const [jFolder, setJFolder]       = useState(existingJournal?.folder ?? preset.journalFolders[0]?.name ?? '')
+  const [jPages, setJPages]         = useState<JournalPageDef[]>(existingJournal?.pages ?? [{ name: 'Overview', html: '' }])
 
   const originalName = target.item?.name
   const ALIGNMENTS   = ['lawful good','neutral good','chaotic good','lawful neutral','true neutral','chaotic neutral','lawful evil','neutral evil','chaotic evil','unaligned']
@@ -404,7 +458,7 @@ function EditModal({ target, preset, onSave, onClose }: {
         img: img.trim() || autoImg(name.trim()),
       }
       onSave('npc', npc, originalName)
-    } else {
+    } else if (isCreature) {
       if (!cName.trim()) return
       const creature: CreatureDef = {
         name: cName.trim(), cr: parseFloat(cCr) || 1, creatureType: cType.trim(),
@@ -413,11 +467,34 @@ function EditModal({ target, preset, onSave, onClose }: {
         ...(cStat.trim() ? { statText: cStat.trim() } : {}),
       }
       onSave('creature', creature, originalName)
+    } else if (isContinent) {
+      if (!ctName.trim()) return
+      const cont: ContinentDef = {
+        name: ctName.trim(), theme: ctTheme.trim(), geography: ctGeo.trim(),
+        culture: ctCulture.trim(),
+        locations: ctLocs.split('\n').map(l => l.trim()).filter(Boolean),
+      }
+      onSave('continent', cont, originalName)
+    } else {
+      if (!jName.trim()) return
+      const journal: JournalDef = {
+        name: jName.trim(),
+        folder: jFolder,
+        pages: jPages.filter(p => p.name.trim()),
+      }
+      onSave('journal', journal, originalName)
     }
   }
 
-  const modalTitle = isNpc ? (target.item ? 'Edit NPC' : 'Add NPC') : (target.item ? 'Edit Creature' : 'Add Creature')
-  const canSave = isNpc ? !!name.trim() : !!cName.trim()
+  const modalTitle = isNpc ? (target.item ? 'Edit NPC' : 'Add NPC')
+    : isCreature  ? (target.item ? 'Edit Creature'  : 'Add Creature')
+    : isContinent ? (target.item ? 'Edit Continent' : 'Add Continent')
+    : (target.item ? 'Edit Journal' : 'Add Journal')
+
+  const canSave = isNpc ? !!name.trim()
+    : isCreature  ? !!cName.trim()
+    : isContinent ? !!ctName.trim()
+    : !!jName.trim()
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: '#00000099', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
@@ -477,6 +554,65 @@ function EditModal({ target, preset, onSave, onClose }: {
             <div style={{ ...F.group, marginBottom: 20 }}>
               <span style={F.label}>Stat Block text (optional — enables full actor in Step 4)</span>
               <textarea style={{ ...F.field, resize: 'vertical' as const }} rows={6} value={cStat} onChange={e => setCStat(e.target.value)} placeholder="Paste raw D&D 5e stat block text here..." />
+            </div>
+          </>
+        ) : isContinent ? (
+          <>
+            <div style={F.group}><span style={F.label}>Name *</span><input style={F.field} value={ctName} onChange={e => setCtName(e.target.value)} placeholder="e.g. Thornwall" /></div>
+            <div style={F.group}><span style={F.label}>Theme</span><input style={F.field} value={ctTheme} onChange={e => setCtTheme(e.target.value)} placeholder="e.g. Dark industrial empire" /></div>
+            <div style={F.group}><span style={F.label}>Geography</span><input style={F.field} value={ctGeo} onChange={e => setCtGeo(e.target.value)} placeholder="e.g. Dense forests, volcanic peaks" /></div>
+            <div style={F.group}><span style={F.label}>Culture</span><input style={F.field} value={ctCulture} onChange={e => setCtCulture(e.target.value)} placeholder="e.g. Militaristic, honor-bound clans" /></div>
+            <div style={{ ...F.group, marginBottom: 20 }}>
+              <span style={F.label}>Locations (one per line)</span>
+              <textarea style={{ ...F.field, resize: 'vertical' as const }} rows={5} value={ctLocs} onChange={e => setCtLocs(e.target.value)} placeholder={"Capital City\nAncient Ruins\nForbidden Forest"} />
+            </div>
+          </>
+        ) : (
+          <>
+            <div style={F.grid2}>
+              <div style={F.group}><span style={F.label}>Name *</span><input style={F.field} value={jName} onChange={e => setJName(e.target.value)} placeholder="e.g. World Overview" /></div>
+              <div style={F.group}>
+                <span style={F.label}>Folder</span>
+                <select style={F.field} value={jFolder} onChange={e => setJFolder(e.target.value)}>
+                  {preset.journalFolders.map(f => <option key={f.name} value={f.name}>{f.name}</option>)}
+                </select>
+              </div>
+            </div>
+            <div style={{ marginBottom: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <span style={F.label}>Pages</span>
+                <button
+                  onClick={() => setJPages(p => [...p, { name: '', html: '' }])}
+                  style={{ display: 'flex', alignItems: 'center', gap: 3, background: 'none', border: '1px solid #334155', color: '#94a3b8', borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 11 }}
+                >
+                  <Plus size={10} /> Add Page
+                </button>
+              </div>
+              {jPages.map((page, i) => (
+                <div key={i} style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 6, padding: 10, marginBottom: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                    <input
+                      style={{ ...F.field, flex: 1 }}
+                      value={page.name}
+                      onChange={e => setJPages(p => p.map((pg, j) => j === i ? { ...pg, name: e.target.value } : pg))}
+                      placeholder={`Page ${i + 1} name`}
+                    />
+                    <button
+                      onClick={() => setJPages(p => p.filter((_, j) => j !== i))}
+                      style={{ background: 'none', border: 'none', color: '#991b1b', cursor: 'pointer', padding: 2, display: 'flex', flexShrink: 0 }}
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                  <textarea
+                    style={{ ...F.field, resize: 'vertical' as const }}
+                    rows={3}
+                    value={page.html}
+                    onChange={e => setJPages(p => p.map((pg, j) => j === i ? { ...pg, html: e.target.value } : pg))}
+                    placeholder="<p>Page content HTML...</p>"
+                  />
+                </div>
+              ))}
             </div>
           </>
         )}
@@ -565,9 +701,53 @@ export default function CampaignBuilder() {
     setPreset(p => ({ ...p, creatures: p.creatures.filter(c => c.name !== name) }))
   }
 
-  const handleModalSave = (type: 'npc' | 'creature', item: NpcDef | CreatureDef, originalName?: string) => {
-    if (type === 'npc') handleSaveNpc(item as NpcDef, originalName)
-    else handleSaveCreature(item as CreatureDef, originalName)
+  const handleSaveContinent = (cont: ContinentDef, originalName?: string) => {
+    setPreset(p => ({
+      ...p,
+      continents: originalName
+        ? p.continents.map(c => c.name === originalName ? cont : c)
+        : [...p.continents, cont],
+      // If renamed, update NPC continent references
+      npcs: originalName && originalName !== cont.name
+        ? p.npcs.map(n => n.continent === originalName ? { ...n, continent: cont.name } : n)
+        : p.npcs,
+    }))
+    setEditTarget(null)
+  }
+
+  const handleDeleteContinent = (name: string) => {
+    const npcCount = preset.npcs.filter(n => n.continent === name).length
+    const msg = npcCount > 0
+      ? `Delete continent "${name}" and its ${npcCount} NPC(s)? This cannot be undone.`
+      : `Delete continent "${name}"? This cannot be undone.`
+    if (!confirm(msg)) return
+    setPreset(p => ({
+      ...p,
+      continents: p.continents.filter(c => c.name !== name),
+      npcs: p.npcs.filter(n => n.continent !== name),
+    }))
+  }
+
+  const handleSaveJournal = (journal: JournalDef, originalName?: string) => {
+    setPreset(p => ({
+      ...p,
+      journals: originalName
+        ? p.journals.map(j => j.name === originalName ? journal : j)
+        : [...p.journals, journal],
+    }))
+    setEditTarget(null)
+  }
+
+  const handleDeleteJournal = (name: string) => {
+    if (!confirm(`Delete journal "${name}"? This cannot be undone.`)) return
+    setPreset(p => ({ ...p, journals: p.journals.filter(j => j.name !== name) }))
+  }
+
+  const handleModalSave = (type: 'npc' | 'creature' | 'continent' | 'journal', item: NpcDef | CreatureDef | ContinentDef | JournalDef, originalName?: string) => {
+    if      (type === 'npc')       handleSaveNpc(item as NpcDef, originalName)
+    else if (type === 'creature')  handleSaveCreature(item as CreatureDef, originalName)
+    else if (type === 'continent') handleSaveContinent(item as ContinentDef, originalName)
+    else                           handleSaveJournal(item as JournalDef, originalName)
   }
 
   // Preset management
@@ -751,6 +931,12 @@ export default function CampaignBuilder() {
         onEditCreature={c => setEditTarget({ type: 'creature', item: c })}
         onDeleteCreature={handleDeleteCreature}
         onAddCreature={() => setEditTarget({ type: 'creature', item: null })}
+        onEditContinent={c => setEditTarget({ type: 'continent', item: c })}
+        onDeleteContinent={handleDeleteContinent}
+        onAddContinent={() => setEditTarget({ type: 'continent', item: null })}
+        onEditJournal={j => setEditTarget({ type: 'journal', item: j })}
+        onDeleteJournal={handleDeleteJournal}
+        onAddJournal={() => setEditTarget({ type: 'journal', item: null })}
       />
 
       {editTarget && (
