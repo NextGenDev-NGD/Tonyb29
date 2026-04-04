@@ -2,7 +2,7 @@
 
 A browser-based toolkit that converts D&D 5e stat blocks into Foundry VTT / Fantasy Grounds actor JSON, builds homebrew classes, manages encounter collections, and imports full campaign worlds — all from a single-page app with no server required.
 
-**Current version:** v4.4-alpha (Phase 17 Sprint 1 complete)
+**Current version:** v4.5-alpha (Phase 17 Sprint 2 complete)
 **Primary target:** Foundry VTT + dnd5e system v4.0+ / v5.x
 **Secondary target:** Fantasy Grounds Unity (2024 schema)
 **Scope:** D&D 5e only — intentionally single-system
@@ -167,7 +167,8 @@ netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=3000 conne
 | 15c | AI Campaign Generator + Import/Export JSON | ✅ Complete |
 | 16 | AI Class Assistant | ✅ Complete |
 | 17 Sprint 1 | Campaign editor — localStorage, add/edit/delete NPCs & creatures | ✅ Complete |
-| 17 Sprint 2 | Campaign editor — add/edit/delete continents & journals | 🔜 Next |
+| 17 Sprint 2 | Campaign editor — add/edit/delete continents & journals | ✅ Complete |
+| 18 | Magic Item Creator — Tab 6 | 🔜 Next |
 | — | UI/UX design pass + color scheme | 🔜 Planned |
 | — | Hosting + account/monetization system | 🔜 Planned |
 | — | Roll20 export | Deferred |

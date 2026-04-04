@@ -2,6 +2,19 @@
 
 ---
 
+## v4.5-alpha — Phase 17 Sprint 2 (2026-04-03)
+
+### Campaign Editor — Continents & Journals
+- **Add/Edit/Delete Continents** — form with name, theme, geography, culture, locations (one per line)
+- Renaming a continent auto-updates all NPC continent references
+- Deleting a continent warns about and removes associated NPCs
+- **Add/Edit/Delete Journals** — form with name, folder selector, dynamic pages list
+- Each journal page has its own name + HTML textarea; pages can be added and removed freely
+- Sidebar: new Continents section above NPCs with hover pencil/trash icons + Add Continent button
+- Sidebar: Journals now show page count badge (e.g. `3p`) with hover edit/delete + Add Journal button
+
+---
+
 ## v4.4-alpha — Phase 15c / 17 Sprint 1 (2026-04-02)
 
 ### Phase 15c — AI Campaign Generator
@@ -153,5 +166,5 @@
 
 ---
 
-**Last updated:** 2026-04-02
-**Current stable build:** v4.4-alpha (Phase 17 Sprint 1)
+**Last updated:** 2026-04-03
+**Current stable build:** v4.5-alpha (Phase 17 Sprint 2)
