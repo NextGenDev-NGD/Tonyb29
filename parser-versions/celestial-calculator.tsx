@@ -15,6 +15,7 @@ import {
   ELDORIA_CALENDAR, BLANK_CALENDAR,
 } from './celestial-data'
 import { generateSkyDescription } from './claude-api'
+import { generateFoundryModule } from './celestial-foundry-export'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const SKY_R: Record<string, number> = { tiny: 16, small: 24, medium: 34, large: 46 }
@@ -404,6 +405,7 @@ export default function CelestialCalculator() {
   const [aiError, setAiError]     = useState('')
   const [editingIdx, setEditingIdx] = useState<number | 'new' | null>(null)
   const [copied, setCopied]       = useState(false)
+  const [moduleGen, setModuleGen] = useState(false)
 
   // Settings form mirrors
   const [calName, setCalName] = useState(calendar.name)
@@ -555,6 +557,17 @@ export default function CelestialCalculator() {
     }
     reader.readAsText(file)
     e.target.value = ''
+  }
+
+  async function handleGenerateModule() {
+    setModuleGen(true)
+    try {
+      await generateFoundryModule(calendar)
+    } catch (e: any) {
+      alert('Module generation failed: ' + (e.message ?? String(e)))
+    } finally {
+      setModuleGen(false)
+    }
   }
 
   // ── New moon default ──────────────────────────────────────────────────────────
@@ -920,6 +933,49 @@ export default function CelestialCalculator() {
               Calendars auto-save to your browser. Export JSON regularly as a manual backup.
             </div>
           </div>
+
+          {/* Foundry module generator */}
+          <div style={{ background: '#0d1117', border: '1px solid #0e7490aa', borderRadius: 10, padding: '14px 16px' }}>
+            <div style={{ color: '#67e8f9', fontWeight: 600, fontSize: 14, marginBottom: 6 }}>
+              Export to Foundry VTT
+            </div>
+            <div style={{ color: '#64748b', fontSize: 12, marginBottom: 12, lineHeight: 1.6 }}>
+              Generate an installable Foundry module for <strong style={{ color: '#94a3b8' }}>{calendar.name}</strong>.
+              Opens a Night Sky panel in Foundry showing live moon phases and tonight's events.
+              Optionally syncs with <strong style={{ color: '#94a3b8' }}>Simple Calendar</strong> for automatic date tracking.
+            </div>
+            <button
+              onClick={handleGenerateModule}
+              disabled={moduleGen}
+              style={{
+                background: moduleGen ? '#1e293b' : 'linear-gradient(135deg, #0e7490, #0891b2)',
+                border: 'none', borderRadius: 7, color: 'white', padding: '9px 20px',
+                cursor: moduleGen ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: 14,
+                display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14,
+              }}
+            >
+              <Download size={15} />
+              {moduleGen ? 'Generating…' : 'Download Foundry Module (.zip)'}
+            </button>
+            <div style={{ background: '#060912', border: '1px solid #1e293b', borderRadius: 8, padding: '10px 14px' }}>
+              <div style={{ color: '#475569', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
+                Installation
+              </div>
+              {[
+                'In Foundry, go to Add-on Modules → Install Module',
+                'Click "Install" and choose the downloaded .zip file',
+                'Enable the module in your World settings',
+                'Click the 🌙 moon button in the Journal sidebar to open the Night Sky panel',
+                '(Optional) Install Simple Calendar for automatic date sync',
+              ].map((step, i) => (
+                <div key={i} style={{ color: '#64748b', fontSize: 12, marginBottom: 5, display: 'flex', gap: 8 }}>
+                  <span style={{ color: '#0e7490', flexShrink: 0, fontWeight: 700 }}>{i + 1}.</span>
+                  {step}
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
       )}
     </div>
