@@ -162,26 +162,21 @@ export function findYearEvents(calendar: WorldCalendar, year = 1): CelestialEven
       }
     }
 
-    // ── Eclipse (simplified: one large moon near-full, another near-new) ──
+    // ── Eclipse (solar eclipse: conjunction at new moon — all moons align before the sun) ──
+    // Conjunctions alternate between new-moon (solar eclipse) and full-moon alignments.
+    // We emit an eclipse only when the conjunction peak falls within new-moon phase.
     if (moons.length >= 2) {
-      for (let i = 0; i < moons.length; i++) {
-        for (let j = 0; j < moons.length; j++) {
-          if (i === j) continue
-          const nearFull = illumination(phases[i]) > 0.92
-          const nearNew  = Math.min(phases[j], 1 - phases[j]) < 0.04
-          const blockerSize = moons[j].size
-          const litSize     = moons[i].size
-          const sizeOk = ['medium','large'].includes(blockerSize) ||
-            (blockerSize === 'small' && litSize === 'tiny')
-          if (nearFull && nearNew && sizeOk) {
-            const nearFullP = illumination(phasesP[i]) > 0.92
-            // Only record on the day the eclipse begins or peaks
-            if (!nearFullP || d === startDay) {
-              events.push({ day: d, type: 'eclipse', moonIds: [moons[i].id, moons[j].id],
-                label: `${moons[j].name} eclipses ${moons[i].name}` })
-            }
-          }
-        }
+      const allNearNew = phases.every(p => Math.min(p, 1 - p) < 0.06)
+      const spread     = phaseSpread(phases)
+      const spreadP    = phaseSpread(phasesP)
+      const spreadN    = phaseSpread(phasesN)
+      // Peak day of conjunction (local spread minimum) while all moons are near new
+      if (allNearNew && spread < 0.06 && spread <= spreadP && spread <= spreadN) {
+        const moonNames = moons.map(m => m.name).join(' & ')
+        events.push({
+          day: d, type: 'eclipse', moonIds: moons.map(m => m.id),
+          label: `Solar Eclipse — ${moonNames} align before the Sun`,
+        })
       }
     }
   }
