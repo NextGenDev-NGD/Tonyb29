@@ -162,20 +162,21 @@ export function findYearEvents(calendar: WorldCalendar, year = 1): CelestialEven
       }
     }
 
-    // ── Eclipse (solar eclipse: conjunction at new moon — all moons align before the sun) ──
-    // Conjunctions alternate between new-moon (solar eclipse) and full-moon alignments.
-    // We emit an eclipse only when the conjunction peak falls within new-moon phase.
+    // ── Eclipse (lunar eclipse: conjunction at full moon — moons enter the planet's shadow) ──
+    // Planet sits between sun and moons; its shadow falls across all moons simultaneously.
+    // Nighttime event — the moons darken and take on a blood-red hue.
+    // For Eldoria (Luna 30d, Selene 50d) fires every 150 days: days 75, 225, 375…
     if (moons.length >= 2) {
-      const allNearNew = phases.every(p => Math.min(p, 1 - p) < 0.06)
-      const spread     = phaseSpread(phases)
-      const spreadP    = phaseSpread(phasesP)
-      const spreadN    = phaseSpread(phasesN)
-      // Peak day of conjunction (local spread minimum) while all moons are near new
-      if (allNearNew && spread < 0.06 && spread <= spreadP && spread <= spreadN) {
+      const allNearFull = phases.every(p => illumination(p) > 0.94)
+      const spread      = phaseSpread(phases)
+      const spreadP     = phaseSpread(phasesP)
+      const spreadN     = phaseSpread(phasesN)
+      // Peak day of conjunction (local spread minimum) while all moons are near full
+      if (allNearFull && spread < 0.06 && spread <= spreadP && spread <= spreadN) {
         const moonNames = moons.map(m => m.name).join(' & ')
         events.push({
           day: d, type: 'eclipse', moonIds: moons.map(m => m.id),
-          label: `Solar Eclipse — ${moonNames} align before the Sun`,
+          label: `Lunar Eclipse — ${moonNames} pass through the world's shadow`,
         })
       }
     }
@@ -300,10 +301,12 @@ export const ELDORIA_CALENDAR: WorldCalendar = {
     },
     eclipse: {
       boons: [
-        'A rare celestial omen: divine and arcane portents occur; NPCs may offer cryptic prophecy',
+        'Blood moon: divination spells cast tonight reveal one additional true detail beyond their normal scope',
+        'Lycanthropes who embrace the crimson light may choose to transform voluntarily with no save required',
       ],
       pitfalls: [
         'Undead regain 1d6 hit points at the start of their turns for the duration of the eclipse',
+        'The darkened moons unsettle all creatures: Wisdom saving throws have disadvantage until dawn',
       ],
     },
   },
