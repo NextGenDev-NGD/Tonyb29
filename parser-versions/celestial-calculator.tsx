@@ -579,7 +579,8 @@ export default function CelestialCalculator() {
 
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 16px 40px' }}>
+    <div style={{ background: '#0f172a', minHeight: '100vh', padding: '20px 16px 40px' }}>
+    <div style={{ maxWidth: 900, margin: '0 auto' }}>
 
       {/* Header */}
       <div style={{ marginBottom: 18 }}>
@@ -921,6 +922,7 @@ export default function CelestialCalculator() {
           </div>
         </div>
       )}
+    </div>
     </div>
   )
 }
