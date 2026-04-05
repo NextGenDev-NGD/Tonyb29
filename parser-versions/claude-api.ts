@@ -314,6 +314,41 @@ ${description.trim()}`,
   return (msg.content[0] as any).text?.trim() ?? ''
 }
 
+// Generate a poetic sky description for the current night in any fantasy world
+export async function generateSkyDescription(
+  worldName: string,
+  moonDescriptions: string[],   // e.g. ["Luna: Full Moon (100% lit)", "Selene: Waxing Crescent (40% lit)"]
+  eventDescriptions: string[]   // e.g. ["Luna & Selene Conjunction", "Luna — Full Moon"]
+): Promise<string> {
+  const client = getClient()
+
+  const moonList  = moonDescriptions.join('\n')
+  const eventList = eventDescriptions.length ? eventDescriptions.join(', ') : 'none'
+
+  const msg = await client.messages.create({
+    model: MODEL,
+    max_tokens: 256,
+    messages: [{
+      role: 'user',
+      content: `You are a fantasy world narrator. Write a vivid, atmospheric 2–3 sentence description of the night sky in the world of ${worldName}, as a DM might read aloud to their players.
+
+Current sky:
+${moonList}
+
+Tonight's celestial events: ${eventList}
+
+Rules:
+- Evocative, immersive prose — describe what the characters actually SEE
+- Weave in the moon phases, colors, and any events naturally
+- Match tone to events: a full moon feels sacred or eerie; a conjunction feels portentous; an eclipse feels dramatic
+- No game mechanics, no brackets, no meta-language
+- Output only the sky description — no title, no preamble`,
+    }],
+  })
+
+  return (msg.content[0] as any).text?.trim() ?? ''
+}
+
 // Extract a plain-text stat block from a URL (fetches page text, sends to Claude)
 export async function extractStatBlockFromUrl(url: string): Promise<string> {
   const client = getClient();
