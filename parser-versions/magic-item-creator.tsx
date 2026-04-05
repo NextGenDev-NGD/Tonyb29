@@ -346,6 +346,12 @@ if (existing) {
 }`
 }
 
+// ── Example content ───────────────────────────────────────────────────────
+const TEXT_EXAMPLE = `Flame Tongue
+Weapon (longsword), rare (requires attunement)
+
+You can use a bonus action to speak this magic sword's command word, causing flames to erupt from the blade. These flames shed bright light in a 40-foot radius and dim light for an additional 40 feet. While the sword is ablaze, it deals an extra 2d6 fire damage to any target it hits. The flames last until you use a bonus action to speak the command word again or until you drop or sheathe the sword.`
+
 // ── Utility ───────────────────────────────────────────────────────────────
 function copyText(text: string) { navigator.clipboard.writeText(text) }
 function downloadText(text: string, filename: string) {
@@ -678,13 +684,19 @@ export default function MagicItemCreator() {
               placeholder={"Flame Tongue\nWeapon (longsword), rare (requires attunement)\n\nYou can use a bonus action to speak this magic sword's command word, causing flames to erupt from the blade. These flames shed bright light..."}
               style={{ ...S.textarea, minHeight: 160 }}
             />
-            <div style={{ marginTop: 12 }}>
+            <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
               <button
                 onClick={handleParseText}
                 disabled={loading || !textInput.trim()}
                 style={{ ...S.btn('#be185d'), opacity: loading || !textInput.trim() ? 0.5 : 1 }}
               >
                 {loading ? 'Parsing…' : <><Sparkles size={14} /> Parse with Claude</>}
+              </button>
+              <button
+                onClick={() => setTextInput(TEXT_EXAMPLE)}
+                style={{ ...S.btn('#334155') }}
+              >
+                Load Example
               </button>
             </div>
           </div>
@@ -922,7 +934,12 @@ export default function MagicItemCreator() {
             {/* Macro */}
             <div style={S.card}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <h3 style={{ margin: 0, fontSize: 14 }}>Foundry Import Macro</h3>
+                <div>
+                  <h3 style={{ margin: '0 0 2px', fontSize: 14 }}>Foundry Import Macro</h3>
+                  <p style={{ margin: 0, fontSize: 11, color: '#475569' }}>
+                    In Foundry: open the Macro Directory (bottom hotbar or press M) → New Macro → paste → Run
+                  </p>
+                </div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button onClick={() => handleCopy('macro')} style={S.btn('#065f46')}>
                     <Copy size={13} /> {copied === 'macro' ? 'Copied!' : 'Copy Macro'}

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Settings } from 'lucide-react'
+import { Settings, HelpCircle, X } from 'lucide-react'
 import StatBlockParser from '../parser-versions/dnd-parser-v20-stable'
 import ClassImporter from '../parser-versions/class-importer'
 import BatchProcessor from '../parser-versions/batch-processor'
@@ -11,12 +11,28 @@ import { hasApiKey } from '../parser-versions/claude-api'
 
 type Tab = 'parser' | 'batch' | 'encounter' | 'class' | 'campaign' | 'items'
 
+const TAB_META: Record<Tab, { desc: string; color: string }> = {
+  parser:    { color: '#7c3aed', desc: 'Paste any D&D 5e stat block — get a Foundry-ready actor in seconds' },
+  batch:     { color: '#0369a1', desc: 'Parse an entire bestiary at once, or generate monsters by name with AI' },
+  encounter: { color: '#b45309', desc: 'Build balanced encounters with live XP thresholds and difficulty ratings' },
+  class:     { color: '#4338ca', desc: 'Turn a class description into a complete Foundry class with all advancements' },
+  campaign:  { color: '#065f46', desc: 'Import a full world — continents, NPCs, and creatures — in five steps' },
+  items:     { color: '#be185d', desc: 'Create magic weapons, armor, wondrous items, and consumables with Foundry JSON' },
+}
+
 function uid() { return Math.random().toString(36).slice(2, 10) }
 
 export default function App() {
   const [tab, setTab]             = useState<Tab>('parser')
   const [showSettings, setShowSettings] = useState(false)
   const [apiKeySet, setApiKeySet] = useState(hasApiKey())
+  const [bannerOpen, setBannerOpen] = useState(
+    () => localStorage.getItem('dnd_welcome_dismissed') !== '1'
+  )
+  const dismissBanner = () => {
+    localStorage.setItem('dnd_welcome_dismissed', '1')
+    setBannerOpen(false)
+  }
 
   // Encounter state — lifted here so parser + batch can push into it
   const [encounters, setEncounters] = useState<Encounter[]>([])
@@ -86,48 +102,135 @@ export default function App() {
 
   const totalCombatants = encounters.reduce((s, e) => s + e.creatures.reduce((ss, c) => ss + c.quantity, 0), 0)
 
-  const btn = (t: Tab, label: string, active: string, inactive = '#1e293b') => (
-    <button onClick={() => setTab(t)}
-      style={{ padding: '6px 18px', borderRadius: 6, border: 'none', cursor: 'pointer',
-        background: tab === t ? active : inactive, color: '#fff', fontWeight: 600, position: 'relative' as const }}>
-      {label}
-      {t === 'encounter' && totalCombatants > 0 && (
-        <span style={{
-          position: 'absolute', top: -6, right: -6,
-          background: '#ef4444', color: '#fff', borderRadius: 99,
-          fontSize: 10, fontWeight: 700, padding: '1px 5px', lineHeight: 1.4,
-        }}>{totalCombatants}</span>
-      )}
-    </button>
-  )
+  const btn = (t: Tab, label: string) => {
+    const { color } = TAB_META[t]
+    const active = tab === t
+    return (
+      <button onClick={() => setTab(t)} style={{
+        padding: '6px 16px', borderRadius: 6, border: 'none', cursor: 'pointer',
+        background: active ? color : '#1e293b',
+        color: active ? '#fff' : '#94a3b8',
+        fontWeight: 600, fontSize: 13, position: 'relative' as const,
+        boxShadow: active ? `0 0 12px ${color}66, 0 2px 0 ${color}` : 'none',
+        transition: 'all 0.15s',
+      }}>
+        {label}
+        {t === 'encounter' && totalCombatants > 0 && (
+          <span style={{
+            position: 'absolute', top: -6, right: -6,
+            background: '#ef4444', color: '#fff', borderRadius: 99,
+            fontSize: 10, fontWeight: 700, padding: '1px 5px', lineHeight: 1.4,
+          }}>{totalCombatants}</span>
+        )}
+      </button>
+    )
+  }
 
   // Render all tabs — use CSS display to hide inactive ones so state is preserved
   const show = (t: Tab) => ({ display: tab === t ? '' : 'none' })
 
+  const { color: tabColor, desc: tabDesc } = TAB_META[tab]
+
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 24px', background: '#0f172a', borderBottom: '1px solid #334155', position: 'sticky', top: 0, zIndex: 500 }}>
-        {btn('parser',    'Stat Block Parser', '#7c3aed')}
-        {btn('batch',     'Batch Processor',   '#0369a1')}
-        {btn('encounter', 'Encounter Builder', '#b45309')}
-        {btn('class',     'Class Importer',    '#4338ca')}
-        {btn('campaign',  'Campaign Builder',  '#065f46')}
-        {btn('items',     '✦ Magic Items',     '#be185d')}
-        <div style={{ marginLeft: 'auto' }}>
-          <button
-            onClick={() => setShowSettings(true)}
-            title="Settings"
-            style={{
-              background: 'none', border: '1px solid #334155', borderRadius: 6,
-              padding: '5px 8px', cursor: 'pointer', color: apiKeySet ? '#86efac' : '#94a3b8',
-              display: 'flex', alignItems: 'center', gap: 4, fontSize: 12
-            }}
-          >
-            <Settings size={15} />
-            {apiKeySet ? 'API ✓' : 'API'}
-          </button>
+      {/* ── Nav bar ─────────────────────────────────────────────── */}
+      <div style={{ background: '#0f172a', borderBottom: '1px solid #1e293b', position: 'sticky', top: 0, zIndex: 500 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 20px' }}>
+          {btn('parser',    'Stat Block Parser')}
+          {btn('batch',     'Batch Processor')}
+          {btn('encounter', 'Encounter Builder')}
+          {btn('class',     'Class Importer')}
+          {btn('campaign',  'Campaign Builder')}
+          {btn('items',     '✦ Magic Items')}
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <button
+              onClick={() => setBannerOpen(v => !v)}
+              title={bannerOpen ? 'Hide intro' : 'About this tool'}
+              style={{
+                background: 'none', border: '1px solid #334155', borderRadius: 6,
+                padding: '5px 8px', cursor: 'pointer', color: bannerOpen ? '#c4b5fd' : '#475569',
+                display: 'flex', alignItems: 'center', gap: 4, fontSize: 12,
+              }}
+            >
+              <HelpCircle size={14} />
+            </button>
+            <button
+              onClick={() => setShowSettings(true)}
+              title="API key settings"
+              style={{
+                background: 'none', border: '1px solid #334155', borderRadius: 6,
+                padding: '5px 8px', cursor: 'pointer', color: apiKeySet ? '#86efac' : '#94a3b8',
+                display: 'flex', alignItems: 'center', gap: 4, fontSize: 12,
+              }}
+            >
+              <Settings size={15} />
+              {apiKeySet ? 'API ✓' : 'API'}
+            </button>
+          </div>
+        </div>
+
+        {/* ── Tab context bar ───────────────────────────────────── */}
+        <div style={{
+          padding: '5px 20px', borderTop: `1px solid ${tabColor}33`,
+          background: `${tabColor}0d`,
+          display: 'flex', alignItems: 'center', gap: 8,
+        }}>
+          <span style={{
+            width: 6, height: 6, borderRadius: '50%',
+            background: tabColor, flexShrink: 0,
+            boxShadow: `0 0 6px ${tabColor}`,
+          }} />
+          <span style={{ fontSize: 12, color: '#94a3b8', fontStyle: 'italic' }}>{tabDesc}</span>
         </div>
       </div>
+
+      {/* ── Welcome banner ────────────────────────────────────────── */}
+      {bannerOpen && (
+        <div style={{
+          background: 'linear-gradient(135deg, #1e1b4b 0%, #1e293b 60%, #0f172a 100%)',
+          borderBottom: '1px solid #7c3aed44',
+          padding: '16px 24px',
+        }}>
+          <div style={{ maxWidth: 860, margin: '0 auto', display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                <span style={{ fontSize: 18 }}>⚔</span>
+                <span style={{ fontWeight: 700, fontSize: 16, color: '#e2e8f0' }}>
+                  Stop building in Foundry by hand.
+                </span>
+              </div>
+              <p style={{ margin: '0 0 10px', fontSize: 13, color: '#94a3b8', lineHeight: 1.6 }}>
+                This tool converts D&D 5e stat blocks, custom classes, encounters, campaign worlds, and magic items
+                into <strong style={{ color: '#c4b5fd' }}>ready-to-import Foundry macros</strong> — in seconds, with no JSON editing required.
+                New to Foundry? Start with <strong style={{ color: '#a78bfa' }}>Stat Block Parser</strong> and paste any monster description.
+                Already know what you&apos;re doing? Pick a tab.
+              </p>
+              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' as const }}>
+                {([
+                  ['#7c3aed', 'Stat Block Parser', 'Paste a monster → Foundry actor'],
+                  ['#b45309', 'Encounter Builder', 'Balance fights by CR & party level'],
+                  ['#065f46', 'Campaign Builder', 'Import worlds in 5 steps'],
+                  ['#be185d', 'Magic Items', 'Generate any item with AI'],
+                ] as [string, string, string][]).map(([c, name, desc]) => (
+                  <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: c, flexShrink: 0 }} />
+                    <span style={{ fontSize: 12, color: '#64748b' }}>
+                      <strong style={{ color: '#cbd5e1' }}>{name}</strong> — {desc}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <button onClick={dismissBanner} title="Don't show again" style={{
+              background: 'none', border: '1px solid #334155', borderRadius: 6,
+              padding: '5px 8px', cursor: 'pointer', color: '#475569', flexShrink: 0,
+              display: 'flex', alignItems: 'center', gap: 4, fontSize: 11,
+            }}>
+              <X size={12} /> Got it
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Toast notification */}
       {sentToast && (
