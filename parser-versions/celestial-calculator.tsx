@@ -446,6 +446,33 @@ export default function CelestialCalculator() {
     setYear(y)
   }
 
+  function goToNextEvent(direction: 1 | -1) {
+    const events = direction > 0
+      ? yearEvents.filter(e => e.day > actualDay)
+      : [...yearEvents].reverse().filter(e => e.day < actualDay)
+    if (events.length > 0) {
+      const target = events[0]
+      setDay((target.day % calendar.daysPerYear) + 1)
+      // year is already correct since yearEvents is scoped to displayYear
+    } else if (direction > 0) {
+      // wrap to first event of next year
+      const next = findYearEvents(calendar, displayYear + 1)
+      if (next.length > 0) {
+        setYear(displayYear + 1)
+        setDay((next[0].day % calendar.daysPerYear) + 1)
+      }
+    } else {
+      // wrap to last event of previous year
+      if (displayYear > 1) {
+        const prev = findYearEvents(calendar, displayYear - 1)
+        if (prev.length > 0) {
+          setYear(displayYear - 1)
+          setDay((prev[prev.length - 1].day % calendar.daysPerYear) + 1)
+        }
+      }
+    }
+  }
+
   // ── AI description ────────────────────────────────────────────────────────────
   async function handleGenerateDesc() {
     setAiLoading(true)
@@ -569,10 +596,14 @@ export default function CelestialCalculator() {
         background: '#0d1117', border: '1px solid #1e293b', borderRadius: 10,
         padding: '10px 14px', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 10,
       }}>
-        <button onClick={() => navigate(-30)} title="−30 days" style={{
+        <button onClick={() => goToNextEvent(-1)} title="Jump to previous event" style={{
+          background: 'none', border: `1px solid ${ACCENT}66`, borderRadius: 5, color: '#67e8f9',
+          padding: '3px 9px', cursor: 'pointer', fontSize: 11, display: 'flex', alignItems: 'center', gap: 3,
+        }}><ChevronLeft size={12} />Event</button>
+        <button onClick={() => navigate(-7)} title="−7 days" style={{
           background: 'none', border: '1px solid #1e293b', borderRadius: 5, color: '#475569',
           padding: '3px 8px', cursor: 'pointer', fontSize: 11,
-        }}>−30</button>
+        }}>−7</button>
         <button onClick={() => navigate(-1)} style={{
           background: 'none', border: '1px solid #334155', borderRadius: 5, color: '#94a3b8',
           padding: '3px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center',
@@ -595,10 +626,14 @@ export default function CelestialCalculator() {
         }}>
           <ChevronRight size={15} />
         </button>
-        <button onClick={() => navigate(30)} title="+30 days" style={{
+        <button onClick={() => navigate(7)} title="+7 days" style={{
           background: 'none', border: '1px solid #1e293b', borderRadius: 5, color: '#475569',
           padding: '3px 8px', cursor: 'pointer', fontSize: 11,
-        }}>+30</button>
+        }}>+7</button>
+        <button onClick={() => goToNextEvent(1)} title="Jump to next event" style={{
+          background: 'none', border: `1px solid ${ACCENT}66`, borderRadius: 5, color: '#67e8f9',
+          padding: '3px 9px', cursor: 'pointer', fontSize: 11, display: 'flex', alignItems: 'center', gap: 3,
+        }}>Event<ChevronRight size={12} /></button>
         <button onClick={() => { setDay(1); setYear(1) }} style={{
           background: 'none', border: '1px solid #1e293b', borderRadius: 5, color: '#475569',
           padding: '3px 10px', cursor: 'pointer', fontSize: 12,
