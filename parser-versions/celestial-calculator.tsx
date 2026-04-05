@@ -957,15 +957,18 @@ export default function CelestialCalculator() {
               <Download size={15} />
               {moduleGen ? 'Generating…' : 'Download Foundry Module (.zip)'}
             </button>
-            <div style={{ background: '#060912', border: '1px solid #1e293b', borderRadius: 8, padding: '10px 14px' }}>
+            {/* Quick install */}
+            <div style={{ background: '#060912', border: '1px solid #1e293b', borderRadius: 8, padding: '10px 14px', marginBottom: 10 }}>
               <div style={{ color: '#475569', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
-                Installation
+                Option A — Manual Install (local game)
               </div>
               {[
-                'In Foundry, go to Add-on Modules → Install Module',
-                'Click "Install" and choose the downloaded .zip file',
-                'Enable the module in your World settings',
-                'Click the 🌙 moon button in the Journal sidebar to open the Night Sky panel',
+                'Extract the .zip — you\'ll get a folder named ' + calendar.id + '-celestial',
+                'Copy that folder to your Foundry modules directory:',
+                '  Windows: %localappdata%\\FoundryVTT\\Data\\modules\\',
+                '  Mac / Linux: ~/foundryuserdata/Data/modules/',
+                'In Foundry → Add-on Modules, click Refresh and enable the module',
+                'Click the 🌙 button in the Journal sidebar to open the Night Sky panel',
                 '(Optional) Install Simple Calendar for automatic date sync',
               ].map((step, i) => (
                 <div key={i} style={{ color: '#64748b', fontSize: 12, marginBottom: 5, display: 'flex', gap: 8 }}>
@@ -973,6 +976,41 @@ export default function CelestialCalculator() {
                   {step}
                 </div>
               ))}
+            </div>
+
+            {/* GitHub manifest distribution */}
+            <div style={{ background: '#060912', border: '1px solid #0e749055', borderRadius: 8, padding: '10px 14px' }}>
+              <div style={{ color: '#475569', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
+                Option B — GitHub Hosted (share / one-click install)
+              </div>
+              <div style={{ color: '#475569', fontSize: 12, marginBottom: 8, lineHeight: 1.6 }}>
+                Push the extracted folder to a GitHub repo, then anyone can install it via Foundry's{' '}
+                <strong style={{ color: '#64748b' }}>Install Module</strong> dialog — no file extraction needed.
+              </div>
+              {[
+                'Create a GitHub repo (e.g. ' + calendar.id + '-celestial)',
+                'Push the extracted module folder into the repo root',
+                'Create a Release tagged v1.0.0',
+                'Your manifest URL will be:',
+              ].map((step, i) => (
+                <div key={i} style={{ color: '#64748b', fontSize: 12, marginBottom: 5, display: 'flex', gap: 8 }}>
+                  <span style={{ color: '#0e7490', flexShrink: 0, fontWeight: 700 }}>{i + 1}.</span>
+                  {step}
+                </div>
+              ))}
+              <div style={{
+                background: '#0d1117', border: '1px solid #1e293b', borderRadius: 5,
+                padding: '6px 10px', fontFamily: 'monospace', fontSize: 11,
+                color: '#67e8f9', wordBreak: 'break-all' as const, marginBottom: 8, marginTop: 2,
+              }}>
+                {'https://raw.githubusercontent.com/YOUR_USERNAME/' + calendar.id + '-celestial/main/' + calendar.id + '-celestial/module.json'}
+              </div>
+              <div style={{ color: '#475569', fontSize: 12 }}>
+                5. In Foundry → <strong style={{ color: '#64748b' }}>Install Module</strong>, paste the URL above and click Install.
+              </div>
+              <div style={{ color: '#334155', fontSize: 11, marginTop: 8, fontStyle: 'italic' }}>
+                The downloaded .zip includes a README.md with full GitHub setup instructions.
+              </div>
             </div>
           </div>
 
