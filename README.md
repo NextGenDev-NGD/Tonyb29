@@ -129,8 +129,21 @@ All macros are **update-in-place safe** — re-running updates existing actors, 
 
 ```bash
 npm install
-nohup npx vite --port 3000 > /tmp/vite-fresh.log 2>&1 &
 ```
+
+**Starting / restarting the dev server:**
+
+Option A — run the restart script (kills any running Vite, clears cache, starts fresh):
+```bash
+./dev.sh
+```
+
+Option B — paste into the Claude Code prompt with `!` prefix:
+```
+! pkill -f vite 2>/dev/null; sleep 1; nohup npx vite --port 3000 --force > /tmp/vite-fresh.log 2>&1 &
+```
+
+After restarting, always do a hard refresh in the browser: `Ctrl+Shift+R`
 
 **Access from Windows (WSL2):**
 - `http://localhost:3000` (if WSL2 port mirroring active)
@@ -143,7 +156,7 @@ netsh interface portproxy reset
 netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=3000 connectaddress=$wslIp connectport=3000
 ```
 
-> **WSL2 note:** HMR unreliable on `/mnt/c/`. Kill and restart Vite after changes. Check: `strings /tmp/vite-fresh.log | grep -E "Local:|error"`
+> **WSL2 note:** Vite's file watcher uses Linux inotify which doesn't reliably detect changes on `/mnt/c/` (Windows filesystem). HMR is inconsistent — always use `./dev.sh` or the `!` one-liner to restart. The `--force` flag clears Vite's dependency cache which is the main source of stale builds.
 
 ---
 
