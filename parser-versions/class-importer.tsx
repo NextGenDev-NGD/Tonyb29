@@ -735,17 +735,33 @@ export default function ClassImporter() {
     a.click(); URL.revokeObjectURL(url);
   };
 
+  const safeCopy = (text: string) => {
+    try {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text);
+      } else {
+        const el = document.createElement('textarea');
+        el.value = text;
+        el.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+        document.body.appendChild(el);
+        el.focus(); el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+      }
+    } catch { /* clipboard unavailable — notification still shows */ }
+  };
+
   const copyJSON = () => {
     const classItem = getClassItem();
     if (!classItem) return;
-    navigator.clipboard.writeText(JSON.stringify(classItem, null, 2));
+    safeCopy(JSON.stringify(classItem, null, 2));
     setCopiedB(true); setTimeout(() => setCopiedB(false), 2000);
   };
 
   const copyMacro = () => {
     const str = getMacroStr();
     if (!str) return;
-    navigator.clipboard.writeText(str);
+    safeCopy(str);
     setCopiedM(true); setTimeout(() => setCopiedM(false), 2000);
   };
 

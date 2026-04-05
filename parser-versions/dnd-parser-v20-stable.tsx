@@ -1652,7 +1652,7 @@ export default function StatBlockParser({ onSendToEncounter }: { onSendToEncount
                   <div className="flex gap-3 mt-4">
                     <button onClick={() => { const b = new Blob([JSON.stringify(output, null, 2)], { type: 'application/json' }); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = `${output.name.replace(/\s+/g,'_')}_foundry.json`; a.click(); URL.revokeObjectURL(u); }}
                       className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2"><Download size={16} /> Download JSON</button>
-                    <button onClick={() => { navigator.clipboard.writeText(JSON.stringify(output, null, 2)); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+                    <button onClick={() => { try { if (navigator.clipboard) { navigator.clipboard.writeText(JSON.stringify(output, null, 2)); } else { const el = document.createElement('textarea'); el.value = JSON.stringify(output, null, 2); el.style.cssText='position:fixed;opacity:0'; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); } } catch {} setCopied(true); setTimeout(() => setCopied(false), 2000); }}
                       className="flex-1 bg-green-600/50 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2"><Copy size={16} /> {copied ? 'Copied!' : 'Copy JSON'}</button>
                   </div>
                   {onSendToEncounter && (
@@ -1669,7 +1669,7 @@ export default function StatBlockParser({ onSendToEncounter }: { onSendToEncount
                   <div className="flex gap-3 mt-4">
                     <button onClick={() => { const xml = toFantasyGroundsXML(output); const b = new Blob([xml], { type: 'application/xml' }); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = `${output.name.replace(/\s+/g,'_')}_fg.xml`; a.click(); URL.revokeObjectURL(u); }}
                       className="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2"><Download size={16} /> Download XML</button>
-                    <button onClick={() => { navigator.clipboard.writeText(toFantasyGroundsXML(output)); setCopiedFGU(true); setTimeout(() => setCopiedFGU(false), 2000); }}
+                    <button onClick={() => { try { if (navigator.clipboard) { navigator.clipboard.writeText(toFantasyGroundsXML(output)); } else { const el = document.createElement('textarea'); el.value = toFantasyGroundsXML(output); el.style.cssText='position:fixed;opacity:0'; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); } } catch {} setCopiedFGU(true); setTimeout(() => setCopiedFGU(false), 2000); }}
                       className="flex-1 bg-amber-600/50 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded transition flex items-center justify-center gap-2"><Copy size={16} /> {copiedFGU ? 'Copied!' : 'Copy XML'}</button>
                   </div>
                 </div>

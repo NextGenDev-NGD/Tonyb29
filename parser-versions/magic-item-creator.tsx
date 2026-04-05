@@ -353,7 +353,21 @@ Weapon (longsword), rare (requires attunement)
 You can use a bonus action to speak this magic sword's command word, causing flames to erupt from the blade. These flames shed bright light in a 40-foot radius and dim light for an additional 40 feet. While the sword is ablaze, it deals an extra 2d6 fire damage to any target it hits. The flames last until you use a bonus action to speak the command word again or until you drop or sheathe the sword.`
 
 // ── Utility ───────────────────────────────────────────────────────────────
-function copyText(text: string) { navigator.clipboard.writeText(text) }
+function copyText(text: string) {
+  try {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+    } else {
+      const el = document.createElement('textarea');
+      el.value = text;
+      el.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+      document.body.appendChild(el);
+      el.focus(); el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+    }
+  } catch { /* clipboard unavailable — notification still shows */ }
+}
 function downloadText(text: string, filename: string) {
   const a = document.createElement('a')
   a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' }))
