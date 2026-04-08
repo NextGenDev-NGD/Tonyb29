@@ -1,8 +1,8 @@
 # D&D 5e Parser & Campaign Tools
 
-A browser-based toolkit that converts D&D 5e stat blocks into Foundry VTT / Fantasy Grounds actor JSON, builds homebrew classes, manages encounter collections, and imports full campaign worlds — all from a single-page app with no server required.
+A browser-based toolkit that converts D&D 5e stat blocks into Foundry VTT / Fantasy Grounds actor JSON, builds homebrew classes, manages encounter collections, imports full campaign worlds, creates magic items, and tracks celestial events — all from a single-page app with no server required.
 
-**Current version:** v4.6-alpha (Phase 18 complete)
+**Current version:** v4.6-alpha (Phase 18b complete)
 **Primary target:** Foundry VTT + dnd5e system v4.0+ / v5.x
 **Secondary target:** Fantasy Grounds Unity (2024 schema)
 **Scope:** D&D 5e only — intentionally single-system
@@ -76,6 +76,33 @@ Paste a structured class template and get a self-contained Foundry macro that cr
 
 ---
 
+### Tab 5 — Campaign Builder
+Generate Foundry macros to import a full campaign world in 5 steps.
+
+1. **Folders** — journal and actor folder structure
+2. **Journals** — world lore entries with HTML content
+3. **NPC Actors** — leader actors per continent (bio, race, class, CR, image)
+4. **Creature Actors** — with full embedded stat blocks parsed client-side; optional AI generation for all creatures
+5. **AI NPC Stat Blocks** — Claude generates and patches all NPC actors in-place
+
+All macros are **update-in-place safe** — re-running updates existing actors, never duplicates. Never rename actors or folders in Foundry — rename in Campaign Builder and re-run the macro.
+
+**Preset Management:**
+- **✨ AI Generate** — describe your campaign in plain language; Claude generates a full preset
+- **Import JSON** — load a previously exported `.json` preset file
+- **Export JSON** — download current campaign as a `.json` backup
+- **Reset** — discard edits and reload the original preset
+
+**Campaign Editor:**
+- Add, edit, and delete NPCs per continent via sidebar hover icons
+- Add, edit, and delete creatures, continents, and journals via sidebar hover icons
+- All changes auto-save to localStorage — survive page refresh and browser close
+- Export JSON regularly as a manual backup
+
+**Architecture:** generic `CampaignPreset` interface; default preset is Eldoria: Echoes of the Aether (7 continents, 28 NPC leaders, 19 creatures).
+
+---
+
 ### Tab 6 — Magic Item Creator
 Create Foundry-ready magic item JSON in three modes.
 
@@ -98,30 +125,31 @@ Create Foundry-ready magic item JSON in three modes.
 
 ---
 
-### Tab 5 — Campaign Builder
-Generate Foundry macros to import a full campaign world in 5 steps.
+### Tab 7 — Celestial Calculator
+Track moon phases, celestial events, boons & pitfalls, and generate Foundry modules for any fantasy world calendar.
 
-1. **Folders** — journal and actor folder structure
-2. **Journals** — world lore entries with HTML content
-3. **NPC Actors** — leader actors per continent (bio, race, class, CR, image)
-4. **Creature Actors** — with full embedded stat blocks parsed client-side
-5. **AI NPC Stat Blocks** — Claude generates and patches all NPC actors in-place
+**Night Sky viewer:**
+- Live SVG night sky with accurate moon phase shading and deterministic star field
+- Moon phase cards — phase name, illumination %, orbit length per moon
+- Tonight's events — conjunctions, eclipses, oppositions, full moons, new moons auto-detected
+- Boons & Pitfalls — narrative gameplay effects for each event type
+- Year event count — total celestial events in the current campaign year
 
-All macros are **update-in-place safe** — re-running updates existing actors, never duplicates. Never rename actors or folders in Foundry — rename in Campaign Builder and re-run the macro.
+**Navigation:** jump ±1/±7 days, skip to next/previous event
 
-**Preset Management:**
-- **✨ AI Generate** — describe your campaign in plain language; Claude generates a full preset
-- **Import JSON** — load a previously exported `.json` preset file
-- **Export JSON** — download current campaign as a `.json` backup
-- **Reset** — discard edits and reload the original preset
+**Moon & Calendar Editor:**
+- Add/remove/edit moons: name, orbit length, size, color, start phase
+- Edit world name, days per year
+- Write custom boons and pitfalls per event type (Full Moon, New Moon, Conjunction, Opposition, Eclipse)
+- Import/export calendar as JSON
 
-**Campaign Editor (Phase 17):**
-- Add, edit, and delete NPCs per continent via sidebar hover icons
-- Add, edit, and delete creatures via sidebar hover icons
-- All changes auto-save to localStorage — survive page refresh and browser close
-- Export JSON regularly as a manual backup
+**✨ AI Sky Description:** Claude generates a 2–3 sentence poetic read-aloud description of the current night sky
 
-**Architecture:** generic `CampaignPreset` interface; default preset is Eldoria: Echoes of the Aether (7 continents, 28 NPC leaders, 19 creatures).
+**Export to Foundry VTT:**
+- Generates a complete, installable Foundry module ZIP (module.json + JS + CSS + templates)
+- Module adds a moon button to the Journal sidebar; opens a live Night Sky panel in-game
+- Built-in calendar editor inside Foundry — no external tool required after install
+- Optional Simple Calendar / Simple Calendar Reborn sync
 
 ---
 
@@ -165,23 +193,26 @@ netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=3000 conne
 ```
 /
 ├── src/
-│   └── App.tsx                          # Tab host — all 6 tabs, encounter state, callbacks
+│   └── App.tsx                          # Tab host — all 7 tabs, encounter state, callbacks
 ├── parser-versions/
-│   ├── dnd-parser-v20-stable.tsx        # Core parser + StatBlockParser component
-│   ├── class-importer.tsx               # Class Importer + AI Class Assistant
-│   ├── batch-processor.tsx              # Batch Processor + AI Name Mode
-│   ├── encounter-builder.tsx            # Encounter Builder
-│   ├── campaign-builder.tsx             # Campaign Builder UI
-│   ├── campaign-builder-data.ts         # CampaignPreset interface + Eldoria data + macro builders
-│   ├── campaign-eldoria-preset.ts       # ELDORIA_PRESET thin wrapper
-│   ├── magic-item-creator.tsx           # Magic Item Creator — Tab 6
+│   ├── dnd-parser-v20-stable.tsx        # Core parser + StatBlockParser component (Tab 1)
+│   ├── batch-processor.tsx              # Batch Processor + AI Name Mode (Tab 2)
+│   ├── encounter-builder.tsx            # Encounter Builder (Tab 3)
+│   ├── class-importer.tsx               # Class Importer + AI Class Assistant (Tab 4)
+│   ├── campaign-builder.tsx             # Campaign Builder UI (Tab 5)
+│   ├── campaign-builder-data.ts         # CampaignPreset interface + macro builders
+│   ├── campaign-eldoria-preset.ts       # ELDORIA_PRESET + BLANK_PRESET
+│   ├── magic-item-creator.tsx           # Magic Item Creator (Tab 6)
+│   ├── celestial-calculator.tsx         # Celestial Calculator + Night Sky (Tab 7)
+│   ├── celestial-foundry-export.ts      # Foundry module ZIP generator
 │   ├── claude-api.ts                    # Anthropic SDK — all AI calls isolated here
 │   ├── fantasy-grounds-exporter.ts      # FGU 2024 XML formatter
 │   └── settings-modal.tsx              # API key management
 ├── campaign/
 │   └── Echoes of the Aether/           # Raw campaign source files
 ├── docs/
-│   └── version-history.md              # Full version history
+│   └── (archived — see archived/ folder for Phase 6-era docs)
+├── archived/                            # Outdated docs from earlier phases
 ├── vite.config.ts
 └── README.md
 ```
@@ -202,11 +233,13 @@ netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=3000 conne
 | 15b | Encounter Builder + AI Custom CR mode + difficulty | ✅ Complete |
 | 15c | AI Campaign Generator + Import/Export JSON | ✅ Complete |
 | 16 | AI Class Assistant | ✅ Complete |
-| 17 Sprint 1 | Campaign editor — localStorage, add/edit/delete NPCs & creatures | ✅ Complete |
-| 17 Sprint 2 | Campaign editor — add/edit/delete continents & journals | ✅ Complete |
-| 18 | Magic Item Creator — Tab 6 | ✅ Complete |
+| 17 | Campaign editor — add/edit/delete NPCs, creatures, continents, journals | ✅ Complete |
+| 18 | Magic Item Creator (Tab 6) | ✅ Complete |
+| 18b | Celestial Calculator (Tab 7) — night sky, moon phases, year calendar, AI descriptions, Foundry module export | ✅ Complete |
+| 18c | Foundry module hosting + Simple Calendar Reborn compatibility | ✅ Complete |
+| — | Static hosting + Cloudflare Pages deployment | 🔜 Planned |
+| — | Desktop executable (Electron/Tauri) + distribution | 🔜 Planned |
 | — | UI/UX design pass + color scheme | 🔜 Planned |
-| — | Hosting + account/monetization system | 🔜 Planned |
 | — | Roll20 export | Deferred |
 
 ---
@@ -217,5 +250,4 @@ netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=3000 conne
 - Spells not in `SPELL_META` have blank school and level 0 with a named warning
 - URL import works on static HTML only (D&D Beyond / GMBinder are JS-rendered — not supported)
 - FGU export targets 2024 schema only
-- Campaign Builder editor covers NPCs and creatures — continent and journal editing coming in Phase 17 Sprint 2
 - API key stored in `localStorage` — will move to backend proxy for hosted version

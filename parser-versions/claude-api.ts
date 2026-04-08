@@ -132,6 +132,7 @@ RULES:
 - 4-8 unique creatures fitting the setting
 - Journals: one "World Overview" + one per continent (each with 2-3 pages)
 - NPC cr: 1-10 range typical; alignment in "lawful good" format
+- actorFolders MUST include one entry per continent with name === that continent's name exactly (Step 3 macros look up folders by continent name)
 - Use thematic hex colors for folders (e.g. "#4a1d96" for arcane, "#1e3a5f" for ocean)
 - img paths: "worlds/[id]/assets/[name-slug].png"
 - Keep bio/html concise — 2-4 sentences per field
