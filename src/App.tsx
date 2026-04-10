@@ -208,6 +208,9 @@ export default function App() {
                 New to Foundry? Start with <strong style={{ color: '#a78bfa' }}>Stat Block Parser</strong> and paste any monster description.
                 Already know what you&apos;re doing? Pick a tab.
               </p>
+              <p style={{ margin: '0 0 10px', fontSize: 12, color: '#64748b', lineHeight: 1.6 }}>
+                AI features (stat block generation, campaign builder, magic items) require a Claude API key — click <strong style={{ color: '#94a3b8' }}>API ⚙</strong> in the top right for a 2-minute setup guide. All other features work without a key.
+              </p>
               <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' as const }}>
                 {([
                   ['#7c3aed', 'Stat Block Parser', 'Paste a monster → Foundry actor'],
@@ -224,13 +227,29 @@ export default function App() {
                 ))}
               </div>
             </div>
-            <button onClick={dismissBanner} title="Don't show again" style={{
-              background: 'none', border: '1px solid #334155', borderRadius: 6,
-              padding: '5px 8px', cursor: 'pointer', color: '#475569', flexShrink: 0,
-              display: 'flex', alignItems: 'center', gap: 4, fontSize: 11,
-            }}>
-              <X size={12} /> Got it
-            </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0, alignItems: 'flex-end' }}>
+              <a
+                href="https://ko-fi.com/tonyb29"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  background: 'none', border: '1px solid #334155', borderRadius: 6,
+                  padding: '5px 10px', color: '#94a3b8', fontSize: 11,
+                  textDecoration: 'none', whiteSpace: 'nowrap' as const,
+                }}
+                title="If this saved you prep time, a coffee is appreciated!"
+              >
+                ☕ Buy me a coffee
+              </a>
+              <button onClick={dismissBanner} title="Don't show again" style={{
+                background: 'none', border: '1px solid #334155', borderRadius: 6,
+                padding: '5px 8px', cursor: 'pointer', color: '#475569',
+                display: 'flex', alignItems: 'center', gap: 4, fontSize: 11,
+              }}>
+                <X size={12} /> Got it
+              </button>
+            </div>
           </div>
         </div>
       )}
