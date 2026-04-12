@@ -299,7 +299,7 @@ RULES:
 - Do NOT include "mgc" in extraProperties — it is added automatically
 - attackBonus: 0 if no attack bonus, 1/2/3 for +1/+2/+3 weapons
 - extraDamageParts: [] if no extra damage
-- description: 2–3 sentence flavor + mechanical summary as HTML with <p> tags
+- description: HTML formatted for Foundry's rich text editor. Start with 1–2 flavor sentences in a <p> tag. Then each named feature or property gets its own <p> block: <p><strong>Feature Name.</strong> Full mechanical text of that feature.</p> — never run multiple features together on one line. Recharge features belong in the charges/recharge fields AND should also appear in their own <p> block in description so the text is complete.
 - baseWeapon must be one of: longsword, shortsword, greatsword, greataxe, handaxe, dagger, rapier, mace, quarterstaff, warhammer, battleaxe, spear, flail, glaive, halberd, maul, whip, longbow, shortbow, handcrossbow, heavycrossbow, lighthammer, trident
 - baseArmor must be one of: leather, studdedleather, hide, chainshirt, scalemail, breastplate, halfplate, ringmail, chainmail, splint, plate, shield
 - healingFormula: only for healing potions/items; null otherwise
