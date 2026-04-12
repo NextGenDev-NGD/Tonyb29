@@ -137,11 +137,20 @@ function buildFoundryItem(spec: MagicItemSpec): object {
   const desc = flavorHtml + featuresHtml
 
   // ── Weapon ──────────────────────────────────────────────────────────────
+  // Normalize full-word property names to Foundry codes, then deduplicate
+  const PROP_ALIASES: Record<string, string> = {
+    reach: 'rch', finesse: 'fin', light: 'lgt', heavy: 'hvy', thrown: 'thr',
+    versatile: 'ver', ammunition: 'amm', loading: 'lod', silvered: 'sil',
+    adamantine: 'ada', magical: 'mgc', returning: 'ret', special: 'spc',
+  }
+  const normalizeProps = (extra: string[]) =>
+    extra.map(p => PROP_ALIASES[p.toLowerCase()] ?? p)
+
   if (spec.itemType === 'weapon') {
     const wdef = WEAPONS.find(w => w.value === (spec.baseWeapon ?? 'longsword')) ?? WEAPONS[0]
     const bonus = spec.attackBonus ?? 0
     const bonusStr = bonus > 0 ? String(bonus) : ''
-    const props = [...wdef.props, ...(spec.extraProperties ?? [])].filter((v, i, a) => a.indexOf(v) === i)
+    const props = [...wdef.props, ...normalizeProps(spec.extraProperties ?? [])].filter((v, i, a) => a.indexOf(v) === i)
     const isRanged = wdef.ranged ?? false
     const extraParts = (spec.extraDamageParts ?? []).map(p => ({
       number: p.number, denomination: p.denomination, bonus: '',
@@ -477,6 +486,7 @@ export default function MagicItemCreator() {
   const [itemJson, setItemJson]   = useState('')
   const [macroText, setMacroText] = useState('')
   const [itemName, setItemName]   = useState('')
+  const [rawSpec, setRawSpec]     = useState('')
   const [itemRarity, setItemRarity] = useState<Rarity>('')
 
   // Shared macro option
@@ -541,6 +551,7 @@ export default function MagicItemCreator() {
     setError(''); setLoading(true)
     try {
       const raw = await generateMagicItemSpec(textInput.trim())
+      setRawSpec(raw)
       const spec: MagicItemSpec = JSON.parse(raw.replace(/^```json?\s*/i, '').replace(/```\s*$/, '').trim())
       finishItem(spec)
     } catch (e: any) {

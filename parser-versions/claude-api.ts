@@ -308,7 +308,7 @@ RULES:
 - baseArmor must be one of: leather, studdedleather, hide, chainshirt, scalemail, breastplate, halfplate, ringmail, chainmail, splint, plate, shield
 - healingFormula: only for healing potions/items; null otherwise
 - charges: null for passive unlimited-use items
-- extraProperties: weapon properties beyond mgc — e.g. ["fin"] for finesse, ["ada"] for adamantine
+- extraProperties: additional Foundry weapon property codes beyond what the base weapon already has. Use ONLY these codes: fin (finesse), lgt (light), hvy (heavy), rch (reach), thr (thrown), ver (versatile), two (two-handed), amm (ammunition), lod (loading), sil (silvered), ada (adamantine), ret (returning), spc (special). Do NOT repeat codes already on the base weapon.
 
 ${hintLines ? `USER HINTS (respect these unless they conflict with good design):\n${hintLines}\n` : ''}
 ITEM DESCRIPTION:
