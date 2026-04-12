@@ -7,10 +7,11 @@ import EncounterBuilder, { Encounter, EncounterCreature } from '../parser-versio
 import CampaignBuilder from '../parser-versions/campaign-builder'
 import MagicItemCreator from '../parser-versions/magic-item-creator'
 import CelestialCalculator from '../parser-versions/celestial-calculator'
+import CharacterOptions from '../parser-versions/character-options'
 import SettingsModal from '../parser-versions/settings-modal'
 import { hasApiKey } from '../parser-versions/claude-api'
 
-type Tab = 'parser' | 'batch' | 'encounter' | 'class' | 'campaign' | 'items' | 'celestial'
+type Tab = 'parser' | 'batch' | 'encounter' | 'class' | 'campaign' | 'items' | 'celestial' | 'charoptions'
 
 const TAB_META: Record<Tab, { desc: string; color: string }> = {
   parser:    { color: '#7c3aed', desc: 'Paste any D&D 5e stat block — get a Foundry-ready actor in seconds' },
@@ -19,7 +20,8 @@ const TAB_META: Record<Tab, { desc: string; color: string }> = {
   class:     { color: '#4338ca', desc: 'Turn a class description into a complete Foundry class with all advancements' },
   campaign:  { color: '#065f46', desc: 'Import a full world — continents, NPCs, and creatures — in five steps' },
   items:     { color: '#be185d', desc: 'Create magic weapons, armor, wondrous items, and consumables with Foundry JSON' },
-  celestial: { color: '#0e7490', desc: 'Track moon phases, conjunctions, and celestial events for any fantasy world' },
+  celestial:    { color: '#0e7490', desc: 'Track moon phases, conjunctions, and celestial events for any fantasy world' },
+  charoptions:  { color: '#4338ca', desc: 'Create subclasses, species, and backgrounds with Foundry-ready import macros' },
 }
 
 function uid() { return Math.random().toString(36).slice(2, 10) }
@@ -34,6 +36,25 @@ export default function App() {
   const dismissBanner = () => {
     localStorage.setItem('dnd_welcome_dismissed', '1')
     setBannerOpen(false)
+  }
+
+  // Ko-fi nudge — show once per session after first tab switch
+  const [kofiVisible, setKofiVisible] = useState(false)
+  const [hasNavigated, setHasNavigated] = useState(false)
+  const [kofiDismissed, setKofiDismissed] = useState(
+    () => sessionStorage.getItem('kofi_dismissed') === '1'
+  )
+  const switchTab = (t: Tab) => {
+    setTab(t)
+    if (!hasNavigated && !kofiDismissed) {
+      setHasNavigated(true)
+      setTimeout(() => setKofiVisible(true), 500)
+    }
+  }
+  const dismissKofi = () => {
+    sessionStorage.setItem('kofi_dismissed', '1')
+    setKofiVisible(false)
+    setKofiDismissed(true)
   }
 
   // Encounter state — lifted here so parser + batch can push into it
@@ -108,7 +129,7 @@ export default function App() {
     const { color } = TAB_META[t]
     const active = tab === t
     return (
-      <button onClick={() => setTab(t)} style={{
+      <button onClick={() => switchTab(t)} style={{
         padding: '6px 16px', borderRadius: 6, border: 'none', cursor: 'pointer',
         background: active ? color : '#1e293b',
         color: active ? '#fff' : '#94a3b8',
@@ -145,6 +166,7 @@ export default function App() {
           {btn('campaign',  'Campaign Builder')}
           {btn('items',     '✦ Magic Items')}
           {btn('celestial', '✦ Celestial')}
+          {btn('charoptions', '✦ Character Options')}
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
             <button
               onClick={() => setBannerOpen(v => !v)}
@@ -242,6 +264,19 @@ export default function App() {
               >
                 ☕ Buy me a coffee
               </a>
+              <a
+                href="https://github.com/Tonyb29/DM-VTT-Toolkit/issues/new"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  background: 'none', border: '1px solid #334155', borderRadius: 6,
+                  padding: '5px 10px', color: '#64748b', fontSize: 11,
+                  textDecoration: 'none', whiteSpace: 'nowrap' as const,
+                }}
+              >
+                🐛 Report a bug
+              </a>
               <button onClick={dismissBanner} title="Don't show again" style={{
                 background: 'none', border: '1px solid #334155', borderRadius: 6,
                 padding: '5px 8px', cursor: 'pointer', color: '#475569',
@@ -251,6 +286,49 @@ export default function App() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Ko-fi nudge bar */}
+      {kofiVisible && (
+        <div style={{
+          background: '#1e1b4b', borderBottom: '1px solid #7c3aed44',
+          padding: '8px 24px', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', gap: 12,
+        }}>
+          <span style={{ fontSize: 13, color: '#c4b5fd' }}>
+            ☕ If this saved you 30 minutes of prep time, consider buying me a coffee!
+          </span>
+          <a
+            href="https://ko-fi.com/tonyb29"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              background: '#7c3aed', color: '#fff', borderRadius: 6,
+              padding: '4px 12px', fontSize: 12, fontWeight: 700,
+              textDecoration: 'none', whiteSpace: 'nowrap' as const,
+            }}
+          >
+            Ko-fi ☕
+          </a>
+          <a
+            href="https://github.com/Tonyb29/DM-VTT-Toolkit/issues/new"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: '#64748b', fontSize: 11, textDecoration: 'none',
+              whiteSpace: 'nowrap' as const, borderLeft: '1px solid #334155',
+              paddingLeft: 12,
+            }}
+          >
+            🐛 Bug / Suggestion
+          </a>
+          <button onClick={dismissKofi} style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: '#475569', padding: '2px 4px', marginLeft: 4,
+          }}>
+            <X size={14} />
+          </button>
         </div>
       )}
 
@@ -288,10 +366,28 @@ export default function App() {
       <div style={show('celestial')}>
         <CelestialCalculator />
       </div>
+      <div style={show('charoptions')}>
+        <CharacterOptions />
+      </div>
 
       {showSettings && (
         <SettingsModal onClose={() => { setShowSettings(false); setApiKeySet(hasApiKey()) }} />
       )}
+
+      {/* Footer */}
+      <div style={{
+        borderTop: '1px solid #1e293b', padding: '10px 24px',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16,
+        fontSize: 11, color: '#334155', marginTop: 32,
+      }}>
+        <span>© 2026 Tony B — MIT License</span>
+        <a href="/privacy.html" target="_blank" rel="noopener noreferrer"
+          style={{ color: '#475569', textDecoration: 'none' }}>Privacy Policy</a>
+        <a href="https://github.com/Tonyb29/DM-VTT-Toolkit" target="_blank" rel="noopener noreferrer"
+          style={{ color: '#475569', textDecoration: 'none' }}>GitHub</a>
+        <a href="https://ko-fi.com/tonyb29" target="_blank" rel="noopener noreferrer"
+          style={{ color: '#475569', textDecoration: 'none' }}>☕ Ko-fi</a>
+      </div>
     </>
   )
 }

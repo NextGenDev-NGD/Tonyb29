@@ -319,6 +319,51 @@ ${description.trim()}`,
   return (msg.content[0] as any).text?.trim() ?? ''
 }
 
+// Generate a subclass specification as structured JSON
+export async function generateSubclassSpec(description: string, classIdentifier?: string): Promise<string> {
+  const client = getClient()
+  const msg = await client.messages.create({
+    model: MODEL,
+    max_tokens: 2048,
+    messages: [{
+      role: 'user',
+      content: `You are a D&D 5e subclass designer (2024 ruleset). Generate a subclass specification as a single JSON object. No markdown fences, no commentary — raw JSON only.
+
+SCHEMA:
+{
+  "name": string,
+  "classIdentifier": string,
+  "description": string,
+  "features": [
+    {
+      "level": number,
+      "name": string,
+      "description": string,
+      "recharge": "" | "sr" | "lr" | "5-6" | "4-6" | "6"
+    }
+  ],
+  "domainSpells": [
+    { "level": number, "spells": string }
+  ]
+}
+
+RULES:
+- classIdentifier: lowercase slug of the parent class (e.g. "cleric", "fighter", "warlock")${classIdentifier ? `\n- Use classIdentifier: "${classIdentifier}"` : ''}
+- description: 2-3 sentences of flavor text only (no mechanical rules)
+- features: one entry per named subclass feature; level = cleric/class level when gained (e.g. 1, 2, 6, 10, 14 for a Cleric domain)
+- recharge: "" for passive features, "lr" for long rest, "sr" for short rest, "5-6" for recharge 5-6
+- description in each feature: full mechanical text, complete and precise — include all numbers, dice, and conditions
+- domainSpells: only for Cleric/Druid/Paladin subclasses that grant always-prepared spells; empty array otherwise
+  - level = cleric level when unlocked (1, 3, 5, 7, 9); spells = comma-separated spell names
+- Include ALL features from the description, preserving exact mechanics
+
+SUBCLASS DESCRIPTION:
+${description.trim()}`,
+    }],
+  })
+  return (msg.content[0] as any).text?.trim() ?? ''
+}
+
 // Generate a poetic sky description for the current night in any fantasy world
 export async function generateSkyDescription(
   worldName: string,
