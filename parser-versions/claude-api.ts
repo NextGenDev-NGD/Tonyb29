@@ -276,6 +276,8 @@ SCHEMA (include all fields; use null for unused optional fields):
   "attunement": "" | "optional" | "required",
   "description": string,
 
+  "features": [{"name": string, "description": string, "recharge": string | null}] | null,
+
   "baseWeapon": string | null,
   "attackBonus": number | null,
   "extraDamageParts": [{"number": number, "denomination": number, "types": [string]}] | null,
@@ -299,7 +301,9 @@ RULES:
 - Do NOT include "mgc" in extraProperties — it is added automatically
 - attackBonus: 0 if no attack bonus, 1/2/3 for +1/+2/+3 weapons
 - extraDamageParts: [] if no extra damage
-- description: HTML formatted for Foundry's rich text editor. Start with 1–2 flavor sentences in a <p> tag. Then each named feature or property gets its own <p> block: <p><strong>Feature Name.</strong> Full mechanical text of that feature.</p> — never run multiple features together on one line. Recharge features belong in the charges/recharge fields AND should also appear in their own <p> block in description so the text is complete.
+- description: 1–2 sentences of flavor text only, as a plain HTML <p> tag. Do NOT put named features here.
+- features: array of named item features/properties. Each entry has "name" (the feature title), "description" (full mechanical text), and "recharge" ("sr", "lr", "5-6", or null). Use this for every named feature like "Soul Reaper", "Harvest Essence", etc. Null if the item has no named features.
+- charges/recharge: set on the top-level item if ANY feature recharges — use the most frequent recharge type. Individual feature recharge labels go in features[].recharge.
 - baseWeapon must be one of: longsword, shortsword, greatsword, greataxe, handaxe, dagger, rapier, mace, quarterstaff, warhammer, battleaxe, spear, flail, glaive, halberd, maul, whip, longbow, shortbow, handcrossbow, heavycrossbow, lighthammer, trident
 - baseArmor must be one of: leather, studdedleather, hide, chainshirt, scalemail, breastplate, halfplate, ringmail, chainmail, splint, plate, shield
 - healingFormula: only for healing potions/items; null otherwise

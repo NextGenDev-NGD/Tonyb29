@@ -14,12 +14,19 @@ type Rarity = '' | 'common' | 'uncommon' | 'rare' | 'veryRare' | 'legendary' | '
 type Attunement = '' | 'optional' | 'required'
 interface ExtraDmgPart { number: number; denomination: number; damageType: string }
 
+interface MagicItemFeature {
+  name: string
+  description: string
+  recharge?: string | null  // 'sr' | 'lr' | '5-6' | null
+}
+
 interface MagicItemSpec {
   name: string
   itemType: FoundryItemType
   rarity: Rarity
   attunement: Attunement
   description: string
+  features?: MagicItemFeature[] | null
   baseWeapon?: string | null
   attackBonus?: number | null
   extraDamageParts?: Array<{ number: number; denomination: number; types: string[] }> | null
@@ -122,7 +129,12 @@ function buildFoundryItem(spec: MagicItemSpec): object {
     ? { value: spec.charges, max: String(spec.charges), per: 'charges', recovery: buildRecovery(spec.recharge, spec.rechargeFormula) }
     : { value: null, max: null, per: null, recovery: [] }
 
-  const desc = spec.description.startsWith('<') ? spec.description : `<p>${spec.description}</p>`
+  const flavorHtml = spec.description.startsWith('<') ? spec.description : `<p>${spec.description}</p>`
+  const featuresHtml = (spec.features ?? []).map(f => {
+    const rechargeLabel = f.recharge ? ` (Recharge ${f.recharge === 'sr' ? 'Short Rest' : f.recharge === 'lr' ? 'Long Rest' : f.recharge})` : ''
+    return `<p><strong>${f.name}${rechargeLabel}.</strong> ${f.description}</p>`
+  }).join('')
+  const desc = flavorHtml + featuresHtml
 
   // ── Weapon ──────────────────────────────────────────────────────────────
   if (spec.itemType === 'weapon') {
