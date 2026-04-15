@@ -399,6 +399,53 @@ Rules:
   return (msg.content[0] as any).text?.trim() ?? ''
 }
 
+// Generate a species/race spec from a plain-language description
+export async function generateSpeciesSpec(description: string): Promise<string> {
+  const client = getClient()
+  const msg = await client.messages.create({
+    model: MODEL,
+    max_tokens: 2048,
+    messages: [{
+      role: 'user',
+      content: `You are a D&D 5e species designer (2024 ruleset). Generate a species specification as a single JSON object. No markdown fences, no commentary — raw JSON only.
+
+SCHEMA:
+{
+  "name": string,
+  "size": "tiny" | "sm" | "med" | "lg" | "huge",
+  "speed": number,
+  "flySpeed": number,
+  "swimSpeed": number,
+  "climbSpeed": number,
+  "darkvision": number,
+  "resistances": string,
+  "conditionImmunities": string,
+  "languages": string,
+  "asiNote": string,
+  "traits": [
+    { "name": string, "description": string }
+  ]
+}
+
+RULES:
+- size: lowercase slug — "tiny", "sm", "med", "lg", "huge"
+- speed/flySpeed/swimSpeed/climbSpeed: integer feet, 0 if not applicable
+- darkvision: integer feet, 0 if none
+- resistances: comma-separated damage types (e.g. "poison, fire") or "" if none
+- conditionImmunities: comma-separated condition names (e.g. "charmed, frightened") or "" if none
+- languages: comma-separated (e.g. "Common, Elvish")
+- asiNote: short sentence describing ability score increases in 2024 format (e.g. "Increase one ability score by 2 and another by 1, or increase three different scores by 1 each.")
+- traits: one entry per named racial feature; description = full mechanical text including all numbers, dice, and conditions
+- Do NOT include Darkvision as a trait if darkvision > 0 — it is handled automatically by the darkvision field
+- Do NOT include ASI or speed as a trait — those are handled by dedicated fields
+
+SPECIES DESCRIPTION:
+${description.trim()}`,
+    }],
+  })
+  return (msg.content[0] as any).text?.trim() ?? ''
+}
+
 // Extract a plain-text stat block from a URL (fetches page text, sends to Claude)
 export async function extractStatBlockFromUrl(url: string): Promise<string> {
   const client = getClient();
