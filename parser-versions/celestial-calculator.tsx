@@ -404,9 +404,18 @@ export default function CelestialCalculator() {
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError]     = useState('')
   const [editingIdx, setEditingIdx] = useState<number | 'new' | null>(null)
-  const [copied, setCopied]       = useState(false)
-  const [moduleGen, setModuleGen] = useState(false)
-  const [showInstall, setShowInstall] = useState(false)
+  const [copied, setCopied]             = useState(false)
+  const [copiedManifest, setCopiedManifest] = useState(false)
+  const [moduleGen, setModuleGen]       = useState(false)
+  const [showInstall, setShowInstall]   = useState(false)
+
+  const MANIFEST_URL = 'https://raw.githubusercontent.com/Tonyb29/Celestial-Calendar/main/module.json'
+
+  async function handleCopyManifest() {
+    try { await navigator.clipboard.writeText(MANIFEST_URL) } catch { /* fallback not needed */ }
+    setCopiedManifest(true)
+    setTimeout(() => setCopiedManifest(false), 2000)
+  }
 
   // Settings form mirrors
   const [calName, setCalName] = useState(calendar.name)
@@ -676,6 +685,38 @@ export default function CelestialCalculator() {
           <Download size={13} />
           {moduleGen ? 'Generating…' : '📦 Get Foundry Module'}
         </button>
+      </div>
+
+      {/* Manifest URL bar — always visible, paste into Foundry's Install Module dialog */}
+      <div style={{
+        background: '#060912', border: '1px solid #0e749033', borderRadius: 8,
+        padding: '8px 12px', marginBottom: 16,
+        display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' as const,
+      }}>
+        <span style={{ color: '#475569', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' as const }}>
+          📦 Foundry Install URL:
+        </span>
+        <code style={{
+          flex: 1, color: '#67e8f9', fontSize: 11, fontFamily: 'monospace',
+          wordBreak: 'break-all' as const, minWidth: 0,
+        }}>
+          {MANIFEST_URL}
+        </code>
+        <button
+          onClick={handleCopyManifest}
+          style={{
+            background: copiedManifest ? '#064e3b' : '#0e7490',
+            border: 'none', borderRadius: 5, color: copiedManifest ? '#4ade80' : 'white',
+            padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 600,
+            whiteSpace: 'nowrap' as const, flexShrink: 0,
+          }}
+        >
+          {copiedManifest ? '✓ Copied!' : 'Copy'}
+        </button>
+        <span style={{ color: '#1e293b', fontSize: 11 }}>·</span>
+        <span style={{ color: '#334155', fontSize: 11, whiteSpace: 'nowrap' as const }}>
+          Paste in Foundry → <em>Install Module</em> dialog
+        </span>
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════════ */}
