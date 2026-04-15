@@ -5,6 +5,7 @@
 import React, { useState } from 'react'
 import { Copy, Plus, Trash2, Sparkles, ChevronDown, ChevronRight } from 'lucide-react'
 import { generateSubclassSpec, generateSpeciesSpec, generateBackgroundSpec, hasApiKey } from './claude-api'
+import ClassImporter from './class-importer'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const _djb2 = (s: string) => {
@@ -1387,10 +1388,10 @@ function BackgroundCreator() {
 }
 
 // ── Main Component ─────────────────────────────────────────────────────────────
-type CharMode = 'subclass' | 'species' | 'background'
+type CharMode = 'class' | 'subclass' | 'species' | 'background'
 
 export default function CharacterOptions() {
-  const [mode, setMode] = useState<CharMode>('subclass')
+  const [mode, setMode] = useState<CharMode>('class')
 
   const modeBtn = (m: CharMode, label: string, color: string) => (
     <button onClick={() => setMode(m)} style={{
@@ -1405,16 +1406,16 @@ export default function CharacterOptions() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#0f172a', color: '#e2e8f0' }}>
-      <div style={{ padding: '16px 20px', borderBottom: '1px solid #1e293b', display: 'flex', gap: 8 }}>
-        {modeBtn('subclass',   'Subclass',   '#4338ca')}
+      <div style={{ padding: '16px 20px', borderBottom: '1px solid #1e293b', display: 'flex', gap: 8, flexWrap: 'wrap' as const }}>
+        {modeBtn('class',      'Class',      '#4338ca')}
+        {modeBtn('subclass',   'Subclass',   '#3730a3')}
         {modeBtn('species',    'Species',    '#0f766e')}
         {modeBtn('background', 'Background', '#92400e')}
       </div>
 
-      {mode === 'subclass' && <SubclassCreator />}
-
-      {mode === 'species' && <SpeciesCreator />}
-
+      {mode === 'class'      && <ClassImporter />}
+      {mode === 'subclass'   && <SubclassCreator />}
+      {mode === 'species'    && <SpeciesCreator />}
       {mode === 'background' && <BackgroundCreator />}
     </div>
   )
