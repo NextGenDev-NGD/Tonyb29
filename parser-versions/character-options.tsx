@@ -434,7 +434,11 @@ function SubclassCreator() {
   }
 
   return (
-    <div style={{ maxWidth: 860, margin: '0 auto', padding: '20px 16px' }}>
+    <div style={{ maxWidth: 860, margin: '0 auto', padding: '20px 16px 60px' }}>
+      <h3 style={{ color: '#818cf8', margin: '0 0 4px', fontSize: 18, fontWeight: 700 }}>Subclass Creator</h3>
+      <p style={{ color: '#475569', fontSize: 13, margin: '0 0 20px' }}>
+        Build a class subclass — outputs a Foundry subclass item with feature feats, domain spells, and nested folder structure.
+      </p>
 
       {/* AI Generate toggle */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>

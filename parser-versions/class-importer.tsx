@@ -776,13 +776,17 @@ export default function ClassImporter() {
       <div className="max-w-7xl mx-auto">
 
         {/* Header */}
-        <div className="mb-8 flex items-center gap-3">
-          <h1 className="text-4xl font-bold text-white">Custom Class Importer</h1>
-          <span className="bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-bold">Phase 9</span>
+        <div style={{ marginBottom: 24, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+          <div style={{ flex: 1 }}>
+            <h3 style={{ color: '#818cf8', margin: '0 0 4px', fontSize: 18, fontWeight: 700 }}>Class Creator</h3>
+            <p style={{ color: '#475569', fontSize: 13, margin: 0 }}>
+              Paste a structured class template — outputs a complete Foundry class with all advancements and feature items.
+            </p>
+          </div>
           {(input || bundle) && (
             <button
               onClick={() => { setInput(''); setBundle(null); setMacroItems([]); setSummary(null); setWarnings([]); setErrors([]); setAiDesc(''); setAiOpen(false); setAiError(null); setAiSuccess(false); }}
-              className="ml-auto flex items-center gap-1 bg-slate-700 hover:bg-red-900 text-slate-400 hover:text-red-300 text-xs font-semibold px-3 py-1.5 rounded transition"
+              style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 6, color: '#64748b', fontSize: 11, fontWeight: 600, padding: '5px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}
               title="Clear input and results"
             >
               <X size={13} /> Reset
