@@ -656,10 +656,26 @@ export default function CelestialCalculator() {
       </div>
 
       {/* View tabs */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16, alignItems: 'center', flexWrap: 'wrap' as const }}>
         <button style={viewBtn('sky')}      onClick={() => setView('sky')}>🌙 Night Sky</button>
         <button style={viewBtn('calendar')} onClick={() => setView('calendar')}>📅 Year Calendar</button>
         <button style={viewBtn('settings')} onClick={() => setView('settings')}>⚙ Settings</button>
+        <div style={{ flex: 1 }} />
+        <button
+          onClick={handleGenerateModule}
+          disabled={moduleGen}
+          title="Download a custom Foundry VTT module for your world"
+          style={{
+            background: moduleGen ? '#1e293b' : 'linear-gradient(135deg, #0e7490, #0891b2)',
+            border: 'none', borderRadius: 7, color: moduleGen ? '#64748b' : 'white',
+            padding: '6px 14px', cursor: moduleGen ? 'not-allowed' : 'pointer',
+            fontWeight: 600, fontSize: 12,
+            display: 'flex', alignItems: 'center', gap: 6,
+          }}
+        >
+          <Download size={13} />
+          {moduleGen ? 'Generating…' : '📦 Get Foundry Module'}
+        </button>
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════════ */}
@@ -938,12 +954,12 @@ export default function CelestialCalculator() {
           {/* Foundry module generator */}
           <div style={{ background: '#0d1117', border: '1px solid #0e7490aa', borderRadius: 10, padding: '14px 16px' }}>
             <div style={{ color: '#67e8f9', fontWeight: 600, fontSize: 14, marginBottom: 6 }}>
-              Export to Foundry VTT
+              📦 Foundry VTT Module
             </div>
             <div style={{ color: '#64748b', fontSize: 12, marginBottom: 12, lineHeight: 1.6 }}>
-              Generate an installable Foundry module for <strong style={{ color: '#94a3b8' }}>{calendar.name}</strong>.
+              Downloads a custom Foundry module for <strong style={{ color: '#94a3b8' }}>{calendar.name}</strong> with your moon configuration.
               Opens a Night Sky panel in Foundry showing live moon phases and tonight's events.
-              Optionally syncs with <strong style={{ color: '#94a3b8' }}>Simple Calendar</strong> for automatic date tracking.
+              Optionally syncs with <strong style={{ color: '#94a3b8' }}>Simple Calendar</strong>.
             </div>
             {/* Download button + inline How to Install toggle */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10, flexWrap: 'wrap' as const }}>
