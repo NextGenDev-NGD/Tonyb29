@@ -446,6 +446,48 @@ ${description.trim()}`,
   return (msg.content[0] as any).text?.trim() ?? ''
 }
 
+// Generate a background spec from a plain-language description (2024 format)
+export async function generateBackgroundSpec(description: string): Promise<string> {
+  const client = getClient()
+  const msg = await client.messages.create({
+    model: MODEL,
+    max_tokens: 1024,
+    messages: [{
+      role: 'user',
+      content: `You are a D&D 5e background designer (2024 ruleset). Generate a background specification as a single JSON object. No markdown fences, no commentary — raw JSON only.
+
+SCHEMA:
+{
+  "name": string,
+  "flavorText": string,
+  "skill1": string,
+  "skill2": string,
+  "toolProficiency": string,
+  "language": string,
+  "originFeat": string,
+  "startingEquipment": string,
+  "featureName": string,
+  "featureDescription": string
+}
+
+RULES:
+- name: background name (e.g. "Haunted One", "City Watch")
+- flavorText: 2–3 sentence flavor/lore description
+- skill1 / skill2: full skill names from this list ONLY: Acrobatics, Animal Handling, Arcana, Athletics, Deception, History, Insight, Intimidation, Investigation, Medicine, Nature, Perception, Performance, Persuasion, Religion, Sleight of Hand, Stealth, Survival
+- toolProficiency: one tool or instrument (e.g. "Thieves' Tools", "Herbalism Kit", "Lute")
+- language: one language (e.g. "Abyssal", "Dwarvish", "Any of your choice")
+- originFeat: name of a 2024 D&D feat appropriate for this background (e.g. "Magic Initiate", "Alert", "Skilled", "Lucky", "Tough")
+- startingEquipment: comma-separated list of starting items
+- featureName: name of the background's special feature (e.g. "Shelter of the Faithful")
+- featureDescription: full mechanical/narrative text of the feature
+
+BACKGROUND DESCRIPTION:
+${description.trim()}`,
+    }],
+  })
+  return (msg.content[0] as any).text?.trim() ?? ''
+}
+
 // Extract a plain-text stat block from a URL (fetches page text, sends to Claude)
 export async function extractStatBlockFromUrl(url: string): Promise<string> {
   const client = getClient();
