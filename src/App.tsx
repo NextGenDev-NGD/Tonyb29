@@ -227,6 +227,14 @@ export default function App() {
           >
             <HelpCircle size={14} />
           </button>
+          {/* About */}
+          <a href="/about.html" target="_blank" rel="noopener noreferrer"
+            style={{
+              background: 'none', border: `1px solid ${theme.accent}44`, borderRadius: 6,
+              padding: '5px 10px', color: '#64748b', fontSize: 11,
+              textDecoration: 'none', whiteSpace: 'nowrap' as const,
+            }}
+          >About</a>
           {/* Ko-fi */}
           <a href="https://ko-fi.com/tonyb29" target="_blank" rel="noopener noreferrer"
             style={{
