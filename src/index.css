@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Base scale — bumps everything up ~5% for average screen sizes ───────── */
+html { zoom: 1.05; }
+
 /* ─── Theme B — Teal ──────────────────────────────────────────────────────── */
 [data-theme="B"] .border-purple-500\/30,
 [data-theme="B"] .border-violet-500\/30  { border-color: rgb(13 148 136 / 0.3); }
