@@ -1314,15 +1314,17 @@ export default function StatBlockParser({ onSendToEncounter }: { onSendToEncount
 
   // ─── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
+    <div style={{ padding: '24px' }}>
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8 flex items-center gap-3">
-          <h1 className="text-4xl font-bold text-white">D&D Stat Block Converter</h1>
-          <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1"><Sword size={14} /> v4.3-alpha</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
+          <Sword size={20} color="#7c3aed" />
+          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#e2e8f0' }}>Stat Block Parser</h2>
           {(input || output) && (
             <button
               onClick={() => { setInput(''); setOutput(null); setErrors([]); setWarnings([]); setParseStats(null); setShowEditor(false); setAiError(''); setUrlInput(''); setNameInput(''); setCustomName(''); setCustomCR('1'); setCustomCtx(''); }}
-              className="ml-auto flex items-center gap-1 bg-slate-700 hover:bg-red-900 text-slate-400 hover:text-red-300 text-xs font-semibold px-3 py-1.5 rounded transition"
+              style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, background: '#1e293b', border: '1px solid #334155', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', color: '#94a3b8', fontSize: 12, fontWeight: 600 }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#450a0a'; (e.currentTarget as HTMLButtonElement).style.color = '#fca5a5'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#1e293b'; (e.currentTarget as HTMLButtonElement).style.color = '#94a3b8'; }}
               title="Clear input and results"
             >
               <X size={13} /> Reset

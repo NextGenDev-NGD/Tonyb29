@@ -1,3 +1,57 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ─── Theme B — Teal ──────────────────────────────────────────────────────── */
+[data-theme="B"] .border-purple-500\/30,
+[data-theme="B"] .border-violet-500\/30  { border-color: rgb(13 148 136 / 0.3); }
+[data-theme="B"] .border-purple-400\/30,
+[data-theme="B"] .border-violet-400\/30  { border-color: rgb(45 212 191 / 0.3); }
+[data-theme="B"] .focus\:border-purple-400:focus,
+[data-theme="B"] .focus\:border-violet-400:focus { border-color: #2dd4bf; }
+[data-theme="B"] .hover\:border-purple-400:hover  { border-color: #2dd4bf; }
+[data-theme="B"] .bg-purple-600,
+[data-theme="B"] .bg-violet-600           { background-color: #0d9488; }
+[data-theme="B"] .hover\:bg-purple-600:hover,
+[data-theme="B"] .hover\:bg-violet-600:hover { background-color: #0d9488; }
+[data-theme="B"] .hover\:bg-purple-700:hover,
+[data-theme="B"] .hover\:bg-violet-700:hover { background-color: #0f766e; }
+[data-theme="B"] .bg-purple-700           { background-color: #0f766e; }
+[data-theme="B"] .text-purple-400,
+[data-theme="B"] .text-violet-400         { color: #2dd4bf; }
+
+/* ─── Theme C — Green ─────────────────────────────────────────────────────── */
+[data-theme="C"] .border-purple-500\/30,
+[data-theme="C"] .border-violet-500\/30  { border-color: rgb(22 163 74 / 0.3); }
+[data-theme="C"] .border-purple-400\/30,
+[data-theme="C"] .border-violet-400\/30  { border-color: rgb(74 222 128 / 0.3); }
+[data-theme="C"] .focus\:border-purple-400:focus,
+[data-theme="C"] .focus\:border-violet-400:focus { border-color: #4ade80; }
+[data-theme="C"] .hover\:border-purple-400:hover  { border-color: #4ade80; }
+[data-theme="C"] .bg-purple-600,
+[data-theme="C"] .bg-violet-600           { background-color: #16a34a; }
+[data-theme="C"] .hover\:bg-purple-600:hover,
+[data-theme="C"] .hover\:bg-violet-600:hover { background-color: #16a34a; }
+[data-theme="C"] .hover\:bg-purple-700:hover,
+[data-theme="C"] .hover\:bg-violet-700:hover { background-color: #15803d; }
+[data-theme="C"] .bg-purple-700           { background-color: #15803d; }
+[data-theme="C"] .text-purple-400,
+[data-theme="C"] .text-violet-400         { color: #4ade80; }
+
+/* ─── Theme D — Crimson ───────────────────────────────────────────────────── */
+[data-theme="D"] .border-purple-500\/30,
+[data-theme="D"] .border-violet-500\/30  { border-color: rgb(220 38 38 / 0.3); }
+[data-theme="D"] .border-purple-400\/30,
+[data-theme="D"] .border-violet-400\/30  { border-color: rgb(248 113 113 / 0.3); }
+[data-theme="D"] .focus\:border-purple-400:focus,
+[data-theme="D"] .focus\:border-violet-400:focus { border-color: #f87171; }
+[data-theme="D"] .hover\:border-purple-400:hover  { border-color: #f87171; }
+[data-theme="D"] .bg-purple-600,
+[data-theme="D"] .bg-violet-600           { background-color: #dc2626; }
+[data-theme="D"] .hover\:bg-purple-600:hover,
+[data-theme="D"] .hover\:bg-violet-600:hover { background-color: #dc2626; }
+[data-theme="D"] .hover\:bg-purple-700:hover,
+[data-theme="D"] .hover\:bg-violet-700:hover { background-color: #b91c1c; }
+[data-theme="D"] .bg-purple-700           { background-color: #b91c1c; }
+[data-theme="D"] .text-purple-400,
+[data-theme="D"] .text-violet-400         { color: #f87171; }

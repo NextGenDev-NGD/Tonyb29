@@ -301,9 +301,24 @@ RULES:
 - Do NOT include "mgc" in extraProperties — it is added automatically
 - attackBonus: 0 if no attack bonus, 1/2/3 for +1/+2/+3 weapons
 - extraDamageParts: [] if no extra damage
-- description: 1–2 sentences of flavor text only, as a plain HTML <p> tag. Do NOT put named features here.
-- features: array of named item features/properties. Each entry has "name" (the feature title), "description" (full mechanical text), and "recharge" ("sr", "lr", "5-6", or null). Use this for every named feature like "Soul Reaper", "Harvest Essence", etc. Null if the item has no named features.
+- description: 1–2 sentences of flavor text only, as a plain HTML <p> tag. Do NOT put feature mechanics here — they go in the features array.
+- features: REQUIRED for any item with named abilities. Every named feature (e.g. "Soul Reaper", "Harvest Essence", "Reaper's Reach") must be its own entry in the features array. Do NOT collapse multiple features into one entry. Do NOT put feature text in description. Use null only if the item has zero named features.
+- Each feature entry: "name" = the feature title, "description" = its full mechanical text, "recharge" = "sr"/"lr"/"5-6"/null.
 - charges/recharge: set on the top-level item if ANY feature recharges — use the most frequent recharge type. Individual feature recharge labels go in features[].recharge.
+
+EXAMPLE — multi-feature weapon (follow this pattern exactly):
+Input: "Flame Tongue ... Ignite. When you hit ... Blazing Aura. While the blade is lit ... Inferno Surge. Recharge 5–6. As a bonus action ..."
+Correct output (abbreviated):
+{
+  "description": "<p>A sword wreathed in magical fire, eager to burn.</p>",
+  "features": [
+    { "name": "Ignite", "description": "When you hit a creature with this weapon...", "recharge": null },
+    { "name": "Blazing Aura", "description": "While the blade is lit, creatures within 5 feet...", "recharge": null },
+    { "name": "Inferno Surge", "description": "As a bonus action you can expend a charge...", "recharge": "5-6" }
+  ],
+  "charges": 3,
+  "recharge": "dawn"
+}
 - baseWeapon must be one of: longsword, shortsword, greatsword, greataxe, handaxe, dagger, rapier, mace, quarterstaff, warhammer, battleaxe, spear, flail, glaive, halberd, maul, whip, longbow, shortbow, handcrossbow, heavycrossbow, lighthammer, trident
 - baseArmor must be one of: leather, studdedleather, hide, chainshirt, scalemail, breastplate, halfplate, ringmail, chainmail, splint, plate, shield
 - healingFormula: only for healing potions/items; null otherwise

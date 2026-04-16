@@ -186,21 +186,29 @@ export default function App() {
   const tabDesc  = TAB_META[tab].desc
 
   return (
-    <div style={{ background: theme.bg, minHeight: '100vh' }}>
+    <div data-theme={themeKey} style={{ background: theme.bg, minHeight: '100vh' }}>
 
       {/* ── Site header ─────────────────────────────────────────── */}
       <div style={{
-        background: theme.bg,
-        borderBottom: `1px solid ${theme.accent}33`,
-        padding: '10px 20px',
+        background: `linear-gradient(180deg, ${theme.accentDim}cc 0%, ${theme.bg} 100%)`,
+        borderBottom: `1px solid ${theme.accent}55`,
+        boxShadow: `0 2px 20px ${theme.accent}22, inset 0 1px 0 ${theme.accent}33`,
+        padding: '12px 24px',
         display: 'flex', alignItems: 'center', gap: 12,
       }}>
         {/* Branding */}
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-          <span style={{ fontWeight: 800, fontSize: 18, color: theme.accentText, letterSpacing: '-0.5px' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+          <span style={{
+            fontFamily: "'Cinzel', serif",
+            fontWeight: 700,
+            fontSize: 26,
+            color: theme.accentText,
+            letterSpacing: '1px',
+            textShadow: `0 1px 0 ${theme.accent}88, 0 2px 6px rgba(0,0,0,0.7)`,
+          }}>
             ⚔ DM VTT Toolkit
           </span>
-          <span style={{ color: '#334155', fontSize: 12 }}>
+          <span style={{ color: '#475569', fontSize: 12 }}>
             Prep less. Run more.
           </span>
         </div>
@@ -211,7 +219,7 @@ export default function App() {
             onClick={() => setHelpOpen(v => !v)}
             title="About this tool"
             style={{
-              background: 'none', border: `1px solid #334155`, borderRadius: 6,
+              background: 'none', border: `1px solid ${theme.accent}44`, borderRadius: 6,
               padding: '5px 8px', cursor: 'pointer',
               color: helpOpen ? theme.accentText : '#475569',
               display: 'flex', alignItems: 'center', gap: 4, fontSize: 12,
@@ -222,7 +230,7 @@ export default function App() {
           {/* Ko-fi */}
           <a href="https://ko-fi.com/tonyb29" target="_blank" rel="noopener noreferrer"
             style={{
-              background: 'none', border: '1px solid #334155', borderRadius: 6,
+              background: 'none', border: `1px solid ${theme.accent}44`, borderRadius: 6,
               padding: '5px 10px', color: '#64748b', fontSize: 11,
               textDecoration: 'none', whiteSpace: 'nowrap' as const,
             }}
@@ -232,7 +240,7 @@ export default function App() {
             onClick={() => setShowSettings(true)}
             title="API key settings"
             style={{
-              background: 'none', border: '1px solid #334155', borderRadius: 6,
+              background: 'none', border: `1px solid ${theme.accent}44`, borderRadius: 6,
               padding: '5px 8px', cursor: 'pointer', color: apiKeySet ? '#86efac' : '#94a3b8',
               display: 'flex', alignItems: 'center', gap: 4, fontSize: 12,
             }}
@@ -243,7 +251,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* ── Help panel (on demand, not a banner) ────────────────── */}
+{/* ── Help panel (on demand, not a banner) ────────────────── */}
       {helpOpen && (
         <div style={{
           background: `linear-gradient(135deg, ${theme.accentDim} 0%, #1e293b 60%, ${theme.bg} 100%)`,

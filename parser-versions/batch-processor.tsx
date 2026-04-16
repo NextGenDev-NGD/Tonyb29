@@ -229,17 +229,12 @@ export default function BatchProcessor({ onSendToEncounter }: { onSendToEncounte
   const nameCount    = namesInput.split('\n').map(n => n.trim()).filter(Boolean).length
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
+    <div style={{ padding: '24px' }}>
       <div className="max-w-7xl mx-auto">
 
-        <div className="mb-6 flex items-center gap-3">
-          <h1 className="text-4xl font-bold text-white">Batch Processor</h1>
-          <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-            <Layers size={14} /> Phase 11
-          </span>
-          <span className="bg-violet-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-            <Sparkles size={14} /> Phase 14
-          </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
+          <Layers size={20} color="#0369a1" />
+          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#e2e8f0' }}>Batch Processor</h2>
         </div>
 
         {/* Mode toggle */}

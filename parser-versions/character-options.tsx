@@ -883,10 +883,15 @@ function SpeciesCreator() {
         <textarea value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} rows={3}
           placeholder="e.g. A race of shadow-touched elves who dwell underground. They have darkvision, resistance to necrotic damage, and can become invisible in dim light as a bonus action once per short rest."
           style={{ ...S.textarea, marginBottom: 8 }} />
-        <button onClick={handleAiGenerate} disabled={aiLoading || !hasApiKey()} style={S.btn('#0f766e')}>
-          <Sparkles size={13} />{aiLoading ? 'Generating…' : 'Generate Species'}
-        </button>
-        {!hasApiKey() && <span style={{ color: '#475569', fontSize: 11, marginLeft: 10 }}>API key required (⚙ Settings)</span>}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' as const }}>
+          <button onClick={handleAiGenerate} disabled={aiLoading || !hasApiKey()} style={S.btn('#0f766e')}>
+            <Sparkles size={13} />{aiLoading ? 'Generating…' : 'Generate Species'}
+          </button>
+          {!hasApiKey() && <span style={{ color: '#475569', fontSize: 11 }}>API key required (⚙ Settings)</span>}
+          {error && error === 'Enter a description first.' && (
+            <span style={{ color: '#f87171', fontSize: 12 }}>⚠ {error}</span>
+          )}
+        </div>
       </div>
 
       {/* Core stats */}
@@ -1271,10 +1276,15 @@ function BackgroundCreator() {
         <textarea value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} rows={3}
           placeholder="e.g. A wandering monster hunter who has seen horrors beyond mortal comprehension. Skilled in survival and arcana, carries a monster-hunting kit, and can find shelter among common folk who fear the same creatures."
           style={{ ...S.textarea, marginBottom: 8 }} />
-        <button onClick={handleAiGenerate} disabled={aiLoading || !hasApiKey()} style={S.btn('#92400e')}>
-          <Sparkles size={13} />{aiLoading ? 'Generating…' : 'Generate Background'}
-        </button>
-        {!hasApiKey() && <span style={{ color: '#475569', fontSize: 11, marginLeft: 10 }}>API key required (⚙ Settings)</span>}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' as const }}>
+          <button onClick={handleAiGenerate} disabled={aiLoading || !hasApiKey()} style={S.btn('#92400e')}>
+            <Sparkles size={13} />{aiLoading ? 'Generating…' : 'Generate Background'}
+          </button>
+          {!hasApiKey() && <span style={{ color: '#475569', fontSize: 11 }}>API key required (⚙ Settings)</span>}
+          {error && error === 'Enter a description first.' && (
+            <span style={{ color: '#f87171', fontSize: 12 }}>⚠ {error}</span>
+          )}
+        </div>
       </div>
 
       {/* Name + skills */}
